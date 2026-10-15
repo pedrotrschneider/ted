@@ -1,0 +1,17 @@
+{
+  "time": "2026-10-10T15:03:28.042Z",
+  "sha256": {
+    "main.go": "14a16d22b6dfb1693a221aceae5853dca21a045a567e7373797d3c175b06420a",
+    "main_test.go": "48780bd89529ebfaa9150b35522f595c1e6f3bbc4bea73308192cdd5182dd998",
+    "go.mod": "344e96d54758795905b86751144ab7a2459a79c6dd95fa8471653f6d09d83f41",
+    "Dockerfile": "38d105e42ef5095d6c10f301e60e41db73cf1ca13fc05e4797fcc21a713cadc7",
+    "compose.yaml": "0347e822f70ef88f075da525ccd3c87449f701b4579ca58119bfaece3bf8c57b",
+    "index.html": "1e9656f2e2a3cd4821b620b9b3a252cf3ec7351165c69ff4788f9ec85b4bd5ad",
+    "scripts/extract-spec.mjs": "8b6baf94429d595d1b69b89da35b7bcea55db8b762b629ecdb2258bb999ab60f",
+    "scripts/probe.mjs": "d667ea4c1558b4313e555a4311896cbdfe664ff416d1bf8ed5def3a16a809489",
+    "scripts/restart-check.mjs": "68f72bacdb486b1f0b339c0a90b89e41ed06ca41415df17308923d8d57c1935e",
+    "scripts/sanitize-evidence.mjs": "05034f67bb3e62656ebe12e7b4a74b72108154ed4deb8744bffbe02966abcc5b",
+    "scripts/start.sh": "fab97e04f054ce54f3e1bf72e5953f9143e2693e7adbd7de678811a77c32d7e0",
+    "scripts/transcode.mjs": "3fdc5aa75a78c458566a770511e4efc6f971f135ceacf902524a2926cd7bfa65"
+  }
+}

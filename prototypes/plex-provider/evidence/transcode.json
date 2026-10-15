@@ -1,0 +1,50 @@
+{
+  "time": "2026-10-10T14:57:41.997Z",
+  "session": "ted-prototype-hls-check",
+  "results": [
+    {
+      "label": "start",
+      "status": 200,
+      "contentType": "application/vnd.apple.mpegurl",
+      "bytes": 144,
+      "sha256": "300e81bf498d43c03903b37e3b1b565c43d657a7cbf3eabbf0ff5a083cc94273",
+      "body": "#EXTM3U\n#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=944000,RESOLUTION=640x360,FRAME-RATE=24.000000\nsession/ted-prototype-hls-check/base/index.m3u8\n"
+    },
+    {
+      "label": "variant",
+      "status": 200,
+      "contentType": "application/vnd.apple.mpegurl",
+      "bytes": 309,
+      "sha256": "18043d3acee4e9ab515c68d0695ce79f34606d0381add3ec2ae26a1ab1336372",
+      "body": "#EXTM3U\n#EXT-X-TARGETDURATION:8\n#EXT-X-ALLOW-CACHE:NO\n#EXT-X-MEDIA-SEQUENCE:0\n#EXTINF:8, nodesc\n00000.ts\n#EXTINF:8, nodesc\n00001.ts\n#EXTINF:8, nodesc\n00002.ts\n#EXTINF:8, nodesc\n00003.ts\n#EXTINF:8, nodesc\n00004.ts\n#EXTINF:8, nodesc\n00005.ts\n#EXTINF:8, nodesc\n00006.ts\n#EXTINF:4, nodesc\n00007.ts\n#EXT-X-ENDLIST\n"
+    },
+    {
+      "label": "segment-0",
+      "status": 200,
+      "contentType": "video/MP2T",
+      "bytes": 804640,
+      "sha256": "f79b2498ab74b4bacd49c50796174820260165c1397b2edd7f7499749ca265cb"
+    },
+    {
+      "label": "segment-1",
+      "status": 200,
+      "contentType": "video/MP2T",
+      "bytes": 793360,
+      "sha256": "ba241f716c13308ca4830a23364a2fad0353a28b0d0d542bc7ec0336bca2527c"
+    },
+    {
+      "label": "segment-2",
+      "status": 200,
+      "contentType": "video/MP2T",
+      "bytes": 805768,
+      "sha256": "29a2a8f2fdf2afd6e577da1520403745699f47687ae8b02590b257e0477b4a97"
+    },
+    {
+      "label": "stop",
+      "status": 200,
+      "contentType": "text/html",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "name": "fixture-proxied",
+  "status": 200,
+  "ms": 7,
+  "headers": {
+    "content-type": "application/json",
+    "content-length": "550",
+    "content-range": null
+  },
+  "body": {
+    "MediaContainer": {
+      "Metadata": [
+        {
+          "Media": [
+            {
+              "Part": [
+                {
+                  "Stream": [
+                    {
+                      "codec": "h264",
+                      "frameRate": 24,
+                      "height": 360,
+                      "id": 1,
+                      "selected": true,
+                      "streamType": 1,
+                      "width": 640
+                    },
+                    {
+                      "channels": 1,
+                      "codec": "aac",
+                      "id": 2,
+                      "language": "English",
+                      "languageCode": "eng",
+                      "selected": true,
+                      "streamType": 2
+                    }
+                  ],
+                  "container": "mp4",
+                  "duration": 60000,
+                  "file": "http://provider:42390/stream/demo.mp4",
+                  "id": 1,
+                  "key": "/media/providers/2/proxy/stream/demo.mp4",
+                  "size": 5934442
+                }
+              ],
+              "audioChannels": 1,
+              "audioCodec": "aac",
+              "container": "mp4",
+              "duration": 60000,
+              "height": 360,
+              "id": 1,
+              "protocol": "http",
+              "videoCodec": "h264",
+              "videoFrameRate": "24p",
+              "videoResolution": "sd",
+              "width": 640
+            }
+          ],
+          "duration": 60000,
+          "guid": "tv.plex.provider.ted.cinemeta://demo-movie",
+          "key": "/media/providers/2/proxy/library/metadata/demo-movie",
+          "ratingKey": "demo-movie",
+          "summary": "Original 60-second generated test pattern with a tone. Not a movie or episode from Cinemeta.",
+          "thumb": "http://127.0.0.1:42390/poster.svg",
+          "title": "TED Playback Test (generated video)",
+          "type": "movie",
+          "viewCount": 0,
+          "viewOffset": 21000,
+          "year": 2026
+        }
+      ],
+      "identifier": "tv.plex.provider.ted.cinemeta",
+      "offset": 0,
+      "size": 1,
+      "totalSize": 1
+    }
+  }
+}

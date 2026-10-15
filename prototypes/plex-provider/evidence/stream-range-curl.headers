@@ -1,0 +1,13 @@
+HTTP/1.1 206 Partial Content
+X-Plex-Protocol: 1.0
+Content-Length: 5934442
+Accept-Ranges: bytes
+Access-Control-Allow-Headers: Range, Content-Type, X-Plex-Client-Identifier
+Access-Control-Allow-Methods: GET, HEAD, POST, PUT, OPTIONS
+Access-Control-Allow-Origin: http://127.0.0.1:42390
+Content-Type: video/mp4
+Date: Sat, 10 Oct 2026 14:47:20 GMT
+Last-Modified: Sat, 10 Oct 2026 14:34:42 GMT
+Content-Range: bytes 1000-1999/5934442
+Connection: Keep-Alive
+Keep-Alive: timeout=20

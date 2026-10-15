@@ -1,0 +1,20 @@
+{
+  "name": "watch-state",
+  "status": 200,
+  "ms": 3,
+  "headers": {
+    "content-type": "application/json",
+    "content-length": "132",
+    "content-range": null
+  },
+  "body": {
+    "states": {
+      "demo-movie": {
+        "playbackState": "paused",
+        "updatedAt": "2026-10-10T15:00:16.975857497Z",
+        "viewOffset": 21000,
+        "watched": false
+      }
+    }
+  }
+}

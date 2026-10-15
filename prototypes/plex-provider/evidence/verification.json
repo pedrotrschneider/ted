@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-10",
+  "scope": "Standalone prototype only",
+  "behaviorTests": {
+    "passed": true,
+    "tests": 4,
+    "packageSeconds": 0.535
+  },
+  "raceTests": {
+    "passed": true,
+    "tests": 4,
+    "packageSeconds": 1.665
+  },
+  "linuxArm64Build": {
+    "passed": true
+  },
+  "hlsSegmentDecode": {
+    "passed": true,
+    "secondsDecoded": 5,
+    "segment": "runtime/hls-check/segment-0.ts",
+    "ffmpegExitCode": 0
+  },
+  "productionTedTests": "Not run; no production code changed",
+  "ci": "Not run; no commit or pull request requested",
+  "mobileTvClients": "Not exercised"
+}

@@ -1,0 +1,14 @@
+HTTP/1.1 200 OK
+X-Plex-Protocol: 1.0
+Content-Length: 31607
+Access-Control-Allow-Headers: Range, Content-Type, X-Plex-Client-Identifier
+Access-Control-Allow-Methods: GET, HEAD, POST, PUT, OPTIONS
+Access-Control-Allow-Origin: http://127.0.0.1:42390
+Content-Type: application/json
+Date: Sat, 10 Oct 2026 14:39:51 GMT
+Transfer-Encoding: chunked
+Connection: Keep-Alive
+Keep-Alive: timeout=20
+Cache-Control: no-cache
+Date: Sat, 10 Oct 2026 14:39:51 GMT
+

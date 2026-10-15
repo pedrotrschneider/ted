@@ -1,0 +1,54 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.18.1/.schema/devbox.schema.json",
+  "packages": {
+    "go":            "1.27",
+    "gopls":         "latest",
+    "golangci-lint": "latest",
+    "delve":         "latest",
+    "air":           "latest",
+    "nodejs": {
+      "version":        "24",
+      "disable_plugin": true
+    },
+    "postgresql": {
+      "version":        "18",
+      "disable_plugin": true
+    },
+    "ffmpeg":         "latest",
+    "docker-client":  "latest",
+    "docker-compose": "latest",
+    "docker-buildx":  "latest",
+    "colima": {
+      "version": "latest",
+      "platforms": [
+        "aarch64-darwin",
+        "x86_64-darwin"
+      ]
+    },
+    "git":     "latest",
+    "curl":    "latest",
+    "jq":      "latest",
+    "flutter": "3.47.0-sdk-links",
+    "cocoapods": {
+      "version":   "1.16.2",
+      "platforms": ["aarch64-darwin", "x86_64-darwin"]
+    },
+    "rsync": {
+      "version":   "3.4.4",
+      "platforms": ["aarch64-darwin", "x86_64-darwin"]
+    }
+  },
+  "shell": {
+    "scripts": {
+      "tools-check":           "bash scripts/check-tools.sh",
+      "docker-start":          "colima start --runtime docker --vm-type vz --cpu 4 --memory 4 --disk 60",
+      "docker-stop":           "colima stop",
+      "docker-check":          "docker info",
+      "test":                  "bash scripts/check.sh behavior",
+      "test-race":             "bash scripts/check.sh race",
+      "test-integration":      "bash scripts/test-database.sh behavior",
+      "test-integration-race": "bash scripts/test-database.sh race",
+      "vet":                   "bash scripts/check.sh vet"
+    }
+  }
+}

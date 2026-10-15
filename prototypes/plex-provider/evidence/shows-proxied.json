@@ -1,0 +1,824 @@
+{
+  "name": "shows-proxied",
+  "status": 200,
+  "ms": 93,
+  "headers": {
+    "content-type": "application/json",
+    "content-length": "6931",
+    "content-range": null
+  },
+  "body": {
+    "MediaContainer": {
+      "Metadata": [
+        {
+          "childCount": 1,
+          "duration": 60000,
+          "guid": "tv.plex.provider.ted.cinemeta://demo-show",
+          "key": "/media/providers/2/proxy/library/metadata/demo-show",
+          "leafCount": 1,
+          "ratingKey": "demo-show",
+          "summary": "Original 60-second generated test pattern with a tone. Not a movie or episode from Cinemeta.",
+          "thumb": "http://127.0.0.1:42390/poster.svg",
+          "title": "TED Playback Test Series",
+          "type": "show",
+          "year": 2026
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt21097264"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt21097264/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt21097264",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt21097264",
+          "ratingKey": "show-tt21097264",
+          "summary": "In the farmlands of the Salinas Valley in California, successive generations of two families, the Trasks and the Hamiltons, are destined to reenact the fateful story of Cain and Abel.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt21097264/img",
+          "title": "East of Eden",
+          "type": "show",
+          "year": 2026
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt26545992"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt26545992/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt26545992",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt26545992",
+          "ratingKey": "show-tt26545992",
+          "summary": "Lanterns follows new recruit John Stewart and Lantern legend Hal Jordan, two intergalactic cops drawn into a dark, Earth-based mystery as they investigate a murder in the American heartland.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt26545992/img",
+          "title": "Lanterns",
+          "type": "show",
+          "year": 2026
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt31510819"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt31510819/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt31510819",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt31510819",
+          "ratingKey": "show-tt31510819",
+          "summary": "Power is up for grabs as two warring crime families clash in a battle that threatens to topple empires. In the crossfire stands Harry Da Souza, a street-smart 'fixer' who knows too well where loyalties lie when opposing forces col...\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt31510819/img",
+          "title": "MobLand",
+          "type": "show",
+          "year": 2025
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt10986410"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt10986410/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt10986410",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt10986410",
+          "ratingKey": "show-tt10986410",
+          "summary": "American college football coach Ted Lasso is hired to manage AFC Richmond, a struggling English soccer club, and must win over skeptical players, staff, and fans.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt10986410/img",
+          "title": "Ted Lasso",
+          "type": "show",
+          "year": 2020
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt37972251"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt37972251/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt37972251",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt37972251",
+          "ratingKey": "show-tt37972251",
+          "summary": "\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt37972251/img",
+          "title": "War",
+          "type": "show",
+          "year": 2025
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt1844624"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt1844624/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt1844624",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt1844624",
+          "ratingKey": "show-tt1844624",
+          "summary": "An anthology horror drama series centering on different characters and locations, showcasing different aspects of horror. Created and produced by Ryan Murphy and Brad Falchuk.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt1844624/img",
+          "title": "American Horror Story",
+          "type": "show",
+          "year": 2011
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt5875444"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt5875444/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt5875444",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt5875444",
+          "ratingKey": "show-tt5875444",
+          "summary": "A dysfunctional team of MI5 agents navigate the espionage world's smoke and mirrors to defend the UK from sinister forces.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt5875444/img",
+          "title": "Slow Horses",
+          "type": "show",
+          "year": 2022
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt13210838"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt13210838/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt13210838",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt13210838",
+          "ratingKey": "show-tt13210838",
+          "summary": "When aristocratic Eddie inherits the family estate, he discovers that it's home to a huge weed empire, and its proprietors aren't going anywhere.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt13210838/img",
+          "title": "The Gentlemen",
+          "type": "show",
+          "year": 2024
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt33539520"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt33539520/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt33539520",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt33539520",
+          "ratingKey": "show-tt33539520",
+          "summary": "Neagley, drawing from her experience with Jack Reacher and the 110 Special Investigators, embarks on a perilous mission to expose a sinister threat, risking her life to unravel the mystery.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt33539520/img",
+          "title": "Neagley",
+          "type": "show",
+          "year": 2026
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt36064406"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt36064406/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt36064406",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt36064406",
+          "ratingKey": "show-tt36064406",
+          "summary": "Teen witch apprentices band together to defend New Orleans against an approaching dark force.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt36064406/img",
+          "title": "Coven Academy",
+          "type": "show",
+          "year": 2026
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt33081352"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt33081352/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt33081352",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt33081352",
+          "ratingKey": "show-tt33081352",
+          "summary": "Deborah Wayne enters her freshman year at Hillman College, her parents' HBCU alma mater, where she must escape their shadow and build her own legacy.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt33081352/img",
+          "title": "A Different World",
+          "type": "show",
+          "year": 2026
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt9288030"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt9288030/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt9288030",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt9288030",
+          "ratingKey": "show-tt9288030",
+          "summary": "Itinerant former military policeman Jack Reacher solves crimes and metes out his own brand of street justice. Based on the novels by Lee Child.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt9288030/img",
+          "title": "Reacher",
+          "type": "show",
+          "year": 2022
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt13111078"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt13111078/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt13111078",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt13111078",
+          "ratingKey": "show-tt13111078",
+          "summary": "CIA operative Joe McNamara and her team attempt to balance their personal and professional lives as the tip of the spear in the agency's war on terror.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt13111078/img",
+          "title": "Lioness",
+          "type": "show",
+          "year": 2023
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt6773088"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt6773088/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt6773088",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt6773088",
+          "ratingKey": "show-tt6773088",
+          "summary": "McConaughey and Harrelson they try to live together on a Texas ranch. That close space puts their friendship to the test.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt6773088/img",
+          "title": "Brothers",
+          "type": "show",
+          "year": 2026
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt1196946"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt1196946/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt1196946",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt1196946",
+          "ratingKey": "show-tt1196946",
+          "summary": "Famous \"psychic\" Patrick Jane outs himself as a fake, and using his heightened observational skills and impeccable knowledge of the human psyche, he works with the police so he can find \"Red John\", the madman who killed his family.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt1196946/img",
+          "title": "The Mentalist",
+          "type": "show",
+          "year": 2008
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt33043892"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt33043892/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt33043892",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt33043892",
+          "ratingKey": "show-tt33043892",
+          "summary": "Dexter Morgan awakens from a coma and sets out for New York City, determined to find Harrison and make things right. But when Miami Metro's Angel Batista arrives with questions, Dexter realizes his past is catching up to him fast.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt33043892/img",
+          "title": "Dexter: Resurrection",
+          "type": "show",
+          "year": 2025
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt35726020"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt35726020/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt35726020",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt35726020",
+          "ratingKey": "show-tt35726020",
+          "summary": "Ex-cocaine dealer Jackie Price lives luxuriously selling art through tax schemes. After 20 years of anonymity, her peaceful life ends when The Seven Demons, elite hitmen, are hired to kill her.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt35726020/img",
+          "title": "Kill Jackie",
+          "type": "show",
+          "year": 2026
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt0944947"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt0944947/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt0944947",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt0944947",
+          "ratingKey": "show-tt0944947",
+          "summary": "Nine noble families vie for control of Westeros and the Iron Throne, while an ancient threat beyond The Wall begins to stir.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt0944947/img",
+          "title": "Game of Thrones",
+          "type": "show",
+          "year": 2011
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt33332385"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt33332385/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt33332385",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt33332385",
+          "ratingKey": "show-tt33332385",
+          "summary": "A skeptical mayor leads the superstitious residents of a cursed New England island.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt33332385/img",
+          "title": "Widow's Bay",
+          "type": "show",
+          "year": 2026
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt14688458"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt14688458/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt14688458",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt14688458",
+          "ratingKey": "show-tt14688458",
+          "summary": "Men and women live in a giant silo underground with several regulations which they believe are in place to protect them from the toxic and ruined world on the surface.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt14688458/img",
+          "title": "Silo",
+          "type": "show",
+          "year": 2023
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt7441658"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt7441658/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt7441658",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt7441658",
+          "ratingKey": "show-tt7441658",
+          "summary": "Asta and Yuno were abandoned together at the same church and have been inseparable since. As children, they promised that they would compete against each other to see who would become the next Emperor Magus.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt7441658/img",
+          "title": "Black Clover",
+          "type": "show",
+          "year": 2017
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt19231492"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt19231492/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt19231492",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt19231492",
+          "ratingKey": "show-tt19231492",
+          "summary": "A man is abducted into an alternate version of his life. Amid the mind-bending landscape of lives he could've lived, he embarks on a harrowing journey to get back to his true family and save them from a most terrifying foe: himself..\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt19231492/img",
+          "title": "Dark Matter",
+          "type": "show",
+          "year": 2024
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt0903747"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt0903747/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt0903747",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt0903747",
+          "ratingKey": "show-tt0903747",
+          "summary": "A chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine with a former student to secure his family's future.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt0903747/img",
+          "title": "Breaking Bad",
+          "type": "show",
+          "year": 2008
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt12408718"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt12408718/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt12408718",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt12408718",
+          "ratingKey": "show-tt12408718",
+          "summary": "Karl Alberg moves to a quiet coastal town to soothe a psyche that has been battered by big-city police work, but finds himself needing to call upon all his skills to solve the murders that continue to wash up on his shore.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt12408718/img",
+          "title": "Murder in a Small Town",
+          "type": "show",
+          "year": 2024
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt5607616"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt5607616/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt5607616",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt5607616",
+          "ratingKey": "show-tt5607616",
+          "summary": "After being suddenly transported to another world, Subaru Natsuki and his new female partner are brutally murdered. However, Subaru awakens to a familiar scene, meeting the same girl again. The day begins to mysteriously repeat it...\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt5607616/img",
+          "title": "Re: Zero - Starting Life in Another World",
+          "type": "show",
+          "year": 2016
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt6037988"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt6037988/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt6037988",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt6037988",
+          "ratingKey": "show-tt6037988",
+          "summary": "Police dispatcher Ian Ridley's daughter Maggie disappeared years ago. He receives a call, believing it's her, and embarks on a relentless quest to find her and reunite his family, disregarding consequences.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt6037988/img",
+          "title": "Last Seen",
+          "type": "show",
+          "year": 2026
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt7587890"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt7587890/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt7587890",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt7587890",
+          "ratingKey": "show-tt7587890",
+          "summary": "Starting over isn't easy, especially for John Nolan who, after a life-altering incident, is pursuing his dream of joining the LAPD. As their oldest rookie, he's met with skepticism from those who see him as just a walking midlife ...\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt7587890/img",
+          "title": "The Rookie",
+          "type": "show",
+          "year": 2018
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt11540908"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt11540908/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt11540908",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt11540908",
+          "ratingKey": "show-tt11540908",
+          "summary": "A sheltered girl with telekinetic powers is bullied, leading to a horrific, bloody incident due to her domineering mother's influence.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt11540908/img",
+          "title": "Carrie",
+          "type": "show",
+          "year": 2026
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt39101592"
+            }
+          ],
+          "art": "https://live.metahub.space/background/medium/tt39101592/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt39101592",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt39101592",
+          "ratingKey": "show-tt39101592",
+          "summary": "Dr Ethan Winter, an analytical detective, partners with driven DI Lauren Bell. His deductive genius aids her murder squad, but he's haunted by an unsolved murder of someone close to him.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://live.metahub.space/poster/small/tt39101592/img",
+          "title": "Winter",
+          "type": "show",
+          "year": 2026
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt0141842"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt0141842/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt0141842",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt0141842",
+          "ratingKey": "show-tt0141842",
+          "summary": "New Jersey mob boss Tony Soprano deals with personal and professional issues in his home and business life that affect his mental state, leading him to seek professional psychiatric counseling.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt0141842/img",
+          "title": "The Sopranos",
+          "type": "show",
+          "year": 1999
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt36885662"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt36885662/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt36885662",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt36885662",
+          "ratingKey": "show-tt36885662",
+          "summary": "A brilliant surgeon leaves Boston to become a small-town doctor where he spent childhood summers. Despite his medical skills, his rude manner alienates locals as he battles hidden phobias and struggles with personal connections.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt36885662/img",
+          "title": "Best Medicine",
+          "type": "show",
+          "year": 2026
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt36832679"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt36832679/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt36832679",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt36832679",
+          "ratingKey": "show-tt36832679",
+          "summary": "In 1959, 13 people are stranded on an islet near Mallorca during a storm. At their small hotel, English tourist Elisa Mander is found dead. When suicide seems unlikely, retired actor Basil, once Sherlock Holmes on screen, investig...\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt36832679/img",
+          "title": "The Final Problem",
+          "type": "show",
+          "year": 2026
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt35949226"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt35949226/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt35949226",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt35949226",
+          "ratingKey": "show-tt35949226",
+          "summary": "A 50-year-old divorcee juggles dating life while taking care of her parents and adult son.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt35949226/img",
+          "title": "Youth",
+          "type": "show",
+          "year": 2026
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt36303968"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt36303968/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt36303968",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt36303968",
+          "ratingKey": "show-tt36303968",
+          "summary": "A determined FBI agent delves into a female killer's history while partnering with a seasoned investigator to track her down.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt36303968/img",
+          "title": "Furious",
+          "type": "show",
+          "year": 2026
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt0121955"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt0121955/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt0121955",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt0121955",
+          "ratingKey": "show-tt0121955",
+          "summary": "The misadventures of four foul-mouthed, dirty-minded, irreverent grade-schoolers who live in the quiet, dysfunctional mountain town of South Park, Colorado.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt0121955/img",
+          "title": "South Park",
+          "type": "show",
+          "year": 1997
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt39365612"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt39365612/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt39365612",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt39365612",
+          "ratingKey": "show-tt39365612",
+          "summary": "A family of law enforcement agents become targets of a mysterious assassin after a U.S. Marshal falls in the line of duty, forcing them to use their expertise to protect each other.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt39365612/img",
+          "title": "Line of Fire",
+          "type": "show",
+          "year": 2026
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt36857537"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt36857537/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt36857537",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt36857537",
+          "ratingKey": "show-tt36857537",
+          "summary": "Two detectives fall in love while investigating a murder, until one becomes a suspect.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt36857537/img",
+          "title": "The Blame",
+          "type": "show",
+          "year": 2026
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt11198330"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt11198330/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt11198330",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt11198330",
+          "ratingKey": "show-tt11198330",
+          "summary": "An internal succession war within House Targaryen at the height of its power, 172 years before the birth of Daenerys Targaryen.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt11198330/img",
+          "title": "House of the Dragon",
+          "type": "show",
+          "year": 2022
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt31938062"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt31938062/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt31938062",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt31938062",
+          "ratingKey": "show-tt31938062",
+          "summary": "The daily lives of healthcare professionals in a Pittsburgh hospital as they juggle personal crises, workplace politics, and the emotional toll of treating critically ill patients, revealing the resilience required in their noble ...\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt31938062/img",
+          "title": "The Pitt",
+          "type": "show",
+          "year": 2025
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt35617054"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt35617054/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt35617054",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt35617054",
+          "ratingKey": "show-tt35617054",
+          "summary": "Follows Susan's return to England where she investigates a mystery involving a children's author's death, connected to a 1955 story set in Corfu.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt35617054/img",
+          "title": "Marble Hall Murders",
+          "type": "show",
+          "year": 2026
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt0306414"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt0306414/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt0306414",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt0306414",
+          "ratingKey": "show-tt0306414",
+          "summary": "The Baltimore drug scene, as seen through the eyes of drug dealers and law enforcement.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt0306414/img",
+          "title": "The Wire",
+          "type": "show",
+          "year": 2002
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt0460681"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt0460681/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt0460681",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt0460681",
+          "ratingKey": "show-tt0460681",
+          "summary": "Two brothers follow their father's footsteps as hunters, fighting evil supernatural beings of many kinds, including monsters, demons, and gods that roam the earth.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt0460681/img",
+          "title": "Supernatural",
+          "type": "show",
+          "year": 2005
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt12327578"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt12327578/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt12327578",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt12327578",
+          "ratingKey": "show-tt12327578",
+          "summary": "A prequel to Star Trek (1966), this series follows the crew of the USS Enterprise under the command of Captain Christopher Pike.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt12327578/img",
+          "title": "Star Trek: Strange New Worlds",
+          "type": "show",
+          "year": 2022
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt0388629"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt0388629/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt0388629",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt0388629",
+          "ratingKey": "show-tt0388629",
+          "summary": "Monkey D. Luffy, a pirate with rubber powers, forms the Straw Hat crew and sails the Grand Line, battling rivals and the World Government on a quest for the legendary treasure One Piece and the title of Pirate King.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt0388629/img",
+          "title": "One Piece",
+          "type": "show",
+          "year": 1999
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt2560140"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt2560140/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt2560140",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt2560140",
+          "ratingKey": "show-tt2560140",
+          "summary": "In a world where humanity shelters behind towering walls from man-eating Titans, a determined teen joins the elite Survey Corps to fight the giants and uncover the secrets of their origin.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt2560140/img",
+          "title": "Attack on Titan",
+          "type": "show",
+          "year": 2013
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt14186672"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt14186672/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt14186672",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt14186672",
+          "ratingKey": "show-tt14186672",
+          "summary": "A modern-day tale of fortune seeking in the world of West Texas oil rigs.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt14186672/img",
+          "title": "Landman",
+          "type": "show",
+          "year": 2024
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt14466018"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt14466018/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt14466018",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt14466018",
+          "ratingKey": "show-tt14466018",
+          "summary": "Follows rookie police officers working in Belfast, a city in which being a frontline response cop comes with unique pressures and dangers.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt14466018/img",
+          "title": "Blue Lights",
+          "type": "show",
+          "year": 2023
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt1520211"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt1520211/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt1520211",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt1520211",
+          "ratingKey": "show-tt1520211",
+          "summary": "Sheriff Deputy Rick Grimes wakes up from a coma to learn the world is in ruins and must lead a group of survivors to stay alive.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt1520211/img",
+          "title": "The Walking Dead",
+          "type": "show",
+          "year": 2010
+        },
+        {
+          "Guid": [
+            {
+              "id": "imdb://tt3032476"
+            }
+          ],
+          "art": "https://images.metahub.space/background/medium/tt3032476/img",
+          "guid": "tv.plex.provider.ted.cinemeta://show-tt3032476",
+          "key": "/media/providers/2/proxy/library/metadata/show-tt3032476",
+          "ratingKey": "show-tt3032476",
+          "summary": "Albuquerque lawyer Jimmy McGill scrapes for clients and respect, but every win drags him closer to shady deals, dangerous players, and the alter ego Saul Goodman.\n\nCatalog-only prototype entry: no media source is mapped.",
+          "thumb": "https://images.metahub.space/poster/small/tt3032476/img",
+          "title": "Better Call Saul",
+          "type": "show",
+          "year": 2015
+        }
+      ],
+      "Type": [
+        {
+          "key": "/media/providers/2/proxy/library/sections/shows/all",
+          "title": "Titles",
+          "type": "show"
+        }
+      ],
+      "identifier": "tv.plex.provider.ted.cinemeta",
+      "offset": 0,
+      "size": 50,
+      "totalSize": 50
+    }
+  }
+}

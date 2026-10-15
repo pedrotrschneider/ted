@@ -1,0 +1,17 @@
+.devbox/
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+bin/
+obj/
+.DS_Store
+# Runtime data at the repository root; do not ignore internal/config source.
+/Config/
+/Config-*/
+/Media/
+
+
+# Private historical integration evidence and recovery archives
+/integrations/*/out/

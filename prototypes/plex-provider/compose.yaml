@@ -1,0 +1,40 @@
+name: ted-plex-provider-prototype
+services:
+  plex:
+    # Official Plex image, arm64 manifest resolved on 2026-10-10.
+    image: plexinc/pms-docker@sha256:19a24b6ca20907f8473ba52e9c4d840313c8490a35dbf6c8464c987d684e0e2e
+    environment:
+      TZ: America/Sao_Paulo
+      ALLOWED_NETWORKS: 172.30.89.0/24
+      ADVERTISE_IP: http://127.0.0.1:32490/
+      CHANGE_CONFIG_DIR_OWNERSHIP: "false"
+    ports:
+      - "127.0.0.1:32490:32400"
+    volumes:
+      - ./runtime/plex-config:/config
+      - ./runtime/transcode:/transcode
+    networks:
+      prototype:
+        ipv4_address: 172.30.89.10
+  provider:
+    build:
+      context: .
+    environment:
+      PROVIDER_ADDR: :42390
+      PROVIDER_PUBLIC_URL: http://127.0.0.1:42390
+      PROVIDER_INTERNAL_URL: http://provider:42390
+      PROVIDER_DATA_DIR: /data
+      PROVIDER_MEDIA_FILE: /media/demo.mp4
+    ports:
+      - "127.0.0.1:42390:42390"
+    volumes:
+      - ./runtime/provider:/data
+      - ./runtime/media:/media:ro
+    networks:
+      prototype:
+        ipv4_address: 172.30.89.11
+networks:
+  prototype:
+    ipam:
+      config:
+        - subnet: 172.30.89.0/24

@@ -1,0 +1,19 @@
+{
+  "name": "identity",
+  "status": 200,
+  "ms": 62,
+  "headers": {
+    "content-type": "application/json",
+    "content-length": "150",
+    "content-range": null
+  },
+  "body": {
+    "MediaContainer": {
+      "size": 0,
+      "apiVersion": "1.2.3",
+      "claimed": true,
+      "machineIdentifier": "d43ee8c4ba87921bdc793cda76adcf3d0564bb49",
+      "version": "1.43.4.10903-e5521bd8c"
+    }
+  }
+}

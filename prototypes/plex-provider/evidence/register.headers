@@ -1,0 +1,9 @@
+HTTP/1.1 200 OK
+X-Plex-Protocol: 1.0
+Content-Type: application/json
+Content-Length: 1097
+Connection: Keep-Alive
+Keep-Alive: timeout=20
+Cache-Control: no-cache
+Date: Sat, 10 Oct 2026 14:37:52 GMT
+

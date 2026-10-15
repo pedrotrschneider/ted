@@ -1,0 +1,473 @@
+{
+  "MediaContainer": {
+    "Hub": [
+      {
+        "Metadata": [
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt0096895"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt0096895/img",
+            "guid": "tv.plex.provider.ted.cinemeta://movie-tt0096895",
+            "key": "/media/providers/1/proxy/library/metadata/movie-tt0096895",
+            "ratingKey": "movie-tt0096895",
+            "summary": "\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://m.media-amazon.com/images/M/MV5BYzZmZWViM2EtNzhlMi00NzBlLWE0MWEtZDFjMjk3YjIyNTBhXkEyXkFqcGc@._V1_SX250.jpg",
+            "title": "Batman",
+            "type": "movie",
+            "year": 1989
+          },
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt1877830"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt1877830/img",
+            "guid": "tv.plex.provider.ted.cinemeta://movie-tt1877830",
+            "key": "/media/providers/1/proxy/library/metadata/movie-tt1877830",
+            "ratingKey": "movie-tt1877830",
+            "summary": "\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://m.media-amazon.com/images/M/MV5BMmU5NGJlMzAtMGNmOC00YjJjLTgyMzUtNjAyYmE4Njg5YWMyXkEyXkFqcGc@._V1_SX250.jpg",
+            "title": "The Batman",
+            "type": "movie",
+            "year": 2022
+          },
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt0372784"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt0372784/img",
+            "guid": "tv.plex.provider.ted.cinemeta://movie-tt0372784",
+            "key": "/media/providers/1/proxy/library/metadata/movie-tt0372784",
+            "ratingKey": "movie-tt0372784",
+            "summary": "\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://m.media-amazon.com/images/M/MV5BMzA2NDQzZDEtNDU5Ni00YTlkLTg2OWEtYmQwM2Y1YTBjMjFjXkEyXkFqcGc@._V1_SX250.jpg",
+            "title": "Batman Begins",
+            "type": "movie",
+            "year": 2005
+          },
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt32333324"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt32333324/img",
+            "guid": "tv.plex.provider.ted.cinemeta://movie-tt32333324",
+            "key": "/media/providers/1/proxy/library/metadata/movie-tt32333324",
+            "ratingKey": "movie-tt32333324",
+            "summary": "\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://m.media-amazon.com/images/M/MV5BNTY3YWIzYzYtZDk2My00YjFjLWE2OTctNWVhOTU3ZDQ2YTU0XkEyXkFqcGc@._V1_SX250.jpg",
+            "title": "Batman: Knightfall - Part 1: Knightfall",
+            "type": "movie",
+            "year": 2026
+          },
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt0112462"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt0112462/img",
+            "guid": "tv.plex.provider.ted.cinemeta://movie-tt0112462",
+            "key": "/media/providers/1/proxy/library/metadata/movie-tt0112462",
+            "ratingKey": "movie-tt0112462",
+            "summary": "\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://m.media-amazon.com/images/M/MV5BMTUyNjJhZWItMTZkNS00NDc4LTllNjUtYTg3NjczMzA5ZTViXkEyXkFqcGc@._V1_SX250.jpg",
+            "title": "Batman Forever",
+            "type": "movie",
+            "year": 1995
+          },
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt0103776"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt0103776/img",
+            "guid": "tv.plex.provider.ted.cinemeta://movie-tt0103776",
+            "key": "/media/providers/1/proxy/library/metadata/movie-tt0103776",
+            "ratingKey": "movie-tt0103776",
+            "summary": "\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://m.media-amazon.com/images/M/MV5BZTliMDVkYTktZDdlMS00NTAwLWJhNzYtMWIwMDZjN2ViMGFiXkEyXkFqcGc@._V1_SX250.jpg",
+            "title": "Batman Returns",
+            "type": "movie",
+            "year": 1992
+          },
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt0118688"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt0118688/img",
+            "guid": "tv.plex.provider.ted.cinemeta://movie-tt0118688",
+            "key": "/media/providers/1/proxy/library/metadata/movie-tt0118688",
+            "ratingKey": "movie-tt0118688",
+            "summary": "\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://m.media-amazon.com/images/M/MV5BYzU3ZjE3M2UtM2E4Ni00MDI5LTkyZGUtOTFkMGIyYjNjZGU3XkEyXkFqcGc@._V1_SX250.jpg",
+            "title": "Batman & Robin",
+            "type": "movie",
+            "year": 1997
+          },
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt19850008"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt19850008/img",
+            "guid": "tv.plex.provider.ted.cinemeta://movie-tt19850008",
+            "key": "/media/providers/1/proxy/library/metadata/movie-tt19850008",
+            "ratingKey": "movie-tt19850008",
+            "summary": "\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://m.media-amazon.com/images/M/MV5BMDlkYmJlNmEtMjg5NC00MTk2LThiOGYtYTAyZGI5ZGRjMDA2XkEyXkFqcGc@._V1_SX250.jpg",
+            "title": "The Batman: Part II",
+            "type": "movie",
+            "year": 2028
+          },
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt2975590"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt2975590/img",
+            "guid": "tv.plex.provider.ted.cinemeta://movie-tt2975590",
+            "key": "/media/providers/1/proxy/library/metadata/movie-tt2975590",
+            "ratingKey": "movie-tt2975590",
+            "summary": "\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://m.media-amazon.com/images/M/MV5BZTJkYjdmYjYtOGMyNC00ZGU1LThkY2ItYTc1OTVlMmE2YWY1XkEyXkFqcGc@._V1_SX250.jpg",
+            "title": "Batman v Superman: Dawn of Justice",
+            "type": "movie",
+            "year": 2016
+          },
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt38807532"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt38807532/img",
+            "guid": "tv.plex.provider.ted.cinemeta://movie-tt38807532",
+            "key": "/media/providers/1/proxy/library/metadata/movie-tt38807532",
+            "ratingKey": "movie-tt38807532",
+            "summary": "\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://m.media-amazon.com/images/M/MV5BY2JkYzg3OGEtMjE2OS00ZTMwLWIyOTktYTQ5ZTI3ZmVkMTQyXkEyXkFqcGc@._V1_SX250.jpg",
+            "title": "Batman Knightfall Part 2: Knightquest",
+            "type": "movie",
+            "year": 0
+          },
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt0106364"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt0106364/img",
+            "guid": "tv.plex.provider.ted.cinemeta://movie-tt0106364",
+            "key": "/media/providers/1/proxy/library/metadata/movie-tt0106364",
+            "ratingKey": "movie-tt0106364",
+            "summary": "\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://m.media-amazon.com/images/M/MV5BYjYwN2ZmZWYtMTdlNC00ZDQxLWEyNmUtZDI5Yjk5MzQ2N2Y3XkEyXkFqcGc@._V1_SX250.jpg",
+            "title": "Batman: Mask of the Phantasm",
+            "type": "movie",
+            "year": 1993
+          },
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt4116284"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt4116284/img",
+            "guid": "tv.plex.provider.ted.cinemeta://movie-tt4116284",
+            "key": "/media/providers/1/proxy/library/metadata/movie-tt4116284",
+            "ratingKey": "movie-tt4116284",
+            "summary": "\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://m.media-amazon.com/images/M/MV5BMTcyNTEyOTY0M15BMl5BanBnXkFtZTgwOTAyNzU3MDI@._V1_SX250.jpg",
+            "title": "The Lego Batman Movie",
+            "type": "movie",
+            "year": 2017
+          },
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt4853102"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt4853102/img",
+            "guid": "tv.plex.provider.ted.cinemeta://movie-tt4853102",
+            "key": "/media/providers/1/proxy/library/metadata/movie-tt4853102",
+            "ratingKey": "movie-tt4853102",
+            "summary": "\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://m.media-amazon.com/images/M/MV5BMzJiZTJmNGItYTUwNy00ZWE2LWJlMTgtZjJkNzY1OTRiNTZlXkEyXkFqcGc@._V1_SX250.jpg",
+            "title": "Batman: The Killing Joke",
+            "type": "movie",
+            "year": 2016
+          },
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt0060153"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt0060153/img",
+            "guid": "tv.plex.provider.ted.cinemeta://movie-tt0060153",
+            "key": "/media/providers/1/proxy/library/metadata/movie-tt0060153",
+            "ratingKey": "movie-tt0060153",
+            "summary": "\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://m.media-amazon.com/images/M/MV5BNzEyYWZjNTAtNGRhZi00ZjFiLTlhYmQtNzhhYzJiZmMwNGI1XkEyXkFqcGc@._V1_SX250.jpg",
+            "title": "Batman: The Movie",
+            "type": "movie",
+            "year": 1966
+          },
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt21445686"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt21445686/img",
+            "guid": "tv.plex.provider.ted.cinemeta://movie-tt21445686",
+            "key": "/media/providers/1/proxy/library/metadata/movie-tt21445686",
+            "ratingKey": "movie-tt21445686",
+            "summary": "\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://m.media-amazon.com/images/M/MV5BZjA2MGZjMDMtMDU3YS00YmEzLTg0YmItYzk0Yzg5MDczMDZlXkEyXkFqcGc@._V1_SX250.jpg",
+            "title": "Batman: The Long Halloween",
+            "type": "movie",
+            "year": 2021
+          },
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt0468569"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt0468569/img",
+            "guid": "tv.plex.provider.ted.cinemeta://movie-tt0468569",
+            "key": "/media/providers/1/proxy/library/metadata/movie-tt0468569",
+            "ratingKey": "movie-tt0468569",
+            "summary": "\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://m.media-amazon.com/images/M/MV5BMTMxNTMwODM0NF5BMl5BanBnXkFtZTcwODAyMTk2Mw@@._V1_SX250.jpg",
+            "title": "The Dark Knight",
+            "type": "movie",
+            "year": 2008
+          },
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt38807533"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt38807533/img",
+            "guid": "tv.plex.provider.ted.cinemeta://movie-tt38807533",
+            "key": "/media/providers/1/proxy/library/metadata/movie-tt38807533",
+            "ratingKey": "movie-tt38807533",
+            "summary": "\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://m.media-amazon.com/images/M/MV5BY2JkYzg3OGEtMjE2OS00ZTMwLWIyOTktYTQ5ZTI3ZmVkMTQyXkEyXkFqcGc@._V1_SX250.jpg",
+            "title": "Batman: Knightfall, Part 3 - KnightsEnd",
+            "type": "movie",
+            "year": 0
+          },
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt7451284"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt7451284/img",
+            "guid": "tv.plex.provider.ted.cinemeta://movie-tt7451284",
+            "key": "/media/providers/1/proxy/library/metadata/movie-tt7451284",
+            "ratingKey": "movie-tt7451284",
+            "summary": "Batman, along with a number of his allies and adversaries, finds himself transplanted from modern Gotham City to feudal Japan.\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://images.metahub.space/poster/small/tt7451284/img",
+            "title": "Batman Ninja",
+            "type": "movie",
+            "year": 2018
+          },
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt7167630"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt7167630/img",
+            "guid": "tv.plex.provider.ted.cinemeta://movie-tt7167630",
+            "key": "/media/providers/1/proxy/library/metadata/movie-tt7167630",
+            "ratingKey": "movie-tt7167630",
+            "summary": "In an alternative Victorian Age Gotham City, Batman begins his war on crime while he investigates a new series of murders by Jack the Ripper.\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://images.metahub.space/poster/small/tt7167630/img",
+            "title": "Batman: Gotham by Gaslight",
+            "type": "movie",
+            "year": 2018
+          }
+        ],
+        "hubIdentifier": "ted.cinemeta.movie",
+        "key": "/media/providers/1/proxy/library/sections/movies/all",
+        "size": 19,
+        "title": "Cinemeta movie",
+        "type": "movie"
+      },
+      {
+        "Metadata": [
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt0059968"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt0059968/img",
+            "guid": "tv.plex.provider.ted.cinemeta://show-tt0059968",
+            "key": "/media/providers/1/proxy/library/metadata/show-tt0059968",
+            "ratingKey": "show-tt0059968",
+            "summary": "\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://m.media-amazon.com/images/M/MV5BZWFjNTdlZjctZTRkNC00OTQ1LWI3NDktOWY0ZWZmNzFiOTNkXkEyXkFqcGc@._V1_SX250.jpg",
+            "title": "Batman",
+            "type": "show",
+            "year": 0
+          },
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt0103359"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt0103359/img",
+            "guid": "tv.plex.provider.ted.cinemeta://show-tt0103359",
+            "key": "/media/providers/1/proxy/library/metadata/show-tt0103359",
+            "ratingKey": "show-tt0103359",
+            "summary": "\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://m.media-amazon.com/images/M/MV5BZjM2NjMwMjctZmMxZi00ZTRiLWI1NTItZDc4YTc4YWI2NTRjXkEyXkFqcGc@._V1_SX250.jpg",
+            "title": "Batman: The Animated Series",
+            "type": "show",
+            "year": 0
+          },
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt14681596"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt14681596/img",
+            "guid": "tv.plex.provider.ted.cinemeta://show-tt14681596",
+            "key": "/media/providers/1/proxy/library/metadata/show-tt14681596",
+            "ratingKey": "show-tt14681596",
+            "summary": "\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://m.media-amazon.com/images/M/MV5BMjI1Y2NmNDgtZDVmMy00MjcwLTgwNmItMTFmMjcxMWRlYzQwXkEyXkFqcGc@._V1_SX250.jpg",
+            "title": "Batman: Caped Crusader",
+            "type": "show",
+            "year": 0
+          },
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt0147746"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt0147746/img",
+            "guid": "tv.plex.provider.ted.cinemeta://show-tt0147746",
+            "key": "/media/providers/1/proxy/library/metadata/show-tt0147746",
+            "ratingKey": "show-tt0147746",
+            "summary": "\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://m.media-amazon.com/images/M/MV5BMDExYjNiYTYtZDkwZC00NDcxLTk3YWYtMmIyN2ZlZGYyY2E0XkEyXkFqcGc@._V1_SX250.jpg",
+            "title": "Batman Beyond",
+            "type": "show",
+            "year": 0
+          },
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt0398417"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt0398417/img",
+            "guid": "tv.plex.provider.ted.cinemeta://show-tt0398417",
+            "key": "/media/providers/1/proxy/library/metadata/show-tt0398417",
+            "ratingKey": "show-tt0398417",
+            "summary": "\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://m.media-amazon.com/images/M/MV5BZGRkYTkyOGQtZDVlYy00ZjhjLTk5YjMtNzgxMWUxZTk1ZWZkXkEyXkFqcGc@._V1_SX250.jpg",
+            "title": "The Batman",
+            "type": "show",
+            "year": 0
+          },
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt1213218"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt1213218/img",
+            "guid": "tv.plex.provider.ted.cinemeta://show-tt1213218",
+            "key": "/media/providers/1/proxy/library/metadata/show-tt1213218",
+            "ratingKey": "show-tt1213218",
+            "summary": "An updated animated series centering on the Caped Crusader himself as he partners and deals with his fellow superheroes in the DC Comics universe.\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://images.metahub.space/poster/small/tt1213218/img",
+            "title": "Batman: The Brave and the Bold",
+            "type": "show",
+            "year": 2008
+          },
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt0118266"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt0118266/img",
+            "guid": "tv.plex.provider.ted.cinemeta://show-tt0118266",
+            "key": "/media/providers/1/proxy/library/metadata/show-tt0118266",
+            "ratingKey": "show-tt0118266",
+            "summary": "The further and darker adventures of Batman with a new Robin, a closer association with Batgirl and the previous Robin now as Nightwing.\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://images.metahub.space/poster/small/tt0118266/img",
+            "title": "The New Batman Adventures",
+            "type": "show",
+            "year": 1997
+          },
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt2329077"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt2329077/img",
+            "guid": "tv.plex.provider.ted.cinemeta://show-tt2329077",
+            "key": "/media/providers/1/proxy/library/metadata/show-tt2329077",
+            "ratingKey": "show-tt2329077",
+            "summary": "Batman, a crime-fighting vigilante of Gotham City, goes up against the underworld.\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://images.metahub.space/poster/small/tt2329077/img",
+            "title": "Beware the Batman",
+            "type": "show",
+            "year": 2013
+          },
+          {
+            "Guid": [
+              {
+                "id": "imdb://tt0062544"
+              }
+            ],
+            "art": "https://images.metahub.space/background/medium/tt0062544/img",
+            "guid": "tv.plex.provider.ted.cinemeta://show-tt0062544",
+            "key": "/media/providers/1/proxy/library/metadata/show-tt0062544",
+            "ratingKey": "show-tt0062544",
+            "summary": "The animated debut of Batman and Robin brings the Dynamic Duo to animated life in Filmation's cult classic take on The Dark Knight and The Boy Wonder, defending Gotham City from The Caped Crusader's Rogues Gallery, one crook at a ...\n\nCatalog-only prototype entry: no media source is mapped.",
+            "thumb": "https://images.metahub.space/poster/small/tt0062544/img",
+            "title": "The Adventures of Batman",
+            "type": "show",
+            "year": 1968
+          }
+        ],
+        "hubIdentifier": "ted.cinemeta.show",
+        "key": "/media/providers/1/proxy/library/sections/movies/all",
+        "size": 9,
+        "title": "Cinemeta show",
+        "type": "show"
+      }
+    ],
+    "size": 2
+  }
+}

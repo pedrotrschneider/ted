@@ -1,0 +1,118 @@
+{
+  "time": "2026-10-10T15:00:16.976Z",
+  "version": "1.43.4.10903-e5521bd8c",
+  "claimed": true,
+  "ownerTokenPresent": true,
+  "providerId": 2,
+  "identifier": "tv.plex.provider.ted.cinemeta",
+  "discovered": false,
+  "results": [
+    {
+      "name": "identity",
+      "status": 200,
+      "ms": 62
+    },
+    {
+      "name": "discovery-owner",
+      "status": 200,
+      "ms": 9
+    },
+    {
+      "name": "discovery-owner-included",
+      "status": 200,
+      "ms": 2
+    },
+    {
+      "name": "native-sections",
+      "status": 200,
+      "ms": 2
+    },
+    {
+      "name": "provider-sections",
+      "status": 200,
+      "ms": 10
+    },
+    {
+      "name": "movies-proxied",
+      "status": 200,
+      "ms": 180
+    },
+    {
+      "name": "shows-proxied",
+      "status": 200,
+      "ms": 93
+    },
+    {
+      "name": "search-proxied",
+      "status": 200,
+      "ms": 57
+    },
+    {
+      "name": "fixture-proxied",
+      "status": 200,
+      "ms": 7
+    },
+    {
+      "name": "episode-proxied",
+      "status": 200,
+      "ms": 6
+    },
+    {
+      "name": "series-children-proxied",
+      "status": 200,
+      "ms": 3
+    },
+    {
+      "name": "related-proxied",
+      "status": 200,
+      "ms": 2
+    },
+    {
+      "name": "provider-playqueue",
+      "status": 200,
+      "ms": 2
+    },
+    {
+      "name": "native-playqueue",
+      "status": 200,
+      "ms": 18
+    },
+    {
+      "name": "native-client-playqueue",
+      "status": 200,
+      "ms": 7
+    },
+    {
+      "name": "stream-range",
+      "status": null,
+      "ms": 45,
+      "error": "fetch failed",
+      "cause": "Response does not match the HTTP/1.1 protocol (Duplicate Content-Length)"
+    },
+    {
+      "name": "native-playback-decision",
+      "status": 200,
+      "ms": 5
+    },
+    {
+      "name": "timeline-write",
+      "status": 200,
+      "ms": 3
+    },
+    {
+      "name": "resume-read",
+      "status": 200,
+      "ms": 3
+    },
+    {
+      "name": "continue-watching",
+      "status": 200,
+      "ms": 5
+    },
+    {
+      "name": "watch-state",
+      "status": 200,
+      "ms": 3
+    }
+  ]
+}

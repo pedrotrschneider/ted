@@ -1,0 +1,19 @@
+{
+  "name": "related-proxied",
+  "status": 200,
+  "ms": 2,
+  "headers": {
+    "content-type": "application/json",
+    "content-length": "115",
+    "content-range": null
+  },
+  "body": {
+    "MediaContainer": {
+      "Metadata": [],
+      "identifier": "tv.plex.provider.ted.cinemeta",
+      "offset": 0,
+      "size": 0,
+      "totalSize": 0
+    }
+  }
+}

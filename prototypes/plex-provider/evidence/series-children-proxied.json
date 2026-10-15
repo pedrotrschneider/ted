@@ -1,0 +1,36 @@
+{
+  "name": "series-children-proxied",
+  "status": 200,
+  "ms": 3,
+  "headers": {
+    "content-type": "application/json",
+    "content-length": "368",
+    "content-range": null
+  },
+  "body": {
+    "MediaContainer": {
+      "Metadata": [
+        {
+          "duration": 60000,
+          "grandparentKey": "/media/providers/2/proxy/library/metadata/demo-show",
+          "grandparentTitle": "TED Playback Test Series",
+          "guid": "tv.plex.provider.ted.cinemeta://demo-season",
+          "index": 1,
+          "key": "/media/providers/2/proxy/library/metadata/demo-season",
+          "parentIndex": 1,
+          "parentKey": "/media/providers/2/proxy/library/metadata/demo-season",
+          "ratingKey": "demo-season",
+          "summary": "Original 60-second generated test pattern with a tone. Not a movie or episode from Cinemeta.",
+          "thumb": "http://127.0.0.1:42390/poster.svg",
+          "title": "Season 1",
+          "type": "season",
+          "year": 2026
+        }
+      ],
+      "identifier": "tv.plex.provider.ted.cinemeta",
+      "offset": 0,
+      "size": 1,
+      "totalSize": 1
+    }
+  }
+}

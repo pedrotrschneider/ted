@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TED Plex provider prototype</title>
+<style>
+  body{font:16px system-ui;max-width:1100px;margin:2rem auto;padding:0 1rem;background:#151515;color:#eee}
+  a{color:#8acbff}button,input,select{font:inherit;padding:.6rem;border:1px solid #666;border-radius:6px;background:#222;color:#fff}
+  nav,form{display:flex;gap:1rem;flex-wrap:wrap;margin:1rem 0}video{width:100%;max-width:700px}
+  #catalog{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem}.card img{width:100%;aspect-ratio:2/3;object-fit:cover;background:#173451}.card a{display:block;margin:.5rem 0}.card small{color:#bbb}
+  #status{min-height:1.5rem;color:#ffd685}code{word-break:break-word}
+</style>
+<h1>TED Plex provider prototype</h1>
+<p>This is the provider's diagnostic page. Browsing or playing here does not establish Plex client compatibility.</p>
+<nav>
+  <a href="http://127.0.0.1:32490/web">Plex Web</a>
+  <a id="plex-fixture" hidden>Test title inside Plex Web</a>
+  <a href="/provider.json">Provider manifest</a>
+  <a href="/prototype/state">Fixture watch state</a>
+</nav>
+<h2>Generated playback fixture</h2>
+<p>Original 60-second test pattern with a tone. Cinemeta titles below have no mapped media source.</p>
+<video controls preload="metadata" src="/stream/demo.mp4"></video>
+<h2>Cinemeta catalog</h2>
+<form id="search">
+  <select id="kind" aria-label="Catalog"><option value="movies">Movies</option><option value="shows">Shows</option></select>
+  <input id="query" aria-label="Search Cinemeta" placeholder="Search Cinemeta" maxlength="200">
+  <button>Search</button><button type="button" id="top">Top 50</button>
+</form>
+<p id="status" role="status"></p><div id="catalog"></div>
+<script>
+  const status = document.querySelector('#status'), catalog = document.querySelector('#catalog');
+  let controller;
+  async function load(top=false) {
+    controller?.abort(); controller=new AbortController();
+    const kind=document.querySelector('#kind').value, query=document.querySelector('#query').value.trim();
+    const endpoint=top||!query?'/library/sections/'+kind+'/all':'/hubs/search?query='+encodeURIComponent(query);
+    status.textContent='Loading Cinemeta…';
+    try {
+      const response=await fetch(endpoint,{headers:{Accept:'application/json'},signal:controller.signal});
+      if(!response.ok)throw new Error('Catalog request failed ('+response.status+'). Previous results are retained.');
+      const {MediaContainer:c}=await response.json();
+      const items=c.Metadata??c.Hub.find(h=>h.type===(kind==='movies'?'movie':'show')).Metadata;
+      const cards=items.map(item=>{
+        const card=document.createElement('article');card.className='card';
+        const image=document.createElement('img');image.loading='lazy';image.alt='';
+        if(item.thumb&&/^https?:\/\//.test(item.thumb))image.src=item.thumb;
+        const link=document.createElement('a');link.href=item.key;link.textContent=item.title;
+        const label=document.createElement('small');label.textContent=item.Media?'Generated playback fixture':'Catalog only; no mapped source';
+        card.append(image,link,label);return card;
+      });catalog.replaceChildren(...cards);status.textContent=items.length+' results from the provider';
+    }catch(error){if(error.name!=='AbortError')status.textContent=error.message}
+  }
+  document.querySelector('#search').addEventListener('submit',event=>{event.preventDefault();load()});
+  document.querySelector('#kind').addEventListener('change',()=>load());
+  document.querySelector('#top').addEventListener('click',()=>load(true));
+  fetch('/prototype/connection',{headers:{Accept:'application/json'}}).then(r=>r.ok?r.json():null).then(c=>{
+    if(!c)return;const link=document.querySelector('#plex-fixture');
+    link.href='http://127.0.0.1:32490/web/index.html#!/server/'+encodeURIComponent(c.machineIdentifier)+'/details?key='+encodeURIComponent('/media/providers/'+c.providerId+'/proxy/library/metadata/demo-movie');link.hidden=false;
+  }).catch(()=>{});
+  load(true);
+</script>
+</html>

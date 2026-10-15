@@ -1,0 +1,40 @@
+{
+  "time": "2026-10-10T15:01:26.807Z",
+  "preserved": true,
+  "before": {
+    "machineIdentifier": "d43ee8c4ba87921bdc793cda76adcf3d0564bb49",
+    "version": "1.43.4.10903-e5521bd8c",
+    "providerId": 2,
+    "guid": "tv.plex.provider.ted.cinemeta://demo-movie",
+    "viewOffset": 21000,
+    "viewCount": 0,
+    "state": {
+      "states": {
+        "demo-movie": {
+          "playbackState": "paused",
+          "updatedAt": "2026-10-10T15:00:16.975857497Z",
+          "viewOffset": 21000,
+          "watched": false
+        }
+      }
+    }
+  },
+  "after": {
+    "machineIdentifier": "d43ee8c4ba87921bdc793cda76adcf3d0564bb49",
+    "version": "1.43.4.10903-e5521bd8c",
+    "providerId": 2,
+    "guid": "tv.plex.provider.ted.cinemeta://demo-movie",
+    "viewOffset": 21000,
+    "viewCount": 0,
+    "state": {
+      "states": {
+        "demo-movie": {
+          "playbackState": "paused",
+          "updatedAt": "2026-10-10T15:00:16.975857497Z",
+          "viewOffset": 21000,
+          "watched": false
+        }
+      }
+    }
+  }
+}

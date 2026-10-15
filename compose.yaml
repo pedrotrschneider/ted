@@ -1,0 +1,67 @@
+name: ted
+services:
+  app:
+    build: .
+    user: "${TED_UID:-10001}:${TED_GID:-10001}"
+    init: true
+    restart: unless-stopped
+    environment:
+      TED_TIMEZONE: ${TED_TIMEZONE:-UTC}
+      TED_DATABASE_URL: postgres://ted:${TED_DB_PASSWORD:?Set TED_DB_PASSWORD in .env}@db:5432/ted?sslmode=disable
+      TED_INSECURE_HTTP: ${TED_INSECURE_HTTP:-false}
+      TED_MAPPING_BATCH_SIZE: ${TED_MAPPING_BATCH_SIZE:-200}
+      TED_MAPPING_WORKERS: ${TED_MAPPING_WORKERS:-4}
+      TED_MIN_PASSWORD_LENGTH: ${TED_MIN_PASSWORD_LENGTH:-0}
+      TED_ACCESS_TOKEN_TTL: ${TED_ACCESS_TOKEN_TTL:-10m}
+      TED_REFRESH_TOKEN_IDLE_TTL: ${TED_REFRESH_TOKEN_IDLE_TTL:-720h}
+      TED_TOKEN_FAMILY_TTL: ${TED_TOKEN_FAMILY_TTL:-2160h}
+      TED_REAL_DEBRID_API_KEY: ${TED_REAL_DEBRID_API_KEY:-}
+      TED_MEDIA_DIR: /media
+      TED_METADATA_DIR: /metadata
+      TED_METADATA_LANGUAGE: ${TED_METADATA_LANGUAGE:-en}
+      TED_METADATA_COUNTRY: ${TED_METADATA_COUNTRY:-US}
+    volumes:
+      - type: bind
+        source: ${TED_CONFIG_DIR:-./Config}/metadata
+        target: /metadata
+      - type: bind
+        source: ${TED_MEDIA_DIR:-./Media}
+        target: /media
+    ports:
+      - "${TED_BIND_ADDRESS:-127.0.0.1}:${TED_PORT:-8080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "ted", "healthcheck"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    logging: &logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+  db:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ted
+      POSTGRES_DB: ted
+      POSTGRES_PASSWORD: ${TED_DB_PASSWORD:?Set TED_DB_PASSWORD in .env}
+    volumes:
+      - type: bind
+        source: ${TED_CONFIG_DIR:-./Config}/postgres
+        target: /var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "PGPASSWORD=\"$${POSTGRES_PASSWORD}\" psql -h 127.0.0.1 -U ted -d ted -XAtqc 'SELECT 1' >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    logging: *logging

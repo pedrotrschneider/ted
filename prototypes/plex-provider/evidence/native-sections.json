@@ -1,0 +1,17 @@
+{
+  "name": "native-sections",
+  "status": 200,
+  "ms": 2,
+  "headers": {
+    "content-type": "application/json",
+    "content-length": "91",
+    "content-range": null
+  },
+  "body": {
+    "MediaContainer": {
+      "size": 0,
+      "allowSync": false,
+      "title1": "Plex Library"
+    }
+  }
+}

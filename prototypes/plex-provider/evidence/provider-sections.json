@@ -1,0 +1,69 @@
+{
+  "name": "provider-sections",
+  "status": 200,
+  "ms": 10,
+  "headers": {
+    "content-type": "application/json",
+    "content-length": "301",
+    "content-range": null
+  },
+  "body": {
+    "MediaContainer": {
+      "Directory": [
+        {
+          "Pivot": [
+            {
+              "context": "content.discover",
+              "id": "recommended",
+              "key": "/media/providers/2/proxy/hubs/sections/movies",
+              "symbol": "star",
+              "title": "Recommended",
+              "type": "hub"
+            },
+            {
+              "context": "content.library",
+              "id": "library",
+              "key": "/media/providers/2/proxy/library/sections/movies/all?type=1",
+              "symbol": "library",
+              "title": "Library",
+              "type": "list"
+            }
+          ],
+          "hubKey": "/hubs/sections/movies",
+          "id": "movies",
+          "key": "/media/providers/2/proxy/library/sections/movies",
+          "title": "Cinemeta Movies",
+          "type": "movie",
+          "uuid": "ted-cinemeta-movies"
+        },
+        {
+          "Pivot": [
+            {
+              "context": "content.discover",
+              "id": "recommended",
+              "key": "/media/providers/2/proxy/hubs/sections/shows",
+              "symbol": "star",
+              "title": "Recommended",
+              "type": "hub"
+            },
+            {
+              "context": "content.library",
+              "id": "library",
+              "key": "/media/providers/2/proxy/library/sections/shows/all?type=2",
+              "symbol": "library",
+              "title": "Library",
+              "type": "list"
+            }
+          ],
+          "hubKey": "/hubs/sections/shows",
+          "id": "shows",
+          "key": "/media/providers/2/proxy/library/sections/shows",
+          "title": "Cinemeta Shows",
+          "type": "show",
+          "uuid": "ted-cinemeta-shows"
+        }
+      ],
+      "size": 2
+    }
+  }
+}

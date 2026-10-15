@@ -1,0 +1,22 @@
+{
+  "name": "native-client-playqueue",
+  "status": 200,
+  "ms": 7,
+  "headers": {
+    "content-type": "application/json",
+    "content-length": "231",
+    "content-range": null
+  },
+  "body": {
+    "MediaContainer": {
+      "size": 0,
+      "identifier": "com.plexapp.plugins.library",
+      "mediaTagPrefix": "/system/bundle/media/flags/",
+      "mediaTagVersion": 1786914513,
+      "playQueueID": 9,
+      "playQueueShuffled": false,
+      "playQueueSourceURI": "library://x/directory/%2Fmedia%2Fproviders%2F2%2Fproxy%2Flibrary%2Fmetadata%2Fdemo-movie",
+      "playQueueVersion": 1
+    }
+  }
+}

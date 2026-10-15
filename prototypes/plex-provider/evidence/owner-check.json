@@ -1,0 +1,8 @@
+{
+  "date": "2026-10-10",
+  "surface": "Plex Web 4.160.0",
+  "verification": "Owner-performed; no computer-control tools used",
+  "initial": "Something went wrong screen before XML correction",
+  "afterXmlCorrection": "Title appears; playback fails",
+  "normalCatalogNavigation": "Custom provider absent from server discovery API; owner navigation success not established"
+}

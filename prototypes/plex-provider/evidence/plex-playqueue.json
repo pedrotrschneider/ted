@@ -1,0 +1,12 @@
+{
+  "MediaContainer": {
+    "size": 0,
+    "identifier": "com.plexapp.plugins.library",
+    "mediaTagPrefix": "/system/bundle/media/flags/",
+    "mediaTagVersion": 1786914513,
+    "playQueueID": 2,
+    "playQueueShuffled": false,
+    "playQueueSourceURI": "library://x/item/%2Flibrary%2Fmetadata%2Fdemo-movie",
+    "playQueueVersion": 1
+  }
+}

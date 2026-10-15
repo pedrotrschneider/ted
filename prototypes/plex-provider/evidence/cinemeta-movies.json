@@ -1,0 +1,850 @@
+{
+  "MediaContainer": {
+    "Metadata": [
+      {
+        "Media": [
+          {
+            "Part": [
+              {
+                "Stream": [
+                  {
+                    "codec": "h264",
+                    "frameRate": 24,
+                    "height": 360,
+                    "id": 1,
+                    "selected": true,
+                    "streamType": 1,
+                    "width": 640
+                  },
+                  {
+                    "channels": 1,
+                    "codec": "aac",
+                    "id": 2,
+                    "language": "English",
+                    "languageCode": "eng",
+                    "selected": true,
+                    "streamType": 2
+                  }
+                ],
+                "container": "mp4",
+                "duration": 60000,
+                "file": "http://provider:42390/stream/demo.mp4",
+                "id": 1,
+                "key": "http://127.0.0.1:42390/stream/demo.mp4",
+                "size": 5934442
+              }
+            ],
+            "audioChannels": 1,
+            "audioCodec": "aac",
+            "container": "mp4",
+            "duration": 60000,
+            "height": 360,
+            "id": 1,
+            "protocol": "http",
+            "videoCodec": "h264",
+            "videoFrameRate": "24p",
+            "videoResolution": "sd",
+            "width": 640
+          }
+        ],
+        "duration": 60000,
+        "guid": "tv.plex.provider.ted.cinemeta://demo-movie",
+        "key": "/library/metadata/demo-movie",
+        "ratingKey": "demo-movie",
+        "summary": "Original 60-second generated test pattern with a tone. Not a movie or episode from Cinemeta.",
+        "thumb": "http://127.0.0.1:42390/poster.svg",
+        "title": "TED Playback Test (generated video)",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt6933238"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt6933238/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt6933238",
+        "key": "/library/metadata/movie-tt6933238",
+        "ratingKey": "movie-tt6933238",
+        "summary": "A Harvard student becomes the Unabomber after psychological experiments. Years later, an FBI agent's pursuit reveals how his past shaped his deadly campaign that killed 3 and injured 23 from 1978-1995.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt6933238/img",
+        "title": "Unabomber",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt22526100"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt22526100/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt22526100",
+        "key": "/library/metadata/movie-tt22526100",
+        "ratingKey": "movie-tt22526100",
+        "summary": "After an impulsive kiss, two scientists end up in a fake relationship, testing their theories about love and each other.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt22526100/img",
+        "title": "The Love Hypothesis",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt26657236"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt26657236/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt26657236",
+        "key": "/library/metadata/movie-tt26657236",
+        "ratingKey": "movie-tt26657236",
+        "summary": "After a therapist's patient disappears into a dimension beyond reality, she must venture into the unknown to save him.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt26657236/img",
+        "title": "Backrooms",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt36983905"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt36983905/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt36983905",
+        "key": "/library/metadata/movie-tt36983905",
+        "ratingKey": "movie-tt36983905",
+        "summary": "Based on the true story of the uprising that inspired the legend of Robin Hood, Andrew Garfield stars as the leader of a rebellion against the tyranny of King Richard II in a fight for justice.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt36983905/img",
+        "title": "The Uprising",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt37287335"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt37287335/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt37287335",
+        "key": "/library/metadata/movie-tt37287335",
+        "ratingKey": "movie-tt37287335",
+        "summary": "After breaking the mysterious \"One Wish Willow\" to win his crush's heart, a hopeless romantic finds himself getting exactly what he asked for but soon discovers that some desires come at a dark, sinister price.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt37287335/img",
+        "title": "Obsession",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt22084616"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt22084616/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt22084616",
+        "key": "/library/metadata/movie-tt22084616",
+        "ratingKey": "movie-tt22084616",
+        "summary": "A forgotten Peter Parker lives alone as a full-time Spider-Man until mounting pressure triggers a dangerous change and a powerful new enemy emerges.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt22084616/img",
+        "title": "Spider-Man: Brand New Day",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt27165187"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt27165187/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt27165187",
+        "key": "/library/metadata/movie-tt27165187",
+        "ratingKey": "movie-tt27165187",
+        "summary": "The Platt family bands together to navigate their new surroundings after a cosmic event transports their suburban neighborhood to someplace unknown.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt27165187/img",
+        "title": "The End of Oak Street",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt12042730"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt12042730/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt12042730",
+        "key": "/library/metadata/movie-tt12042730",
+        "ratingKey": "movie-tt12042730",
+        "summary": "A science teacher wakes up alone on a spaceship. As his memory returns, he uncovers a mission to stop a mysterious substance killing Earth's sun, and realizes that an unexpected friendship may be the key.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt12042730/img",
+        "title": "Project Hail Mary",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt1756855"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt1756855/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt1756855",
+        "key": "/library/metadata/movie-tt1756855",
+        "ratingKey": "movie-tt1756855",
+        "summary": "After enduring years of malfunctioning products, Wile E. Coyote teams up with a local personal injury attorney to take on ACME, the manufacturer of anything and everything used by the Looney Tunes characters.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt1756855/img",
+        "title": "Coyote vs. Acme",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt29355505"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt29355505/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt29355505",
+        "key": "/library/metadata/movie-tt29355505",
+        "ratingKey": "movie-tt29355505",
+        "summary": "Woody, Buzz, Jessie and the rest of the gang's jobs are challenged when they're introduced to electronics, a new threat to playtime.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt29355505/img",
+        "title": "Toy Story 5",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt11561116"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt11561116/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt11561116",
+        "key": "/library/metadata/movie-tt11561116",
+        "ratingKey": "movie-tt11561116",
+        "summary": "A grieving father and his young son relocate to the quiet town of Featherbank, which was terrorized by a serial killer known as The Whisper Man 15 years earlier, while rumors circulated that Whisper Man worked with an accomplice.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt11561116/img",
+        "title": "The Whisper Man",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt36429458"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt36429458/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt36429458",
+        "key": "/library/metadata/movie-tt36429458",
+        "ratingKey": "movie-tt36429458",
+        "summary": "A single mother fighting to survive and a reformed ex-con with untapped talent find in each other an unlikely second chance.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt36429458/img",
+        "title": "Doing Life",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt28014327"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt28014327/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt28014327",
+        "key": "/library/metadata/movie-tt28014327",
+        "ratingKey": "movie-tt28014327",
+        "summary": "Lieutenant Troy Brennan's reconnaissance mission over Soviet territory goes awry, forcing him to crash-land and survive in Russian wilderness while evading capture or rescue.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt28014327/img",
+        "title": "Mayday",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt31170389"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt31170389/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt31170389",
+        "key": "/library/metadata/movie-tt31170389",
+        "ratingKey": "movie-tt31170389",
+        "summary": "After the loss of her husband, a woman seeks solace with her in-laws. As one by one they transform into deadites, she comes to discover that the vows she took in life - survive even in death.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt31170389/img",
+        "title": "Evil Dead Burn",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt14173636"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt14173636/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt14173636",
+        "key": "/library/metadata/movie-tt14173636",
+        "ratingKey": "movie-tt14173636",
+        "summary": "Joe and Angela's marriage is on thin ice. When they invite their enigmatic upstairs neighbors for a dinner party, the night spirals into unexpected places.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt14173636/img",
+        "title": "The Invite",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt35298123"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt35298123/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt35298123",
+        "key": "/library/metadata/movie-tt35298123",
+        "ratingKey": "movie-tt35298123",
+        "summary": "A director making a slasher sequel becomes obsessed with casting the original film's 'final girl,' leading both women into psychological and sexual chaos.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt35298123/img",
+        "title": "Teenage Sex and Death at Camp Miasma",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt15047880"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt15047880/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt15047880",
+        "key": "/library/metadata/movie-tt15047880",
+        "ratingKey": "movie-tt15047880",
+        "summary": "If you found out we weren't alone, if someone showed you, proved it to you, would that frighten you?\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt15047880/img",
+        "title": "Disclosure Day",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt4154796"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt4154796/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt4154796",
+        "key": "/library/metadata/movie-tt4154796",
+        "ratingKey": "movie-tt4154796",
+        "summary": "After the devastating events of Avengers: Infinity War (2018), the universe is in ruins. With the help of remaining allies, the Avengers assemble once more in order to reverse Thanos' actions and restore balance to the universe.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt4154796/img",
+        "title": "Avengers: Endgame",
+        "type": "movie",
+        "year": 2019
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt37969426"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt37969426/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt37969426",
+        "key": "/library/metadata/movie-tt37969426",
+        "ratingKey": "movie-tt37969426",
+        "summary": "Kermit and friends return in a modern take on their classic variety show format, mixing nostalgic charm with new comedy bits while staying true to the Muppets' timeless spirit.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt37969426/img",
+        "title": "The Muppet Show",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt27681354"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt27681354/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt27681354",
+        "key": "/library/metadata/movie-tt27681354",
+        "ratingKey": "movie-tt27681354",
+        "summary": "A covert team of elite operatives are living in the shadows. When a ruthless despot steals a billion-dollar fortune, they're sent to steal it back--an impossible heist that erupts into a deadly game of strategy, deception and surv...\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt27681354/img",
+        "title": "In the Grey",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt26581740"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt26581740/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt26581740",
+        "key": "/library/metadata/movie-tt26581740",
+        "ratingKey": "movie-tt26581740",
+        "summary": "When all but one child from the same class mysteriously vanish on the same night at exactly the same time, a community is left questioning who or what is behind their disappearance.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt26581740/img",
+        "title": "Weapons",
+        "type": "movie",
+        "year": 2025
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt0111161"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt0111161/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt0111161",
+        "key": "/library/metadata/movie-tt0111161",
+        "ratingKey": "movie-tt0111161",
+        "summary": "After a banker is sentenced to life in Shawshank Prison, he forms an unlikely friendship with a seasoned inmate and clings to hope amid cruelty and corruption.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt0111161/img",
+        "title": "The Shawshank Redemption",
+        "type": "movie",
+        "year": 1994
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt0120791"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt0120791/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt0120791",
+        "key": "/library/metadata/movie-tt0120791",
+        "ratingKey": "movie-tt0120791",
+        "summary": "Two witch sisters, raised by their eccentric aunts in a small town, face closed-minded prejudice and a curse which threatens to prevent them ever finding lasting love.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt0120791/img",
+        "title": "Practical Magic",
+        "type": "movie",
+        "year": 1998
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt5177120"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt5177120/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt5177120",
+        "key": "/library/metadata/movie-tt5177120",
+        "ratingKey": "movie-tt5177120",
+        "summary": "The British military recruits a small group of highly skilled soldiers to strike against German forces behind enemy lines during World War II.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt5177120/img",
+        "title": "The Ministry of Ungentlemanly Warfare",
+        "type": "movie",
+        "year": 2024
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt32547691"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt32547691/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt32547691",
+        "key": "/library/metadata/movie-tt32547691",
+        "ratingKey": "movie-tt32547691",
+        "summary": "In the tense 72 hours before D-Day, General Dwight D. Eisenhower and Captain James Stagg face an impossible choice--launch the most dangerous seaborne invasion in history or risk losing the war altogether.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt32547691/img",
+        "title": "Pressure",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt0120903"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt0120903/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt0120903",
+        "key": "/library/metadata/movie-tt0120903",
+        "ratingKey": "movie-tt0120903",
+        "summary": "In a world where mutants (evolved super-powered humans) exist and are discriminated against, two groups form for an inevitable clash: the supremacist Brotherhood, and the pacifist X-Men.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt0120903/img",
+        "title": "X-Men",
+        "type": "movie",
+        "year": 2000
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt33296751"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt33296751/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt33296751",
+        "key": "/library/metadata/movie-tt33296751",
+        "ratingKey": "movie-tt33296751",
+        "summary": "A talented piano tuner who suffers from hyperacusis discovers an unexpected aptitude for cracking safes, turning his life upside down.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt33296751/img",
+        "title": "Tuner",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt1341338"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt1341338/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt1341338",
+        "key": "/library/metadata/movie-tt1341338",
+        "ratingKey": "movie-tt1341338",
+        "summary": "A \"Man From the Future\" arrives at a diner in Los Angeles where he must recruit the precise combination of disgruntled patrons to join him on a one-night quest to save the world from the terminal threat of a rogue artificial intel...\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt1341338/img",
+        "title": "Good Luck, Have Fun, Don't Die",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt0048028"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt0048028/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt0048028",
+        "key": "/library/metadata/movie-tt0048028",
+        "ratingKey": "movie-tt0048028",
+        "summary": "Two brothers in 1910s California struggle to maintain the favor of their affectionate but strict, Bible-toting father as an old secret about their long-absent mother comes to light.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt0048028/img",
+        "title": "East of Eden",
+        "type": "movie",
+        "year": 1955
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt15398776"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt15398776/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt15398776",
+        "key": "/library/metadata/movie-tt15398776",
+        "ratingKey": "movie-tt15398776",
+        "summary": "A dramatization of the life story of J. Robert Oppenheimer, the physicist who had a large hand in the development of the atomic bombs that brought an end to World War II.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt15398776/img",
+        "title": "Oppenheimer",
+        "type": "movie",
+        "year": 2023
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt32565993"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt32565993/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt32565993",
+        "key": "/library/metadata/movie-tt32565993",
+        "ratingKey": "movie-tt32565993",
+        "summary": "Every night a shepherd reads aloud a murder mystery, pretending his sheep can understand. When he is found dead, the sheep realize at once that it was a murder and think they know everything about how to go about solving it.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt32565993/img",
+        "title": "The Sheep Detectives",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt27543632"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt27543632/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt27543632",
+        "key": "/library/metadata/movie-tt27543632",
+        "ratingKey": "movie-tt27543632",
+        "summary": "Millie a struggling young woman becomes live-in maid for a wealthy couple Nina and Andrew. She enters a mansion of secrets, manipulation, and escalating psychological games that pull her into a dangerous relationship dynamic.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt27543632/img",
+        "title": "The Housemaid",
+        "type": "movie",
+        "year": 2025
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt0377092"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt0377092/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt0377092",
+        "key": "/library/metadata/movie-tt0377092",
+        "ratingKey": "movie-tt0377092",
+        "summary": "Cady Heron is a hit with The Plastics, the A-list girl clique at her new school, until she makes the mistake of falling for Aaron Samuels, the ex-boyfriend of alpha Plastic Regina George.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt0377092/img",
+        "title": "Mean Girls",
+        "type": "movie",
+        "year": 2004
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt30825738"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt30825738/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt30825738",
+        "key": "/library/metadata/movie-tt30825738",
+        "ratingKey": "movie-tt30825738",
+        "summary": "Once a lone bounty hunter, Mandalorian Din Djarin and his apprentice Grogu embark on an exciting new Star Wars adventure.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt30825738/img",
+        "title": "Star Wars: The Mandalorian and Grogu",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt0107120"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt0107120/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt0107120",
+        "key": "/library/metadata/movie-tt0107120",
+        "ratingKey": "movie-tt0107120",
+        "summary": "A teenage boy named Max and his little sister move to Salem, where he struggles to fit in before awakening a trio of diabolical witches that were executed in the 17th century.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt0107120/img",
+        "title": "Hocus Pocus",
+        "type": "movie",
+        "year": 1993
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt30144839"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt30144839/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt30144839",
+        "key": "/library/metadata/movie-tt30144839",
+        "ratingKey": "movie-tt30144839",
+        "summary": "When their enemy resurfaces after 16 years, a group of ex-revolutionaries reunite to rescue the daughter of one of their own.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt30144839/img",
+        "title": "One Battle After Another",
+        "type": "movie",
+        "year": 2025
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt37853455"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt37853455/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt37853455",
+        "key": "/library/metadata/movie-tt37853455",
+        "ratingKey": "movie-tt37853455",
+        "summary": "Two New Yorkers search for love on the one night of the year when pre-marital sex is legal.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt37853455/img",
+        "title": "One Night Only",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt8367814"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt8367814/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt8367814",
+        "key": "/library/metadata/movie-tt8367814",
+        "ratingKey": "movie-tt8367814",
+        "summary": "An American expat tries to sell off his highly profitable marijuana empire in London, triggering plots, schemes, bribery and blackmail in an attempt to steal his domain out from under him.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt8367814/img",
+        "title": "The Gentlemen",
+        "type": "movie",
+        "year": 2020
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt34385135"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt34385135/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt34385135",
+        "key": "/library/metadata/movie-tt34385135",
+        "ratingKey": "movie-tt34385135",
+        "summary": "Professor Se Jeong attends a biotech conference, only to witness it spiral into catastrophe when a rapidly mutating virus is unleashed. As the outbreak spreads and the infected begin to transform, authorities seal off the entire f...\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt34385135/img",
+        "title": "Colony",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt31193180"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt31193180/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt31193180",
+        "key": "/library/metadata/movie-tt31193180",
+        "ratingKey": "movie-tt31193180",
+        "summary": "Trying to leave their troubled lives behind, twin brothers return to their hometown to start again, only to discover that an even greater evil is waiting to welcome them back.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt31193180/img",
+        "title": "Sinners",
+        "type": "movie",
+        "year": 2025
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt33095251"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt33095251/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt33095251",
+        "key": "/library/metadata/movie-tt33095251",
+        "ratingKey": "movie-tt33095251",
+        "summary": "A 19-year-old Anthony Bourdain travels to Provincetown and stumbles into the chaotic world of a restaurant kitchen, setting off a summer that will shape the course of his life.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt33095251/img",
+        "title": "Tony",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt35672862"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt35672862/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt35672862",
+        "key": "/library/metadata/movie-tt35672862",
+        "ratingKey": "movie-tt35672862",
+        "summary": "A horror writer visits an Irish inn to scatter his parents' ashes, unaware the property is said to be haunted by a witch.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt35672862/img",
+        "title": "Hokum",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt36981462"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt36981462/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt36981462",
+        "key": "/library/metadata/movie-tt36981462",
+        "ratingKey": "movie-tt36981462",
+        "summary": "Assigned to a county-mandated drug court program, Cody Parsons embarks on the tenuous journey toward recovery amidst the opioid epidemic in rural Ohio.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt36981462/img",
+        "title": "Union County",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt7131622"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt7131622/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt7131622",
+        "key": "/library/metadata/movie-tt7131622",
+        "ratingKey": "movie-tt7131622",
+        "summary": "As Hollywood's Golden Age is winding down, a television actor and his stunt double endeavor to achieve lasting success.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt7131622/img",
+        "title": "Once Upon a Time in... Hollywood",
+        "type": "movie",
+        "year": 2019
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt0107688"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt0107688/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt0107688",
+        "key": "/library/metadata/movie-tt0107688",
+        "ratingKey": "movie-tt0107688",
+        "summary": "Jack Skellington, king of Halloween Town, discovers Christmas Town, but his attempts to bring Christmas to his home causes confusion.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt0107688/img",
+        "title": "The Nightmare Before Christmas",
+        "type": "movie",
+        "year": 1993
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt9620292"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt9620292/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt9620292",
+        "key": "/library/metadata/movie-tt9620292",
+        "ratingKey": "movie-tt9620292",
+        "summary": "An unexpected encounter gives a wickedly smart and cunning woman a chance to right the wrongs from her past.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt9620292/img",
+        "title": "Promising Young Woman",
+        "type": "movie",
+        "year": 2020
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt0816692"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt0816692/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt0816692",
+        "key": "/library/metadata/movie-tt0816692",
+        "ratingKey": "movie-tt0816692",
+        "summary": "In a dystopian future where Earth has become near-uninhabitable, a team of astronauts embark on a mission to find a new home for humanity.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt0816692/img",
+        "title": "Interstellar",
+        "type": "movie",
+        "year": 2014
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt11378946"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt11378946/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt11378946",
+        "key": "/library/metadata/movie-tt11378946",
+        "ratingKey": "movie-tt11378946",
+        "summary": "The early life of musician Michael Jackson, from the discovery of his talent as the lead of the Jackson Five to the artist whose creative ambition fueled a pursuit to become the biggest entertainer in the world.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt11378946/img",
+        "title": "Michael",
+        "type": "movie",
+        "year": 2026
+      },
+      {
+        "Guid": [
+          {
+            "id": "imdb://tt33071426"
+          }
+        ],
+        "art": "https://images.metahub.space/background/medium/tt33071426/img",
+        "guid": "tv.plex.provider.ted.cinemeta://movie-tt33071426",
+        "key": "/library/metadata/movie-tt33071426",
+        "ratingKey": "movie-tt33071426",
+        "summary": "A happily-engaged couple is put to the test when an unexpected turn sends their wedding week off the rails.\n\nCatalog-only prototype entry: no media source is mapped.",
+        "thumb": "https://images.metahub.space/poster/small/tt33071426/img",
+        "title": "The Drama",
+        "type": "movie",
+        "year": 2026
+      }
+    ],
+    "identifier": "tv.plex.provider.ted.cinemeta",
+    "offset": 0,
+    "size": 50,
+    "totalSize": 50
+  }
+}
