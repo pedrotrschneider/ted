@@ -2,6 +2,10 @@
 
 This is the current execution checkpoint. [PROJECT](PROJECT.md) contains agreed behavior, [AGENTS](AGENTS.md) engineering constraints, [README](README.md)/[native README](../teddy/README.md) workflows and [Operations](docs/operations.md) recovery. The older chronological implementation journal was consolidated to remove conflicting active instructions. Private pre-consolidation copies are under `.devbox/documentation-20261015`; current requirements do not depend on reading those copies or this chat.
 
+## Person screen joint-account viewing — October 16
+
+Person-page Watched classification now uses the union of the active `viewed` flag and validated joint `seen` projections already returned by TED. The Other row uses the complementary predicate. Completion/progress and colored badges remain separate; joint history never changes the active account. Regressions cover joint-only completed movies, joint-only started shows, overlapping personal/joint viewing without duplicates, unseen joints and projection removal on reload, in desktop/TV layouts. Final Dart analysis of `lib`/`test/ted` is clean and all 24 focused person/metadata/presentation tests pass on the Mac Devbox Flutter runner (`../teddy/.devbox/fruits-basket-20261016/person-final.log`); `source.sha256` identifies the tested source/test files. Both new regressions fail under the old personal-only predicate and pass after restoration. Initial test-fixture compile/label errors were corrected without changing runtime behavior or weakening the row/state assertions; logs remain. No server, Android native runtime or full retained Flutter suite was run for this client-only change. The person change requires a new native build; no server code change or deployment is needed.
+
 ## Chromecast playback, UI scale and season reveal — October 16
 
 Owner confirms navigation now works on Chromecast with Google TV, but reports oversized UI, clipped season episode thumbnails and choppy 4K despite healthy buffering. No device playback reproduction or new Android runtime acceptance is claimed.
