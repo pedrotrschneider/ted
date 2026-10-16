@@ -1,6 +1,6 @@
 # Releases and compatibility
 
-TED and Teddy have independent GitHub repositories and independent `version.txt` files, initially `0.1`. Each file contains exactly MAJOR.MINOR. CI reserves patch and candidate numbers in annotated Git tags, not commits to the version file. This supersedes inherited Plezy release tooling and private-only distribution instructions. Do not use Teddy's inherited `scripts/release/deploy.py` or `release.sh` to publish Teddy; they target upstream store/update services.
+TED and Teddy have independent GitHub repositories and independent `version.txt` files, initially `0.1`. Each file contains exactly MAJOR.MINOR. CI calculates patch and candidate numbers read-only, then creates version tags only after successful builds and publication. It does not commit to the version file. This supersedes inherited Plezy release tooling and private-only distribution instructions. Do not use Teddy's inherited `scripts/release/deploy.py` or `release.sh` to publish Teddy; they target upstream store/update services.
 
 ## Compatibility contract
 
@@ -12,18 +12,18 @@ The container embeds version.txt and its allocated full version. Release Teddy b
 
 ## Allocation examples
 
-| Event | Reserved version |
+| Event | Calculated version |
 | --- | --- |
 | First main build for 0.1 | 0.1.0 |
 | Develop after 0.1.0 | 0.1.1-rc1, 0.1.1-rc2, … |
 | Next main build | 0.1.1 |
-| Develop after that main reservation | 0.1.2-rc1 |
+| Develop after that successful main release | 0.1.2-rc1 |
 | Change version.txt to 0.2 | 0.2.0 / 0.2.0-rc1 |
 | PR #7 | next-patch-pr7.RUN_ID (artifact only) |
 
-Both branches share a queued workflow concurrency group. GitHub's `queue: max` retains up to 100 pending runs, unlike the default that replaces pending runs. Reservations happen before builds, so failed/cancelled runs can leave gaps. Rerunning the same workflow run reuses its annotated reservation, even after newer releases exist. Do not delete or rewrite version tags: they are the durable version ledger. Never force-push a reservation. Each push builds the pushed tip, as usual for GitHub push workflows.
+Both branches share a queued workflow concurrency group. GitHub's `queue: max` retains up to 100 pending runs. Version calculation has read-only permissions and does not create tags. Failed/cancelled builds consume no new patch/RC number. Teddy creates its tag when the fully uploaded draft is published, targeting the exact build commit; TED creates its annotated tag only after the checked multiarchitecture image has been pushed successfully. Existing tags from the previous reservation policy are retained; this change does not delete historical tags or reuse their versions.
 
-Tags use `vVERSION`; image tags omit v. Development versions use GitHub prereleases and never become Latest. Main Teddy releases become Latest. An older rerun cannot promote its version past a newer reserved version in that channel. Existing public Teddy assets and already-published TED version images are preserved on reruns, avoiding mutable version artifacts and moving channel aliases backwards. TED's immutable-version check fails closed on registry errors other than missing manifests. A failed image push that published a version but not its channel alias may need the alias repaired manually to that same digest.
+Tags use `vVERSION`; image tags omit v. Develop uses prereleases and never becomes Latest. Successful reruns reuse their completed tag and preserve public assets. Before publication, the workflow checks that the planned version is still available or belongs to the same commit. If a later successful run consumed a failed run's number, use **Re-run all jobs** to recalculate and rebuild; retrying only failed jobs deliberately refuses to overwrite that version. Never force-push version tags. Publication across GitHub/GHCR and workflow status is not transactional: a registry/tag API failure after upload may require rerunning publication; runner cleanup failures after publication do not roll back public artifacts.
 
 ## Outputs
 
@@ -54,11 +54,11 @@ Flutter is pinned to the project's 3.47.0 toolchain. Linux ARM64 uses flutter-ac
 
 ## Validation and recovery
 
-Run `python3 -m unittest discover -s scripts -p test_release_version.py` in either repository. Tests cover reset/increment rules, invalid input, numeric ordering, and an actual isolated Git remote for reservation/rerun/PR behavior. The allocator files/tests intentionally match across independent repos; update both when release policy changes.
+Run `python3 -m unittest discover -s scripts -p test_release_version.py` in either repository. Tests cover reset/increment rules, invalid input, numeric ordering, and an actual isolated Git remote for read-only allocation, successful finalization, rerun/PR behavior and conflicting stale publication. The allocator files/tests intentionally match across independent repos; update both when release policy changes.
 
 Use actionlint for both workflows. Version 1.7.12 does not yet recognize GitHub's documented `concurrency.queue`; until it does, ignore only that exact diagnostic, not all syntax diagnostics. GitHub documentation: https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency .
 
-On failure, use Re-run failed jobs or Re-run all jobs in the original run; do not manually bump patch numbers or delete reservations. Teddy upload failures leave a draft that the same run can finish. A missing Android secret blocks publication of the entire Teddy release until configured. Hosted runs and OS runtime tests remain necessary before declaring cross-platform support verified.
+On failure, retry failed jobs if the calculated version remains available; otherwise use Re-run all jobs. Do not manually bump patch numbers. Teddy upload failures leave a draft that the next successful build of that version can finish with its own target commit. A missing Android secret blocks publication of the entire Teddy release until configured. Hosted runs and OS runtime tests remain necessary before declaring cross-platform support verified.
 
 ## In-app update discovery and installation
 

@@ -208,6 +208,8 @@ Deferred: More like this recommendations; additional debrid providers/Prowlarr; 
 
 An installation with no accounts shows a web setup page to create its first local administrator using the configured password policy. Creation is serialized in PostgreSQL and refuses once any account exists, including disabled accounts. The user then signs in normally. CLI bootstrap remains an optional alternative. Database failures must never be treated as an empty installation.
 
+Android/Google TV automatically enables TV controls from native UI mode or device features; Force TV Mode is only an override. Android Back follows Escape navigation, dismissing active text input or a dialog before leaving the screen. Add Profile returns to the profile chooser rather than exiting the app.
+
 ### Release updates and application identity
 
 Teddy’s Look for Updates section offers Stable and Release Candidate channels and user-triggered download/install of newer compatible releases. RC includes stable; do not silently downgrade or cross TED/Teddy’s shared major boundary. Close playback, downloads and storage before desktop replacement, preserve user data, verify downloads and retain a rollback bundle. Android uses the system installer and permission flow.

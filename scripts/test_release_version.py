@@ -31,7 +31,7 @@ class VersionTests(unittest.TestCase):
             with self.assertRaises(ValueError): next_version(value,'main',[])
 
 
-class ReservationTests(unittest.TestCase):
+class PublicationTests(unittest.TestCase):
     def test_push_rerun_develop_and_pr_use_real_tag_ledger(self):
         script = Path(__file__).with_name('release_version.py').resolve()
         with tempfile.TemporaryDirectory() as directory:
@@ -47,18 +47,30 @@ class ReservationTests(unittest.TestCase):
             git('add','version.txt')
             git('commit','-m','fixture')
             sha=git('rev-parse','HEAD')
-            def run(branch, run_id, event='push'):
+            def run(branch, run_id, event='push', finalize=None, check=False):
                 output=root/'output'
                 output.write_text('')
                 env=dict(os.environ,GITHUB_EVENT_NAME=event,GITHUB_REF_NAME=branch,
                          GITHUB_RUN_ID=str(run_id),GITHUB_RUN_NUMBER=str(run_id),
                          GITHUB_SHA=sha,GITHUB_OUTPUT=str(output),PR_NUMBER='7')
-                result=subprocess.check_output(['python3',str(script)],cwd=repo,env=env,text=True,stderr=subprocess.DEVNULL)
-                return json.loads(result)
+                args=['python3',str(script)]
+                if finalize:
+                    env['RELEASE_VERSION']=finalize
+                    args.append('--check' if check else '--publish-tag')
+                result=subprocess.check_output(args,cwd=repo,env=env,text=True,stderr=subprocess.DEVNULL)
+                return json.loads(result) if result.strip() else None
             self.assertEqual(run('develop',1)['version'],'0.1.0-rc1')
             self.assertEqual(run('develop',1)['version'],'0.1.0-rc1')
+            self.assertEqual(git('ls-remote','--tags','origin'),'')
+            self.assertEqual(run('develop',2)['version'],'0.1.0-rc1')
+            run('develop',1,finalize='0.1.0-rc1',check=True)
+            self.assertEqual(git('ls-remote','--tags','origin'),'')
+            run('develop',1,finalize='0.1.0-rc1')
+            run('develop',1,finalize='0.1.0-rc1')
             self.assertEqual(run('develop',2)['version'],'0.1.0-rc2')
+            run('develop',2,finalize='0.1.0-rc2')
             self.assertEqual(run('main',3)['version'],'0.1.0')
+            run('main',3,finalize='0.1.0')
             self.assertEqual(run('develop',4)['version'],'0.1.1-rc1')
             tags=git('ls-remote','--tags','origin')
             preview=run('7/merge',5,'pull_request')
@@ -67,6 +79,21 @@ class ReservationTests(unittest.TestCase):
             self.assertEqual(git('ls-remote','--tags','origin'),tags)
             self.assertEqual(run('main',3)['version'],'0.1.0')
             self.assertEqual(git('rev-parse','HEAD'),sha)
+            with self.assertRaises(subprocess.CalledProcessError):
+                run('7/merge',5,'pull_request',finalize='0.1.1')
+            # Another successful commit consumes a failed run's planned number.
+            old_sha=sha
+            git('commit','--allow-empty','-m','new commit')
+            sha=git('rev-parse','HEAD')
+            run('main',6,finalize='0.1.1')
+            sha=old_sha
+            with self.assertRaises(subprocess.CalledProcessError):
+                run('main',5,finalize='0.1.1',check=True)
+            self.assertEqual(run('main',5)['version'],'0.1.2')
+            # Teddy publishes lightweight tags via GitHub's release endpoint.
+            git('tag','v0.1.2',sha)
+            git('push','origin','refs/tags/v0.1.2')
+            self.assertEqual(run('main',5)['version'],'0.1.2')
 
 if __name__ == '__main__': unittest.main()
 

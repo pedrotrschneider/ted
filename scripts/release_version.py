@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Reserve a release version with annotated Git tags; no branch commits.
+"""Calculate versions without publishing tags; finalize only after successful builds.
 
-Run only in the queued release workflow. Tags are durable reservations, including
-failed builds. A workflow rerun finds its run ID in the annotation and reuses it.
-PRs calculate a preview version without pushing anything.
+The queued workflow serializes main/develop. Successful publication owns a tag;
+failed builds consume no version. PRs never mutate release state.
 """
+import argparse
 import json
 import os
 import re
@@ -43,7 +43,20 @@ def git(*args):
     return subprocess.check_output(['git', *args], text=True).strip()
 
 
+def validate_publication(version, sha, branch, base, tags):
+    tag = 'v' + version
+    if tag in tags:
+        if git('rev-parse', tag + '^{commit}') != sha:
+            raise RuntimeError('Version already belongs to another commit; rerun all jobs to recalculate')
+    elif version != next_version(base, branch, tags):
+        raise RuntimeError('Version is stale; rerun all jobs to recalculate')
+
+
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--check', action='store_true')
+    parser.add_argument('--publish-tag', action='store_true')
+    args = parser.parse_args()
     base = Path('version.txt').read_text().strip()
     event = os.environ['GITHUB_EVENT_NAME']
     branch = os.environ['GITHUB_REF_NAME']
@@ -51,8 +64,20 @@ def main():
     sha = os.environ['GITHUB_SHA']
     publish = event == 'push' and branch in ('main','develop')
     tags = git('tag', '--list', 'v*').splitlines()
+    if args.check or args.publish_tag:
+        if not publish:
+            raise RuntimeError('Only main/develop pushes can publish')
+        version = os.environ['RELEASE_VERSION']
+        validate_publication(version, sha, branch, base, tags)
+        if args.publish_tag and 'v' + version not in tags:
+            git('config', 'user.name', 'github-actions[bot]')
+            git('config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com')
+            message = json.dumps(dict(run_id=run_id, sha=sha, branch=branch))
+            git('tag', '-a', f'v{version}', sha, '-m', message)
+            git('push', 'origin', f'refs/tags/v{version}')
+        return
     version = None
-    # An annotated reservation survives both failed jobs and rerun-all-jobs.
+    # Reuse completed tags on rerun, including legacy annotated tags.
     if publish:
         for tag in tags:
             if not TAG.fullmatch(tag):
@@ -61,6 +86,13 @@ def main():
             try:
                 reservation = json.loads(message)
             except (ValueError, TypeError):
+                # GitHub creates a lightweight tag when publishing a draft.
+                match = TAG.fullmatch(tag)
+                if (git('cat-file', '-t', f'refs/tags/{tag}') == 'commit'
+                        and git('rev-parse', tag + '^{commit}') == sha
+                        and (match.group(4) is None) == (branch == 'main')):
+                    version = tag[1:]
+                    break
                 continue
             if reservation.get('run_id') == run_id:
                 if reservation.get('sha') != sha or reservation.get('branch') != branch:
@@ -69,14 +101,7 @@ def main():
                 break
     if version is None:
         version = next_version(base, branch if publish else 'main', tags)
-        if publish:
-            git('config', 'user.name', 'github-actions[bot]')
-            git('config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com')
-            message = json.dumps(dict(run_id=run_id, sha=sha, branch=branch))
-            git('tag', '-a', f'v{version}', sha, '-m', message)
-            # No force: a conflicting reservation fails closed, never overwrites.
-            git('push', 'origin', f'refs/tags/v{version}')
-        else:
+        if not publish:
             version += f"-pr{os.environ['PR_NUMBER']}.{run_id}"
     core = version.split('-')[0]
     # Monotonic across major/minor changes and identical on workflow reruns.
