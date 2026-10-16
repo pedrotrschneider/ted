@@ -205,3 +205,11 @@ Deferred: More like this recommendations; additional debrid providers/Prowlarr; 
 ### First-run administrator setup
 
 An installation with no accounts shows a web setup page to create its first local administrator using the configured password policy. Creation is serialized in PostgreSQL and refuses once any account exists, including disabled accounts. The user then signs in normally. CLI bootstrap remains an optional alternative. Database failures must never be treated as an empty installation.
+
+### Release updates and application identity
+
+Teddy’s Look for Updates section offers Stable and Release Candidate channels and user-triggered download/install of newer compatible releases. RC includes stable; do not silently downgrade or cross TED/Teddy’s shared major boundary. Close playback, downloads and storage before desktop replacement, preserve user data, verify downloads and retain a rollback bundle. Android uses the system installer and permission flow.
+
+Only TED administrators see a bottom-center new-version notice. Dismissing snoozes all version notices for that admin for one day across browsers; no permanent opt-out or server-update button. Discover actually published images, not reserved release tags. Operators remain responsible for their deployment.
+
+Use each project’s supplied icon.png as its square application identity: TED web favicon, Teddy native application icons.

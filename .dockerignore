@@ -24,3 +24,7 @@
 
 !version.go
 !version.txt
+
+!icon.png
+!web/scripts/
+!web/scripts/**

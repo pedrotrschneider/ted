@@ -22,6 +22,7 @@ import (
 	"entertainmentdistrict/internal/settings"
 	"entertainmentdistrict/internal/streaming"
 	"entertainmentdistrict/internal/stremio"
+	"entertainmentdistrict/internal/updates"
 	"entertainmentdistrict/internal/watchstate"
 
 	"github.com/alexedwards/scs/pgxstore"
@@ -31,6 +32,7 @@ import (
 )
 
 type API struct {
+	updateChecker    *updates.Checker
 	CalendarLocation *time.Location
 	Streaming        *streaming.Service
 	NativeAuth       *accounts.NativeAuth
@@ -51,7 +53,7 @@ type API struct {
 }
 
 func New(pool *pgxpool.Pool, service *accounts.Service, secure bool, logger *slog.Logger, rd RDReader) *API {
-	a := &API{CalendarLocation: time.UTC, pool: pool, accounts: service, logger: logger, rd: rd, sessions: scs.New()}
+	a := &API{updateChecker: updates.NewChecker(), CalendarLocation: time.UTC, pool: pool, accounts: service, logger: logger, rd: rd, sessions: scs.New()}
 	a.NativeAuth, _ = accounts.NewNativeAuth(pool, service, accounts.DefaultNativePolicy())
 	a.movies = cinemeta.New()
 	a.series = cinemeta.New()
@@ -146,6 +148,8 @@ func (a *API) Handler() http.Handler {
 	auth.HandleFunc("GET /api/admin/rd/torrents/{id}", a.protected(true, a.rdTorrent))
 	auth.HandleFunc("GET /api/admin/rd/cache", a.protected(true, a.rdCache))
 	auth.HandleFunc("POST /api/admin/rd/cache/refresh", a.protected(true, a.rdCache))
+	auth.HandleFunc("GET /api/admin/updates", a.protected(true, a.updateStatus))
+	auth.HandleFunc("POST /api/admin/updates/dismiss", a.protected(true, a.dismissUpdate))
 	auth.HandleFunc("POST /api/auth/login", a.login)
 	auth.HandleFunc("GET /api/auth/setup", a.setupStatus)
 	auth.HandleFunc("POST /api/auth/setup", a.setupAdmin)

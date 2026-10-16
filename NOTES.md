@@ -25,6 +25,12 @@ LLMs please do not consider this file. These are just personal notes and reminde
 
 - Auto remove metadata in LRU order after a certain threshold of storage has been reached
 
+- Bug: there to be some cases where something is marked as watched on ted that is not synced back to stremio (some episodes I see are missing from stremio). make the two way sync push all differences to stremio, not just the new changed. This total sync from TED to Stremio can be done more sparingly, once a day for example
+
+- Add profile pictures
+
 ## UI
 
 - Consolidate mentions of "Shows" and "Series". They should all be "Shows"
+
+- Add profile pictures

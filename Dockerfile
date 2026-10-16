@@ -3,6 +3,7 @@ WORKDIR /web
 COPY web/package.json web/package-lock.json ./
 RUN npm ci
 COPY web ./
+COPY icon.png /icon.png
 RUN npm run build
 
 FROM golang:1.27.0-bookworm AS build
