@@ -41,4 +41,13 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
+      - name: Test check prerequisites
+        run: python3 -m unittest discover -s scripts -p test_check.py
+      - name: Install media tools
+        if: matrix.mode != 'vet'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ffmpeg
+          ffmpeg -version
+          ffprobe -version
       - run: bash scripts/check.sh "${{ matrix.mode }}"

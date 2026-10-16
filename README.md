@@ -45,6 +45,8 @@ Open [TED on localhost](http://127.0.0.1:8080/). The database is PostgreSQL 18 i
 
 In **Your account**, edit the display name separately from the unique login username. Administrators use **People** to create/disable accounts. Password changes and account disablement revoke all sessions; ordinary browser **Sign out** affects only that browser. **Sign out all devices** is the explicit account-wide action.
 
+Use the pencil at the bottom left of your account icon to upload a profile picture (JPEG, PNG, WebP or GIF, at most 20 MiB and 40 megapixels). TED takes the first frame and crops the center to a square. Pictures are stored in PostgreSQL and included in database backups; no extra directory or provider configuration is needed. An updated Teddy fetches the picture when that profile is selected, on Reload, and within about a minute while it remains active. The chooser uses the saved local picture before signing in, including offline. Select each saved profile once to populate its picture; failed/offline refreshes retain it.
+
 Administrators configure RD, TMDb API Read Access Token, TVDB API key and optional subscriber PIN under **Server providers**. Saved values are never returned. Blank inputs retain them; red Remove saved key buttons remove immediately. Configured status means saved, not verified. Database backups therefore contain sensitive provider state and must remain private.
 
 **Personal Stremio watch state** connects only that user's two-way watched-history account. **Stremio add-ons**, below it for administrators, configures the single server-wide discovery account and its enabled variants. These connections are independent even when using the same external account. Reload add-ons retrieves the inventory; Torrentio and Torrentio RD remain separate public variants. Disabling prevents new lookup/selection/renewal without deleting shared preferences.
@@ -79,7 +81,7 @@ devbox run -- npm --prefix web test
 devbox run -- npm --prefix web run build
 ```
 
-Go tests requiring persistence need a **disposable** PostgreSQL database. Never point `TED_TEST_DATABASE_URL` at production. The helper below starts only its own tmpfs PostgreSQL 18 container and removes it afterward; it requires an explicitly available Docker runtime. Do not run it by starting the owner's retired Mac deployment.
+Go behavior/race checks require FFmpeg and ffprobe on PATH, including the account-picture tests. Devbox supplies both; hosted Go test jobs explicitly install the FFmpeg package. `scripts/check.sh` fails before Go starts when a media tool is missing; vet does not require media tools. Go tests requiring persistence need a **disposable** PostgreSQL database. Never point `TED_TEST_DATABASE_URL` at production. The helper below starts only its own tmpfs PostgreSQL 18 container and removes it afterward; it requires an explicitly available Docker runtime. Do not run it by starting the owner's retired Mac deployment.
 
 ```sh
 devbox run test-integration
@@ -97,7 +99,7 @@ devbox run -- bash scripts/check-teddy.sh
 devbox run -- bash scripts/build-teddy-macos.sh
 ```
 
-The Mac build requires full Xcode and emits a unique immutable app path. Quit the prior instance and open the new app yourself. Never replace libraries inside a running bundle. Other platform validation remains outstanding; see the native README and IMPLEMENTATION for exact evidence. No hosted CI result is claimed and no Git remote is configured at this checkpoint.
+The Mac build requires full Xcode and emits a unique immutable app path. Quit the prior instance and open the new app yourself. Never replace libraries inside a running bundle. Other platform validation remains outstanding; see the native README and IMPLEMENTATION for exact local and hosted evidence. A local passing check does not establish a successful hosted build or publication.
 
 ## Troubleshooting and operational boundaries
 

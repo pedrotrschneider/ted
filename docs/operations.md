@@ -1,6 +1,6 @@
 # TED operations and recovery
 
-Updated October 15, 2026. Read [README](../README.md) for a new installation and [the home-server record](deployments/home-server.md) before operating the owner's actual service. Commands here assume the repository's default Compose project/files; add the installed project's name/override flags where required. Run development-machine commands in Devbox; the deployment server already has Docker/Compose.
+Updated October 16, 2026. Read [README](../README.md) for a new installation and [the home-server record](deployments/home-server.md) before operating the owner's actual service. Commands here assume the repository's default Compose project/files; add the installed project's name/override flags where required. Run development-machine commands in Devbox; the deployment server already has Docker/Compose.
 
 ## Configuration
 
@@ -30,11 +30,13 @@ Updated October 15, 2026. Read [README](../README.md) for a new installation and
 
 Provider settings store RD/TMDb/TVDB secrets in the database; Stremio discovery and history credentials are separate database state. Saved values are not returned to the browser. Browser SCS defaults are 24-hour absolute/30-minute idle sessions; native tokens have separate lifetimes above.
 
-Startup applies embedded forward-only migrations under a PostgreSQL advisory lock, then starts services/workers. Failed migration stops startup; inspect the redacted phase/SQLSTATE, do not reset the database. Schema 41 is the current server checkpoint. An older binary cannot safely run against a newer incompatible schema.
+Startup applies embedded forward-only migrations under a PostgreSQL advisory lock, then starts services/workers. Failed migration stops startup; inspect the redacted phase/SQLSTATE, do not reset the database. Schema 43 is the current source checkpoint (account pictures; schema 42 added update-notice dismissal). This does not imply the installed server has been upgraded. An older binary cannot safely run against a newer incompatible schema.
 
 ## Persistent boundaries
 
 PostgreSQL 18 uses Config/postgres mounted at `/var/lib/postgresql` (its 18/docker layout). Metadata uses Config/metadata; owned media and resumable staging use the configured media filesystem. Retain historical Config/recovery on disk even though no active app mount needs it. Compose has no durable named/anonymous volumes, read-only app root, temporary /tmp and rotated logs (10 MiB ×3 per service).
+
+Normalized account pictures live in PostgreSQL's `account_avatars`, with their content version on `users`; database backups include them. Uploads reuse the existing FFmpeg runtime with fixed raster decoders and byte/pixel/time/output limits. No additional persistent mount or dependency is required. Teddy's scoped image cache is device state, not part of server backups.
 
 River owns mapping/download/metadata/Stremio/RD-inventory/cleanup work. Restart is not cancellation. Preserve queued jobs, selected source descriptors, file checkpoints, replay lineage and provider/account generations. Do not execute copied workers against the same external accounts during a restore drill.
 

@@ -29,12 +29,13 @@ const MutationLockID int64 = 84051002
 var usernamePattern = regexp.MustCompile(`^[a-z0-9][a-z0-9_.-]{2,63}$`)
 
 type User struct {
-	ID          int64  `json:"id"`
-	Username    string `json:"username"`
-	DisplayName string `json:"display_name"`
-	Role        string `json:"role"`
-	Disabled    bool   `json:"disabled"`
-	Version     int64  `json:"-"`
+	ID            int64  `json:"id"`
+	Username      string `json:"username"`
+	DisplayName   string `json:"display_name"`
+	AvatarVersion string `json:"avatar_version,omitempty"`
+	Role          string `json:"role"`
+	Disabled      bool   `json:"disabled"`
+	Version       int64  `json:"-"`
 }
 type Identity struct{ ID, Version int64 }
 type Service struct {
@@ -49,14 +50,14 @@ func normalize(name string) string { return strings.ToLower(strings.TrimSpace(na
 
 func userFrom(row pgx.Row) (User, error) {
 	var u User
-	err := row.Scan(&u.ID, &u.Username, &u.Role, &u.Disabled, &u.Version, &u.DisplayName)
+	err := row.Scan(&u.ID, &u.Username, &u.Role, &u.Disabled, &u.Version, &u.DisplayName, &u.AvatarVersion)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return u, ErrUnauthorized
 	}
 	return u, err
 }
 
-const userColumns = "id, username, role, disabled, session_version, display_name"
+const userColumns = "id, username, role, disabled, session_version, display_name, avatar_version"
 
 func (s *Service) Current(ctx context.Context, who Identity) (User, error) {
 	u, err := userFrom(s.pool.QueryRow(ctx, "SELECT "+userColumns+" FROM users WHERE id=$1", who.ID))
@@ -214,7 +215,7 @@ func (s *Service) Login(ctx context.Context, name, password, ip string) (User, e
 	}
 	var u User
 	var hash string
-	err := s.pool.QueryRow(ctx, "SELECT "+userColumns+", password_hash FROM users WHERE username=$1", name).Scan(&u.ID, &u.Username, &u.Role, &u.Disabled, &u.Version, &u.DisplayName, &hash)
+	err := s.pool.QueryRow(ctx, "SELECT "+userColumns+", password_hash FROM users WHERE username=$1", name).Scan(&u.ID, &u.Username, &u.Role, &u.Disabled, &u.Version, &u.DisplayName, &u.AvatarVersion, &hash)
 	absent := errors.Is(err, pgx.ErrNoRows)
 	if err != nil && !absent {
 		return u, err

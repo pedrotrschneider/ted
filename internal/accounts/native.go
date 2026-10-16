@@ -231,11 +231,11 @@ func (s *NativeAuth) Authenticate(ctx context.Context, raw string) (NativeGrant,
 		return NativeGrant{}, err
 	}
 	var g NativeGrant
-	err = s.pool.QueryRow(ctx, `SELECT u.id,u.username,u.role,u.disabled,u.session_version,u.display_name,f.id::text,f.device_id,t.expires_at
+	err = s.pool.QueryRow(ctx, `SELECT u.id,u.username,u.role,u.disabled,u.session_version,u.display_name,u.avatar_version,f.id::text,f.device_id,t.expires_at
  FROM native_access_tokens t JOIN native_token_families f ON f.id=t.family_id JOIN users u ON u.id=f.user_id
  WHERE t.digest=$1 AND NOT u.disabled AND u.session_version=f.account_version AND f.revoked_at IS NULL
  AND clock_timestamp()<t.expires_at AND clock_timestamp()<f.idle_expires_at AND clock_timestamp()<f.absolute_expires_at`, digest).
-		Scan(&g.User.ID, &g.User.Username, &g.User.Role, &g.User.Disabled, &g.User.Version, &g.User.DisplayName, &g.FamilyID, &g.DeviceID, &g.ExpiresAt)
+		Scan(&g.User.ID, &g.User.Username, &g.User.Role, &g.User.Disabled, &g.User.Version, &g.User.DisplayName, &g.User.AvatarVersion, &g.FamilyID, &g.DeviceID, &g.ExpiresAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return NativeGrant{}, ErrUnauthorized
 	}

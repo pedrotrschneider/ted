@@ -54,7 +54,12 @@ header{min-height:106px;display:flex;justify-content:space-between;align-items:c
 .card{background:#1c2429;border:1px solid #354046;border-radius:12px;padding:1.8rem;min-width:0}
 .card>p{font-size:.9rem}
 .identity h2{overflow-wrap:anywhere}
-.avatar{background:#3e3731;color:#ffbf95;width:64px;height:64px;display:grid;place-items:center;font-size:1.8rem;border-radius:18px;margin-bottom:1.5rem}
+.avatar{background:#3e3731;color:#ffbf95;width:64px;height:64px;display:grid;place-items:center;font-size:1.8rem;border-radius:18px}
+.avatar img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.profile-picture{margin-bottom:1.5rem}
+.avatar-editor{position:relative;width:64px;height:64px}
+.avatar-edit{position:absolute;bottom:-6px;left:-6px;width:30px;height:30px;min-height:0;padding:6px;display:grid;place-items:center;border-radius:50%;background:#ffbf95;color:#241d18;border:2px solid #1c2428}
+.avatar-edit svg{width:16px;height:16px}
 .badge{display:inline-block;border:1px solid #55636a;color:#cdd9dc;border-radius:6px;padding:.2rem .6rem;font-size:.75rem}
 dl{display:grid;grid-template-columns:1fr 1fr;font-size:.85rem;gap:.6rem;margin:2rem 0}
 dt{color:#aab5b8}

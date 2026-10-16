@@ -43,7 +43,7 @@ func (s *Service) List(ctx context.Context, who Identity, after int64) (UserPage
 	page := UserPage{Users: make([]User, 0, UserPageSize)}
 	for rows.Next() {
 		var u User
-		if err = rows.Scan(&u.ID, &u.Username, &u.Role, &u.Disabled, &u.Version, &u.DisplayName); err != nil {
+		if err = rows.Scan(&u.ID, &u.Username, &u.Role, &u.Disabled, &u.Version, &u.DisplayName, &u.AvatarVersion); err != nil {
 			return UserPage{}, err
 		}
 		if len(page.Users) == UserPageSize {

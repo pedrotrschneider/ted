@@ -60,6 +60,22 @@ test('profile updates send only a display name and require a valid account respo
  });
  assert.equal((await api.profile('María 猫')).display_name, 'María 猫');
 });
+test('profile pictures upload binary data and require a validated account image version', async t => {
+ const image = new Blob([new Uint8Array([137, 80, 78, 71])], {type:'image/png'});
+ const changed = {...account, avatar_version:'a'.repeat(64)};
+ const mock = t.mock.method(globalThis, 'fetch', async (path: string, init: RequestInit) => {
+  assert.equal(path, '/api/account/avatar'); assert.equal(init.method, 'PUT');
+  assert.equal(init.body, image); assert.equal(new Headers(init.headers).get('Content-Type'), 'image/png');
+  return Response.json(changed);
+ });
+ assert.deepEqual(await api.uploadAvatar(image), changed);
+ mock.mock.mockImplementation(async () => Response.json(account));
+ await assert.rejects(api.uploadAvatar(image), /did not confirm the profile picture/);
+ mock.mock.mockImplementation(async () => Response.json({...changed, avatar_version:'not-an-image-version'}));
+ await assert.rejects(api.uploadAvatar(image), /invalid profile picture/);
+ mock.mock.mockImplementation(async () => Response.json({code:'avatar_invalid'}, {status:400}));
+ await assert.rejects(api.uploadAvatar(image), /JPEG, PNG, WebP or GIF/);
+});
 
 test('ordinary browser sign-out and explicit all-device sign-out use separate actions', async t => {
  const paths: string[] = [];

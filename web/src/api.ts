@@ -1,4 +1,5 @@
-export interface User { id: number; username: string; display_name: string; role: 'admin' | 'user'; disabled: boolean }
+export interface User { id: number; username: string; display_name: string; role: 'admin' | 'user'; disabled: boolean; avatar_version?: string }
+export type ProfileChange = Pick<User, 'id'> & Partial<Pick<User, 'display_name' | 'avatar_version'>>;
 export interface UserPage { users: User[]; next_after_id?: number }
 export class ApiError extends Error {
   status: number;
@@ -6,6 +7,7 @@ export class ApiError extends Error {
 }
 const record = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
 function user(v: unknown): User {
+  if (record(v) && v.avatar_version !== undefined && (typeof v.avatar_version !== 'string' || !/^[a-f0-9]{64}$/.test(v.avatar_version))) throw new ApiError('TED returned an invalid profile picture. Reload to try again.');
   if (!record(v) || !Number.isSafeInteger(v.id) || Number(v.id) <= 0 || typeof v.username !== 'string' || typeof v.display_name !== 'string' || !v.display_name.trim() || !['admin', 'user'].includes(String(v.role)) || typeof v.disabled !== 'boolean') throw new ApiError('TED returned an invalid account. Reload to try again.');
   return v as unknown as User;
 }
@@ -21,6 +23,8 @@ export async function request(path: string, method = 'GET', body?: unknown, sign
       body: body === undefined ? undefined : body instanceof Blob ? body : JSON.stringify(body) });
     if (!response.ok) {
       const rdMessages: Record<string,string> = {
+        avatar_invalid:'Choose a valid JPEG, PNG, WebP or GIF up to 20 MiB and 40 megapixels.',
+        avatar_too_large:'Profile pictures must be at most 20 MiB.',
         artwork_changed:'Artwork changed while the picker was open. Refresh the artwork and choose again.',
         artwork_invalid:'Choose a valid JPEG, PNG or GIF up to 20 MiB and 40 megapixels.',
         artwork_too_large:'Artwork must be at most 20 MiB.',
@@ -97,6 +101,11 @@ export const api = {
     return Number(v.min_password_length);
   },
   profile: async (display_name: string) => user(await request('/api/auth/profile', 'PUT', { display_name })),
+  uploadAvatar: async (image: Blob) => {
+    const updated = user(await request('/api/account/avatar', 'PUT', image));
+    if (!updated.avatar_version) throw new ApiError('TED did not confirm the profile picture. Reload to check the current picture.');
+    return updated;
+  },
   me: async (signal?: AbortSignal) => user(await request('/api/auth/me', 'GET', undefined, signal)),
   login: async (username: string, password: string) => {
     user(await request('/api/auth/login', 'POST', { username, password }));

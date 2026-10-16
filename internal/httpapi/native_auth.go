@@ -20,6 +20,9 @@ func (a *API) nativeHandler() http.Handler {
 	mux.HandleFunc("POST /api/client/v1/auth/refresh", a.nativeRefresh)
 	mux.HandleFunc("POST /api/client/v1/auth/logout", a.nativeProtected(func(w http.ResponseWriter, r *http.Request, g accounts.NativeGrant) { a.nativeLogout(w, r, g, false) }))
 	mux.HandleFunc("POST /api/client/v1/auth/logout-all", a.nativeProtected(func(w http.ResponseWriter, r *http.Request, g accounts.NativeGrant) { a.nativeLogout(w, r, g, true) }))
+	mux.HandleFunc("GET /api/client/v1/account/avatar", a.nativeProtected(func(w http.ResponseWriter, r *http.Request, g accounts.NativeGrant) {
+		a.avatar(w, r, g.User)
+	}))
 	mux.HandleFunc("GET /api/client/v1/auth/me", a.nativeProtected(func(w http.ResponseWriter, r *http.Request, g accounts.NativeGrant) {
 		respond(w, 200, map[string]any{"user": g.User, "family_id": g.FamilyID, "device_id": g.DeviceID})
 	}))
