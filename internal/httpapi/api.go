@@ -147,6 +147,8 @@ func (a *API) Handler() http.Handler {
 	auth.HandleFunc("GET /api/admin/rd/cache", a.protected(true, a.rdCache))
 	auth.HandleFunc("POST /api/admin/rd/cache/refresh", a.protected(true, a.rdCache))
 	auth.HandleFunc("POST /api/auth/login", a.login)
+	auth.HandleFunc("GET /api/auth/setup", a.setupStatus)
+	auth.HandleFunc("POST /api/auth/setup", a.setupAdmin)
 	auth.HandleFunc("GET /api/auth/policy", func(w http.ResponseWriter, r *http.Request) {
 		respond(w, 200, map[string]int{"min_password_length": a.accounts.MinPasswordLength()})
 	})

@@ -70,3 +70,23 @@ test('ordinary browser sign-out and explicit all-device sign-out use separate ac
  await api.logout(); await api.logoutAll();
  assert.deepEqual(paths, ['/api/auth/logout-browser', '/api/auth/logout']);
 });
+
+test('setup status fails closed on unavailable or malformed responses', async t => {
+ const mock = t.mock.method(globalThis, 'fetch', async () => Response.json({setup_required: true}));
+ assert.equal(await api.setupRequired(), true);
+ mock.mock.mockImplementation(async () => Response.json({setup_required: false}));
+ assert.equal(await api.setupRequired(), false);
+ mock.mock.mockImplementation(async () => Response.json({}));
+ await assert.rejects(api.setupRequired(), /invalid setup/);
+ mock.mock.mockImplementation(async () => Response.json({}, {status:503}));
+ await assert.rejects(api.setupRequired(), ApiError);
+});
+test('setup requires confirmation and does not retry an uncertain creation', async t => {
+ const mock = t.mock.method(globalThis, 'fetch', async () => Response.json({status:'administrator created'}, {status:201}));
+ await api.setup('owner', 'password');
+ mock.mock.mockImplementation(async () => Response.json({}));
+ await assert.rejects(api.setup('owner', 'password'), /invalid setup confirmation/);
+ mock.mock.mockImplementation(async () => {throw new TypeError('network');});
+ await assert.rejects(api.setup('owner', 'password'), /may have completed/);
+ assert.equal(mock.mock.callCount(), 3);
+});

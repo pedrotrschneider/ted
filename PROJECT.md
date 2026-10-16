@@ -201,3 +201,7 @@ All durable server state is in explicit host files: Config/postgres, Config/meta
 Use bounded external requests, validated HTTP ranges, cancellation, credential fencing, scoped link caches and meaningful redacted failures. Failed reads are not successful absence. Optimize only from measurements; never weaken file identity, authorization, durable jobs, locking or recovery for speed. Logs/status remain distinct from successful operations. Migrations are forward-only and must not silently repair malformed persistent state by deleting it.
 
 Deferred: More like this recommendations; additional debrid providers/Prowlarr; archive-member RD streaming (Reborn investigation only); monthly metadata expiry; watchlists; general descriptive overrides beyond artwork; app stores; React/Capacitor; automatic shared-media eviction; persistent cross-session startup-byte cache; further measured startup optimizations; broad non-Mac T6 and release/restore hardening. Existing optional device auto-remove-watched is not automatic server eviction. Personal NOTES are not approval for new features.
+
+### First-run administrator setup
+
+An installation with no accounts shows a web setup page to create its first local administrator using the configured password policy. Creation is serialized in PostgreSQL and refuses once any account exists, including disabled accounts. The user then signs in normally. CLI bootstrap remains an optional alternative. Database failures must never be treated as an empty installation.

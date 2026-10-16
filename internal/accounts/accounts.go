@@ -66,6 +66,13 @@ func (s *Service) Current(ctx context.Context, who Identity) (User, error) {
 	return u, err
 }
 
+// SetupRequired reports an empty installation, never treating a database error as empty.
+func (s *Service) SetupRequired(ctx context.Context) (bool, error) {
+	var empty bool
+	err := s.pool.QueryRow(ctx, "SELECT NOT EXISTS(SELECT 1 FROM users)").Scan(&empty)
+	return empty, err
+}
+
 func (s *Service) Bootstrap(ctx context.Context, name, password string) (User, error) {
 	name = normalize(name)
 	if !usernamePattern.MatchString(name) {

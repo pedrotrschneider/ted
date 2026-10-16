@@ -82,6 +82,15 @@ export function validatePassword(password: string, minimum: number): void {
   if (Array.from(password).length < minimum || new TextEncoder().encode(password).length > 1024) throw new ApiError(`Password must have at least ${minimum} characters and at most 1,024 UTF-8 bytes.`);
 }
 export const api = {
+  setupRequired: async (signal?: AbortSignal): Promise<boolean> => {
+    const v = await request('/api/auth/setup', 'GET', undefined, signal);
+    if (!record(v) || typeof v.setup_required !== 'boolean') throw new ApiError('TED returned invalid setup information.');
+    return v.setup_required;
+  },
+  setup: async (username: string, password: string) => {
+    const v = await request('/api/auth/setup', 'POST', {username, password});
+    if (!record(v) || v.status !== 'administrator created') throw new ApiError('TED returned an invalid setup confirmation. Refresh to check whether setup completed.');
+  },
   policy: async (signal?: AbortSignal): Promise<number> => {
     const v = await request('/api/auth/policy', 'GET', undefined, signal);
     if (!record(v) || !Number.isInteger(v.min_password_length) || Number(v.min_password_length)<0 || Number(v.min_password_length)>1024) throw new ApiError('TED returned an invalid password policy. Reload to try again.');

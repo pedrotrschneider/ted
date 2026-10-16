@@ -35,10 +35,9 @@ Set `TED_UID` and `TED_GID` in `.env` to the owner of Media and Config/metadata 
 ```sh
 devbox run -- docker compose up -d --build --wait
 devbox run -- curl --fail http://127.0.0.1:8080/health/ready
-devbox run -- bash scripts/bootstrap-admin.sh admin
 ```
 
-Readiness returns `{"status":"ready"}`. Bootstrap prompts for the first local administrator's password without echo. Blank is allowed when the configured minimum is zero. Bootstrap refuses when any user exists. There is no default password, public registration or external identity-provider login.
+Readiness returns `{"status":"ready"}`. Open the web UI to create the first administrator. Setup is available only when no accounts exist; concurrent submissions cannot create a second initial account. Complete setup before exposing a fresh installation publicly. Blank passwords are allowed when the configured minimum is zero. After creation, sign in normally. There is no default password, ongoing public registration or external identity-provider login. The optional CLI alternative remains `devbox run -- bash scripts/bootstrap-admin.sh admin`; it also refuses when any user exists.
 
 Open [TED on localhost](http://127.0.0.1:8080/). The database is PostgreSQL 18 in explicit host files at Config/postgres; metadata is Config/metadata and owned server media is Media. Keep these outside disposable container layers and preserve them through upgrades. Docker is not a backup.
 

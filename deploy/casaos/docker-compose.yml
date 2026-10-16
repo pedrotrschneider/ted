@@ -1,0 +1,91 @@
+name: ted-casaos
+# Independent stable installation; development remains on port 33043.
+# Replace BOTH REPLACE_WITH_NEW_HEX_PASSWORD values with the same new random
+# hex password. Keep the filled-in Compose file private under /DATA/AppData/ted.
+services:
+  app:
+    image: ghcr.io/pedrotrschneider/ted:latest
+    pull_policy: always
+    user: "1000:1000"
+    init: true
+    restart: unless-stopped
+    environment:
+      TED_TIMEZONE: UTC
+      TED_DATABASE_URL: postgres://ted:REPLACE_WITH_NEW_HEX_PASSWORD@db:5432/ted?sslmode=disable
+      TED_INSECURE_HTTP: "true"
+      TED_MAPPING_BATCH_SIZE: "200"
+      TED_MAPPING_WORKERS: "4"
+      TED_MIN_PASSWORD_LENGTH: "0"
+      TED_ACCESS_TOKEN_TTL: 10m
+      TED_REFRESH_TOKEN_IDLE_TTL: 720h
+      TED_TOKEN_FAMILY_TTL: 2160h
+      TED_MEDIA_DIR: /media
+      TED_METADATA_DIR: /metadata
+      TED_METADATA_LANGUAGE: en
+      TED_METADATA_COUNTRY: US
+    volumes:
+      - type: bind
+        source: /DATA/AppData/ted/metadata
+        target: /metadata
+      - type: bind
+        source: /DATA/AppData/ted/media
+        target: /media
+    networks: [default, egress]
+    ports:
+      - "0.0.0.0:33044:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "ted", "healthcheck"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    logging: &logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+  db:
+    networks: [default]
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ted
+      POSTGRES_DB: ted
+      POSTGRES_PASSWORD: REPLACE_WITH_NEW_HEX_PASSWORD
+    volumes:
+      - type: bind
+        source: /DATA/AppData/ted/postgres
+        target: /var/lib/postgresql
+    healthcheck:
+      # Local socket avoids CasaOS re-interpolating shell environment variables.
+      test: ["CMD", "psql", "-h", "/var/run/postgresql", "-U", "ted", "-d", "ted", "-XAtqc", "SELECT 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    logging: *logging
+
+networks:
+  egress:
+    enable_ipv6: true
+
+x-casaos:
+  architectures: [amd64, arm64]
+  main: app
+  category: Media
+  title:
+    en_US: TED
+  tagline:
+    en_US: The Entertainment District
+  description:
+    en_US: Media discovery, watch history and Real-Debrid playback for Teddy.
+  port_map: "33044"
+  scheme: http
+  index: /

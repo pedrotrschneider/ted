@@ -32,19 +32,40 @@ function useAction() {
 }
 export function App() {
   const [minimum, setMinimum] = useState(0);
+  const [setupRequired, setSetupRequired] = useState(false);
   const [user, setUser] = useState<User | null>(null), [checking, setChecking] = useState(true), [failure, setFailure] = useState(''), [attempt, setAttempt] = useState(0), [message, setMessage] = useState('');
   useEffect(() => {
     const controller = new AbortController(); setChecking(true); setFailure('');
-    Promise.all([api.policy(controller.signal), api.me(controller.signal).catch(e => {
+    Promise.all([api.setupRequired(controller.signal), api.policy(controller.signal), api.me(controller.signal).catch(e => {
       if (e instanceof ApiError && e.status === 401) return null; throw e;
-    })]).then(([policy, u]) => { if (!controller.signal.aborted) {setMinimum(policy); setUser(u);} }).catch(e => {
+    })]).then(([setup, policy, u]) => { if (!controller.signal.aborted) {setSetupRequired(setup); setMinimum(policy); setUser(u);} }).catch(e => {
       if (controller.signal.aborted) return;
       if (e instanceof ApiError && e.status === 401) setUser(null); else setFailure(errorMessage(e));
     }).finally(() => { if (!controller.signal.aborted) setChecking(false); });
     return () => controller.abort();
   }, [attempt]);
   function signedOut(message: string) { setUser(null); setMessage(message); }
-  return <><a className="skip" href="#main" onClick={e => { e.preventDefault(); document.getElementById('main')?.focus(); }}>Skip to content</a>{checking || failure ? <main tabIndex={-1} id="main" className="connection"><Brand/><h1>{checking ? 'Opening your district…' : 'Unable to connect'}</h1><Notice error>{failure}</Notice>{failure && <button onClick={() => setAttempt(attempt + 1)}>Try again</button>}</main> : user ? <AccountShell key={user.id} user={user} minimum={minimum} updated={setUser} signedOut={signedOut}/> : <Login message={message} onLogin={u => { setUser(u); setMessage(''); }}/>}<footer>THE ENTERTAINMENT DISTRICT <span>Personal by design.</span><a href="/third-party-notices.txt">Open-source notices</a></footer></>;
+  return <><a className="skip" href="#main" onClick={e => { e.preventDefault(); document.getElementById('main')?.focus(); }}>Skip to content</a>{checking || failure ? <main tabIndex={-1} id="main" className="connection"><Brand/><h1>{checking ? 'Opening your district…' : 'Unable to connect'}</h1><Notice error>{failure}</Notice>{failure && <button onClick={() => setAttempt(attempt + 1)}>Try again</button>}</main> : setupRequired ? <Setup minimum={minimum} complete={message => {setSetupRequired(false); setMessage(message);}}/> : user ? <AccountShell key={user.id} user={user} minimum={minimum} updated={setUser} signedOut={signedOut}/> : <Login message={message} onLogin={u => { setUser(u); setMessage(''); }}/>}<footer>THE ENTERTAINMENT DISTRICT <span>Personal by design.</span><a href="/third-party-notices.txt">Open-source notices</a></footer></>;
+}
+function Setup({minimum, complete}: {minimum: number; complete: (message: string) => void}) {
+  const action = useAction();
+  function submit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault(); const form = e.currentTarget;
+    const password = field(form, 'password');
+    if (password !== field(form, 'confirm')) { action.setError('Passwords do not match.'); return; }
+    void action.run(async () => {
+      validatePassword(password, minimum);
+      try { await api.setup(field(form, 'username'), password); }
+      catch (error) {
+        if (error instanceof ApiError && error.status === 409) {
+          complete('Setup has already been completed. Sign in with an existing account.'); return;
+        }
+        throw error;
+      }
+      complete('Administrator created. Sign in with your new account.');
+    }, () => {});
+  }
+  return <div className="welcome"><section className="welcome-copy"><Brand/><div><p className="eyebrow">WELCOME TO TED</p><h1>Your district<br/>starts here.</h1><p className="intro">Create the first administrator to set up your server.</p></div></section><main tabIndex={-1} id="main" className="login-panel"><div className="form-heading"><h2>Create administrator</h2><p>This setup is available only while the server has no accounts.</p></div><form onSubmit={submit}><fieldset disabled={action.pending}><label>Username<input name="username" autoComplete="username" autoCapitalize="none" spellCheck={false} required minLength={3} maxLength={64} pattern="[A-Za-z0-9][A-Za-z0-9_.\-]{2,63}"/></label><Password name="password" label="Password" fresh/><Password name="confirm" label="Confirm password" fresh/><p className="hint">{minimum > 0 ? `Use at least ${minimum} characters.` : 'A password is optional under this server’s password policy.'}</p><Notice error>{action.error}</Notice><button type="submit" className="primary">{action.pending ? 'Creating administrator…' : 'Create administrator'}</button></fieldset></form><p className="form-note">Already completed setup in another window? <button onClick={() => complete('Sign in with your administrator account.')}>Go to sign in</button></p></main></div>;
 }
 function Login({ message, onLogin }: { message: string; onLogin: (u: User) => void }) {
   const action = useAction();
@@ -52,7 +73,7 @@ function Login({ message, onLogin }: { message: string; onLogin: (u: User) => vo
     e.preventDefault(); const form = e.currentTarget; let user: User;
     void action.run(async () => { user = await api.login(field(form, 'username'), field(form, 'password')); }, () => { form.reset(); onLogin(user); });
   }
-  return <div className="welcome"><section className="welcome-copy"><Brand/><div><p className="eyebrow">YOUR PERSONAL DISTRICT</p><h1>A place for <br/>your next <br/><em>great watch.</em></h1><p className="intro">Welcome to The Entertainment District.<br/>Your space. Your account.</p></div><p className="quiet">Discover movies and save your sources. Playback is coming next.</p></section><main tabIndex={-1} id="main" className="login-panel"><div className="form-heading"><span className="eyebrow">WELCOME BACK</span><h2>Sign in to TED</h2><p>Use your local TED account to continue.</p></div><Notice>{message}</Notice><form onSubmit={submit}><fieldset disabled={action.pending}><label>Username<input name="username" autoComplete="username" required maxLength={64} autoCapitalize="none" spellCheck={false}/></label><Password name="password" label="Password"/><Notice error>{action.error}</Notice><button className="primary" type="submit">{action.pending ? 'Signing in…' : 'Sign in'}<span aria-hidden="true">↗</span></button></fieldset></form><p className="form-note">Need an account? Ask your TED administrator.<br/>The first administrator is created from the command line.</p></main></div>;
+  return <div className="welcome"><section className="welcome-copy"><Brand/><div><p className="eyebrow">YOUR PERSONAL DISTRICT</p><h1>A place for <br/>your next <br/><em>great watch.</em></h1><p className="intro">Welcome to The Entertainment District.<br/>Your space. Your account.</p></div><p className="quiet">Discover, watch and keep track of your movies and shows.</p></section><main tabIndex={-1} id="main" className="login-panel"><div className="form-heading"><span className="eyebrow">WELCOME BACK</span><h2>Sign in to TED</h2><p>Use your local TED account to continue.</p></div><Notice>{message}</Notice><form onSubmit={submit}><fieldset disabled={action.pending}><label>Username<input name="username" autoComplete="username" required maxLength={64} autoCapitalize="none" spellCheck={false}/></label><Password name="password" label="Password"/><Notice error>{action.error}</Notice><button className="primary" type="submit">{action.pending ? 'Signing in…' : 'Sign in'}<span aria-hidden="true">↗</span></button></fieldset></form><p className="form-note">Need an account? Ask your TED administrator.</p></main></div>;
 }
 function AccountShell({ user, signedOut, minimum, updated }: { user: User; minimum: number; updated: (user: User) => void; signedOut: (message: string) => void }) {
   const [hash, setHash] = useState(() => window.location.hash);

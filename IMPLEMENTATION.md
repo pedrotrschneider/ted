@@ -2,6 +2,34 @@
 
 This is the current execution checkpoint. [PROJECT](PROJECT.md) contains agreed behavior, [AGENTS](AGENTS.md) engineering constraints, [README](README.md)/[native README](../teddy/README.md) workflows and [Operations](docs/operations.md) recovery. The older chronological implementation journal was consolidated to remove conflicting active instructions. Private pre-consolidation copies are under `.devbox/documentation-20261015`; current requirements do not depend on reading those copies or this chat.
 
+## First-run web administrator setup — October 15
+
+Empty installations now show Create administrator in the web UI. Public GET/POST /api/auth/setup use the existing cross-origin protection, bounded JSON input and password policy. POST reuses Bootstrap's PostgreSQL advisory lock and transactional empty-users check; once any user exists it returns setup_completed/409. Status/database failures fail closed. Creation returns to ordinary login, avoiding ambiguous account-creation/session-cookie coupling. CLI bootstrap remains supported. No migration or existing-account changes.
+
+Validation: web typecheck/production build and all 114 frontend tests pass. TestWebSetupLifecycle and TestBootstrapConcurrentAndCannotResetExistingAccount pass with the race detector against a disposable PostgreSQL 18 instance on the home server. Covers empty/nonempty status, invalid input, cross-origin rejection, administrator login, closed setup and concurrent creation. Temporary database/tunnel removed afterward. Production/development databases untouched. Not deployed: CasaOS needs a newly published GHCR image and update before this UI is available. Browser visual acceptance remains manual.
+
+## CasaOS production startup network repair — October 15
+
+Production containers were created, PostgreSQL healthy, but app repeatedly failed migration before any schema existed. In-memory redacted configuration checks found matching app/DB password settings, but no shared network: CasaOS had assigned db to network_mode bridge while app used ted-casaos_default and ted-casaos_egress. Connected production db to ted-casaos_default with alias db and restarted only production app. Migrations completed, both services healthy, HTTP 200 on port 33044. Development untouched.
+
+Persisted the network correction in /var/lib/casaos/apps/ted-casaos/docker-compose.yml (rollback file docker-compose.pre-network-fix.yml) and copied current Compose to /DATA/AppData/ted/docker-compose.yml mode 0600 for backups. Repository template now explicitly declares db networks: [default]. Installed password is still the sample placeholder; owner informed to rotate it before use. No password printed or changed. Source template Compose validation passed; production configuration validated through a private pipe because the file is root-readable only.
+
+## CasaOS installation diagnosis — October 15
+
+Inspected the home server over persistent SSH after failed imports. CasaOS app-management logs repeatedly report `Error response from daemon: error from registry: unauthorized` for ted-casaos; a direct manifest lookup from the host reproduces unauthorized. No production TED containers were created; development app/database remain healthy. Package visibility/access is the installation blocker; repository visibility does not prove GHCR package visibility. No credentials obtained and no services restarted.
+
+CasaOS also warns POSTGRES_PASSWORD is unset during its repeated Compose interpolation, despite the escaped variable in the template healthcheck. Replaced that healthcheck with an exec-form local Unix-socket psql SELECT 1, avoiding shell interpolation while checking database readiness. Applies only to fresh CasaOS PostgreSQL initialization using the official image's local socket authentication. App database connections still use the configured password over the internal network. CasaOS message-bus service is active but /tmp/message-bus.sock is missing, causing event-notification errors; distinct from the fatal registry error, not repaired/restarted without further diagnosis. Existing preview Compose discovery emits missing-.env warnings, also unrelated to the new install's image-pull failure.
+
+## CasaOS GHCR deployment template — October 15
+
+Owner clarified the stable CasaOS installation must be independent; the current preview/database remains the development instance. deploy/casaos/docker-compose.yml now uses ghcr.io/pedrotrschneider/ted:latest, PostgreSQL 18, port 33044 (checked unused), project ted-casaos, and bind directories /DATA/AppData/ted/{postgres,metadata,media}. No named/anonymous data volumes. App UID/GID 1000, UTC and dual-stack egress retained. Two new-password placeholders; no existing database or credential reuse. README covers fresh setup, storing the filled-in Compose alongside data, stopped-stack filesystem backups preserving ownership, and matching-image restoration. No migration, stop, deployment or data change performed. Prior anonymous registry check was unauthorized; image availability/access must be resolved before install.
+
+## Android lint JDK correction — October 15
+
+Owner reports only Android still fails; the latest hosted log reaches url_launcher_android:lintVitalAnalyzeRelease and crashes inside lint's JavaDocParser with NoSuchMethodError for java.util.List.removeLast(). That API is available starting in Java 21, while the runner used Java 17. Updated Teddy's hosted JDK and Devbox package/lock to Java 21; retained Java/Kotlin target 17 and all lint checks. README/release guide now name JDK 21. Verified local Java/javac/keytool 21.0.11 and Gradle 9.6.1 launching and selecting its daemon JVM on Java 21; workflow lint and diff checks pass. Full Android lint/package build still awaits hosted verification.
+
+The universal APK is shared by Android phones/tablets and Android TV: normal and Leanback launcher entries, optional touchscreen/Leanback features, TV detection and ARM32/ARM64/x64 packaging. This is packaging support, not device acceptance testing. Owner clarified the prior runner shutdown was exhaustion of free Actions usage, not proven memory pressure. Owner reverted the license changes; TED retains AGPL v3 and Teddy retains GPL v3. No license files changed in this fix. No commit/push/publication performed.
+
 ## TED hosted CI missing package — October 15
 
 All three supplied Go jobs (behavior, race, vet) failed because `internal/config` was absent from the Git checkout. The unanchored `Config/` runtime-data ignore rule also matched the lowercase source directory on the owner's case-insensitive Mac; config.go and config_test.go existed locally but were never tracked. Root-anchor `/Config/` and `/Config-*/` now preserve private runtime-data exclusions without hiding the Go package. Both existing configuration source files must be included in the next commit; committing only .gitignore will not fix hosted builds. No runtime behavior or dependency changed.
@@ -16,7 +44,7 @@ Linux x64 reached tests but exposed a real TV auxiliary-control overflow. The ri
 
 ## Teddy local Java toolchain — October 15
 
-Installed `jdk@17` through Teddy's Devbox and updated devbox.json/devbox.lock. On the owner's Mac it resolves to Zulu OpenJDK 17.0.19. Verified `java -version`, `javac -version`, and `keytool -help` through `devbox run`; all resolve inside Teddy's Devbox profile rather than macOS's runtime-less system launchers. README documents re-entering an existing shell. No signing key was generated, no system Java changed, and no secrets were accessed.
+Initially installed `jdk@17` through Teddy's Devbox and updated devbox.json/devbox.lock; superseded by Java 21 for Android lint as recorded above. On the owner's Mac it resolves to Zulu OpenJDK 17.0.19. Verified `java -version`, `javac -version`, and `keytool -help` through `devbox run`; all resolve inside Teddy's Devbox profile rather than macOS's runtime-less system launchers. README documents re-entering an existing shell. No signing key was generated, no system Java changed, and no secrets were accessed.
 
 ## GitHub release automation — October 15
 
