@@ -1,6 +1,6 @@
 # The Entertainment District — product contract
 
-Updated October 15, 2026. This is the current agreed direction, not an execution log. Later owner decisions have been reconciled here; superseded alternatives are not active requirements. Read [IMPLEMENTATION.md](IMPLEMENTATION.md) for delivered code, verification and gaps, [README.md](README.md) for operations, and [AGENTS.md](AGENTS.md) before engineering work.
+Updated October 16, 2026. This is the current agreed direction, not an execution log. Later owner decisions have been reconciled here; superseded alternatives are not active requirements. Read [IMPLEMENTATION.md](IMPLEMENTATION.md) for delivered code, verification and gaps, [README.md](README.md) for operations, and [AGENTS.md](AGENTS.md) before engineering work.
 
 ## Product and architecture
 
@@ -94,6 +94,8 @@ The modal has All, Favorites, Recent and installed-add-on categories. All dedupl
 
 TV buttons and seekbar are about 50% larger; center previous/rewind/pause/forward/next and vertically align right-side controls. Use one seekbar style with a round focused thumb. Remove chapter-jump and aspect-ratio controls; preserve aspect ratio. Marker skip buttons must not overlap the seekbar. Hide the idle cursor over playback in fullscreen and windowed mode.
 
+Android MPV hardware playback uses direct MediaCodec decoding and the native video plane, avoiding copy-back through the GPU for supported media. Honor the hardware-decoding setting before renderer initialization. The already bundled ExoPlayer is an explicit Android alternative in Video Playback settings; changes apply to the next video. ExoPlayer chooses its decoders automatically. UI scaling changes controls and layout while preserving full-resolution native video.
+
 Keyboard left/right shows and operates the seekbar; left/right on it only seek, Down moves to pause. Show cumulative seek feedback. Audio/subtitle sheets support mouse and keyboard. Escape closes an active player menu first; otherwise always returns to the current episode/movie details. Restore usable keyboard focus after window reactivation. Mouse motion can reveal controls, but **must not assign keyboard focus or trigger scrolling** (this later rule supersedes hover-to-focus requests).
 
 Buffering shows the media logo with pulsing scale/alpha, never fully transparent. Buffered ranges reflect actual retained ranges after backward seeks. Keyboard and pointer seek paths must not interpret transient EOF, failed ranges, resume initialization or buffering as completion. Keep the player buffer capacity separate from initial fill so playback need not wait for its maximum cache.
@@ -148,7 +150,7 @@ Horizontal lists remember the last section when returning from sidebar. Right fr
 - **Search:** same desktop/TV media presentation, only Type (Movies/Series, left) and query. No Mapped, watch, genre or sort controls. The separate Mapped-items page is removed.
 - **Movie details:** selection-style banner with release date; left action row Play/resume-progress, Start from beginning, Download, Toggle watched. Right selectors choose RD mapping or Stremio and the selected file/source. Default RD when available; Stremio-only has a noninteractive type selector. RD filename is noninteractive; Stremio opens the picker. Load sources on entry; disable Play until usable. Keyboard focus on any action-row control reveals the top; visible focus/hover treatment for Play.
 - **Show details:** shorter banner, release date, Download show and Mark show watched/unwatched. No Play/restart. First focus is seasons, not Download. One horizontal season row before cast, with Specials last and watched/total badges. No separate Up Next block. Focus reveals the whole season row rather than clipping its bottom to expose the entire hero.
-- **Season:** shared show banner with a larger season poster and centered show logo, season release date, Download season and Mark season watched/unwatched, then episode thumbnails. Episode name is prominent; Season X Episode Y smaller below, followed by release date.
+- **Season:** shared show banner with a larger season poster and centered show logo, season release date, Download season and Mark season watched/unwatched, then episode thumbnails. Episode name is prominent; Season X Episode Y smaller below, followed by release date. Keyboard/remote episode focus reveals as much hero as fits while keeping the entire episode row and captions visible with a small bottom margin, independently of UI scale. Deferred reveal rechecks input mode and current focus.
 - **Episode:** larger episode thumbnail at left, show logo, episode description/release date, movie-style playback/source actions. Season and episode cast rows reuse the show's cast; do not make extra per-episode cast lookups.
 - **Cast/person:** cast uses portrait proportions and a leading section icon. Person hero uses the originating title's backdrop, portrait/basic data left and biography right with close spacing and vertical centering. Truncate long biography with keyboard-selectable Read more dialog. Watched then Other horizontal filmography rows have section icons; hide empty Watched. Keyboard focus on the first actual row reveals the hero; re-reveal focused content if late Watched data inserts above Other. Hero may cut off part of the second row; fitting both is no longer a requirement.
 
@@ -177,7 +179,7 @@ One vertically scrolling page, Plezy-style grouped tiles, section headings and s
 | Section | Options/defaults |
 | --- | --- |
 | General | Startup destination from the shared sidebar inventory: Home; Force TV mode: off, layout restart; Start fullscreen: off |
-| Appearance | Theme: system; Hide spoilers: off (blur unwatched/in-progress episode thumbnail and description when enabled); Watched indicators: on; Keep sidebar open: off |
+| Appearance | UI scale: 100%, manually selectable 50–150%, applied immediately and persisted; Theme: system; Hide spoilers: off (blur unwatched/in-progress episode thumbnail and description when enabled); Watched indicators: on; Keep sidebar open: off |
 | Video Playback | Hardware decoding: on; small skip 10 s; large skip 30 s; rewind on resume 0 s; autoplay next: off; intro and credits modes Off/Button/Automatic with off default; chapter markers: on; click video to pause: off; exit fullscreen on close: off |
 | Downloads | App-data storage by platform; changing root moves existing owned files; Wi-Fi only: off; auto-remove watched: off; range size 512 MiB; simultaneous downloads 1 |
 | Advanced | Reveal logs; clear local image cache with confirmation; reset settings with confirmation |
