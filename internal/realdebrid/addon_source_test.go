@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-func TestAddonTorrentSelectsAllOnceAndPreservesPartialOriginal(t *testing.T) {
+func TestAddonTorrentSelectsRequestedFileOnceAndPreservesPartialOriginal(t *testing.T) {
 	s, _, actor := newInventoryFixture(t, 0)
 	inspectionPool := s.pool
 	cfg := s.pool.Config()
@@ -56,8 +56,8 @@ func TestAddonTorrentSelectsAllOnceAndPreservesPartialOriginal(t *testing.T) {
 				t.Error("ownership was not committed before selecting files", e)
 			}
 			_ = r.ParseForm()
-			if r.Form.Get("files") != "all" {
-				t.Error("TED did not select all files")
+			if r.Form.Get("files") != "2" {
+				t.Error("TED did not select only the requested file")
 			}
 			close(entered)
 			<-release
@@ -97,8 +97,13 @@ func TestAddonTorrentSelectsAllOnceAndPreservesPartialOriginal(t *testing.T) {
 			if id == "OWN" && all {
 				select2 = 1
 			}
-			v["files"] = []any{map[string]any{"id": 1, "path": "/ep1.mkv", "bytes": 1000, "selected": 1}, map[string]any{"id": 2, "path": "/ep2.mkv", "bytes": 1000, "selected": select2}}
-			links := []string{"https://real-debrid.com/d/" + id + "-1"}
+			select1 := 0
+			links := []string{}
+			if id == "ORIGINAL" {
+				select1 = 1
+				links = append(links, "https://real-debrid.com/d/"+id+"-1")
+			}
+			v["files"] = []any{map[string]any{"id": 1, "path": "/ep1.mkv", "bytes": 1000, "selected": select1}, map[string]any{"id": 2, "path": "/ep2.mkv", "bytes": 1000, "selected": select2}}
 			if select2 == 1 {
 				links = append(links, "https://real-debrid.com/d/"+id+"-2")
 			}

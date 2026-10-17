@@ -106,17 +106,28 @@ func (s *Inventory) resolveSelection(ctx context.Context, w TorrentSelection, al
 		if d.Hash != w.Hash {
 			return FileRequest{}, Resolved{}, ErrMismatch
 		}
-		if e := sourceReady(d); e != nil {
-			return FileRequest{}, Resolved{}, e
-		}
 		f, e := selectedTorrentFile(d, w)
 		if e != nil {
 			return FileRequest{}, Resolved{}, e
 		}
-		if !f.Selected {
-			return FileRequest{}, Resolved{}, ErrPending
-		}
 		want := FileRequest{AccountID: account, TorrentID: d.ID, Hash: w.Hash, Path: f.Path, Bytes: f.Bytes}
+		var individual bool
+		if e = conn.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM rd_addon_file_torrents WHERE scope=$1 AND hash=$2 AND path=$3 AND bytes=$4 AND (owned_id!='' OR add_attempted))`, scope, w.Hash, f.Path, f.Bytes).Scan(&individual); e != nil {
+			return want, Resolved{}, e
+		}
+		if individual {
+			return s.resolveIndividualFile(ctx, conn, c, scope, want, allowAdd)
+		}
+		ready := sourceReady(d)
+		if errors.Is(ready, ErrRejected) {
+			return want, Resolved{}, ready
+		}
+		if !f.Selected {
+			return s.resolveIndividualFile(ctx, conn, c, scope, want, allowAdd)
+		}
+		if ready != nil {
+			return want, Resolved{}, ready
+		}
 		resolved, e := c.ResolveFile(ctx, want)
 		if errors.Is(e, ErrArchive) {
 			return s.resolveIndividualFile(ctx, conn, c, scope, want, allowAdd)
@@ -148,7 +159,11 @@ func (s *Inventory) resolveSelection(ctx context.Context, w TorrentSelection, al
 				if !allowAdd {
 					return FileRequest{}, Resolved{}, ErrPending
 				}
-				if e = c.selectAll(ctx, owned); e != nil {
+				f, err := selectedTorrentFile(d, w)
+				if err != nil {
+					return FileRequest{}, Resolved{}, err
+				}
+				if e = c.selectFile(ctx, d, FileRequest{Hash: w.Hash, Path: f.Path, Bytes: f.Bytes}); e != nil {
 					return FileRequest{}, Resolved{}, e
 				}
 				d, e = c.Torrent(ctx, owned)
@@ -211,9 +226,6 @@ func (s *Inventory) resolveSelection(ctx context.Context, w TorrentSelection, al
 			return FileRequest{}, Resolved{}, false, nil
 		}
 		if !f.Selected {
-			if d.Status != "downloaded" {
-				pending = true
-			}
 			return FileRequest{}, Resolved{}, false, nil
 		}
 		want, res, e := finish(d)
@@ -262,11 +274,11 @@ func (s *Inventory) resolveSelection(ctx context.Context, w TorrentSelection, al
 		}
 		return FileRequest{}, Resolved{}, e
 	}
-	if !idPattern.MatchString(added.ID) {
+	if !idPattern.MatchString(added.ID) || checked[added.ID] {
 		return FileRequest{}, Resolved{}, ErrIncomplete
 	}
 	// Retain known ownership even if the caller disconnects immediately after RD
-	// returns. This independent commit must precede selectFiles(all).
+	// returns. This independent commit must precede selecting the requested file.
 	save, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	_, e = conn.Exec(save, `UPDATE rd_addon_torrents SET owned_id=$3,updated_at=now() WHERE scope=$1 AND hash=$2`, scope, w.Hash, added.ID)
 	cancel()
@@ -281,7 +293,11 @@ func (s *Inventory) resolveSelection(ctx context.Context, w TorrentSelection, al
 		return FileRequest{}, Resolved{}, ErrMismatch
 	}
 	if d.Status == "waiting_files_selection" {
-		if e = c.selectAll(ctx, added.ID); e != nil {
+		f, err := selectedTorrentFile(d, w)
+		if err != nil {
+			return FileRequest{}, Resolved{}, err
+		}
+		if e = c.selectFile(ctx, d, FileRequest{Hash: w.Hash, Path: f.Path, Bytes: f.Bytes}); e != nil {
 			return FileRequest{}, Resolved{}, e
 		}
 		d, e = c.Torrent(ctx, added.ID)

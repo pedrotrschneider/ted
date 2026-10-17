@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func TestRecoveryPreservesPartialEntryAndPersistsBeforeAllSelection(t *testing.T) {
+func TestRecoveryPreservesPartialEntryAndPersistsBeforeExactFileSelection(t *testing.T) {
 	want := FileRequest{"123", "original", strings.Repeat("a", 40), "/movie.mkv", 1000}
 	for _, saveFailure := range []bool{false, true} {
 		t.Run(fmt.Sprint(saveFailure), func(t *testing.T) {
@@ -40,8 +40,8 @@ func TestRecoveryPreservesPartialEntryAndPersistsBeforeAllSelection(t *testing.T
 						t.Error("selection before persistence")
 					}
 					r.ParseForm()
-					if r.Form.Get("files") != "all" {
-						t.Error("not all files")
+					if r.Form.Get("files") != "42" {
+						t.Error("not the exact requested file")
 					}
 					selected = true
 					w.WriteHeader(204)
@@ -88,5 +88,48 @@ func TestMissingRecoveryRejectsIncompleteAccountRead(t *testing.T) {
 	_, e := c.PrepareFile(context.Background(), FileRequest{"123", "missing", strings.Repeat("a", 40), "/movie.mkv", 1000}, "", func(string) error { t.Fatal("unexpected ownership write"); return nil })
 	if !errors.Is(e, ErrIncomplete) {
 		t.Fatal(e)
+	}
+}
+
+func TestRecoveryDoesNotReselectAnOwnedEntryForAnotherEpisode(t *testing.T) {
+	want := FileRequest{"123", "missing", strings.Repeat("a", 40), "/episode.mkv", 1000}
+	remembered, selected := false, false
+	c := fake(t, func(w http.ResponseWriter, r *http.Request) {
+		detail := func(id, status string) string {
+			return strings.TrimSuffix(strings.Replace(item(id), `"downloaded"`, `"`+status+`"`, 1), "}") + fmt.Sprintf(`,"hash":%q,"files":[{"id":7,"path":"/other.mkv","bytes":1000,"selected":1},{"id":42,"path":"/episode.mkv","bytes":1000,"selected":0}]}`, want.Hash)
+		}
+		switch r.URL.Path {
+		case "/user":
+			fmt.Fprint(w, `{"id":123}`)
+		case "/torrents/info/missing":
+			w.WriteHeader(404)
+		case "/torrents/info/previous":
+			fmt.Fprint(w, detail("previous", "downloaded"))
+		case "/torrents":
+			w.Header().Set("X-Total-Count", "1")
+			fmt.Fprint(w, "["+detail("previous", "downloaded")+"]")
+		case "/torrents/addMagnet":
+			w.WriteHeader(201)
+			fmt.Fprint(w, `{"id":"new"}`)
+		case "/torrents/info/new":
+			fmt.Fprint(w, detail("new", "waiting_files_selection"))
+		case "/torrents/selectFiles/new":
+			_ = r.ParseForm()
+			if !remembered || r.Form.Get("files") != "42" {
+				t.Error("missing ownership or wrong selection")
+			}
+			selected = true
+			w.WriteHeader(204)
+		default:
+			t.Error("existing entry mutated", r.URL.Path)
+			w.WriteHeader(400)
+		}
+	})
+	prepared, err := c.PrepareFile(context.Background(), want, "previous", func(id string) error {
+		remembered = id == "new"
+		return nil
+	})
+	if err != nil || !selected || prepared.TorrentID != "new" {
+		t.Fatal("another episode's selection was reused or changed", err)
 	}
 }

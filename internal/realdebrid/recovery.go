@@ -9,7 +9,7 @@ import (
 )
 
 // PrepareFile preserves existing account selections. Only an entry TED created
-// and durably recorded may receive selectFiles(all). Original IDs remain provenance.
+// and durably recorded may select the requested file. Original IDs remain provenance.
 // An ambiguous add response is not retried blindly: a subsequent pass reads the
 // account again, and pending entries require waiting rather than reselection.
 func (c *Client) PrepareFile(ctx context.Context, want FileRequest, owned string, remember func(string) error) (FileRequest, error) {
@@ -43,14 +43,18 @@ func (c *Client) PrepareFile(ctx context.Context, want FileRequest, owned string
 				return want, ErrMismatch
 			}
 			if d.Status == "waiting_files_selection" {
-				if e = c.selectAll(ctx, owned); e != nil {
+				if e = c.selectFile(ctx, d, want); e != nil {
 					return want, e
 				}
+				want.TorrentID = owned
+				return want, nil
 			}
-			want.TorrentID = owned
-			return want, nil
+			if matches(d) {
+				want.TorrentID = owned
+				return want, nil
+			}
 		}
-		if !errors.Is(e, ErrNotFound) {
+		if e != nil && !errors.Is(e, ErrNotFound) {
 			return want, e
 		}
 	}
@@ -150,14 +154,21 @@ func (c *Client) PrepareFile(ctx context.Context, want FileRequest, owned string
 		return want, ErrMismatch
 	}
 	if recovered.Status == "waiting_files_selection" {
-		if err = c.selectAll(ctx, added.ID); err != nil {
+		if err = c.selectFile(ctx, recovered, want); err != nil {
 			return want, err
 		}
 	}
 	want.TorrentID = added.ID
 	return want, nil
 }
-func (c *Client) selectAll(ctx context.Context, id string) error {
-	_, err := c.request(ctx, "POST", "torrents/selectFiles/"+url.PathEscape(id), url.Values{"files": {"all"}}, nil)
+func (c *Client) selectFile(ctx context.Context, d Detail, want FileRequest) error {
+	if d.Hash != want.Hash {
+		return ErrMismatch
+	}
+	file, err := individualTorrentFile(d, want)
+	if err != nil {
+		return err
+	}
+	_, err = c.request(ctx, "POST", "torrents/selectFiles/"+url.PathEscape(d.ID), url.Values{"files": {strconv.FormatInt(file.ID, 10)}}, nil)
 	return err
 }

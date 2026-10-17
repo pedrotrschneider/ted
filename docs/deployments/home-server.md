@@ -1,6 +1,6 @@
 # Owner home-server deployment
 
-Updated October 15, 2026. This records the installed native deployment, not broad platform acceptance. The old Mac preview is stopped; do not run a second copy of its synchronization workers. General backup/restore is in [Operations](../operations.md); code/test status is in [IMPLEMENTATION](../../IMPLEMENTATION.md).
+Updated October 17, 2026. This records the installed home-server preview on port 33043, not broad platform acceptance. The separate CasaOS installation on port 33044 remains `ghcr.io/pedrotrschneider/ted:0.1.7` and was not changed by this preview rollout. The old Mac server is stopped; do not start its stale synchronization workers. General backup/restore is in [Operations](../operations.md); code/test status is in [IMPLEMENTATION](../../IMPLEMENTATION.md).
 
 ## Current installation
 
@@ -10,17 +10,28 @@ Updated October 15, 2026. This records the installed native deployment, not broa
 | Web/LAN | `http://192.168.1.2:33043` |
 | Deployment root | `/home/ptrschneider/projects/ted-teddy-preview` |
 | Compose | project `ted-teddy-preview`; `compose.yaml`, `compose.home.yaml`, private `.env` |
-| Image | `ted-home:20261015-person-cursor` |
-| Image ID | `sha256:1c0e761c2db40c069a8b475dae4903ccb8261f9efe8a1bba609a329f8fb196f6` |
-| Source | `releases/20261015-person-cursor` |
-| Source archive SHA256 | `808d84c4cd72f413da96bbb37b18a62f2bce89f749883f3e9a6111e9b5853bed` |
-| Database | PostgreSQL 18; TED schema 41; host Config/postgres |
+| Image | `ted-home:20261017-playback-rd-fallback` |
+| Image ID | `sha256:58166d369e8bb951dd6770bdb042de2e86f16e7597503e5f9557c5511d8ca8cb` |
+| Source | `releases/20261017-playback-rd-fallback` |
+| Source archive SHA256 | `d73f4d97d71ccfc92d6d5843f8f7012a0c2b67c23793caa18bf138ea5dc5e7aa` |
+| Reported version | `0.1.0-preview.20261017`, compatibility major `0` |
+| Database | PostgreSQL 18; TED schema 44; host Config/postgres |
 | Files | Config/metadata and Media bind mounts; historical Config/recovery retained on disk, no active recovery mount |
-| New Mac build | `../teddy/build/releases/20261015T142015Z-vVCwj0du/Teddy.app` relative to the local TED folder; rebuilt after relocation, signed, owner launch pending |
+| New Mac build | `../teddy/build/releases/20261017T124624Z-GQMNIga1/Teddy.app` relative to the local TED folder; signed and opened, owner Keychain approval pending at last inspection |
 
 Provider credentials are in the database/admin settings, not frontend files. `.env` holds deployment configuration/database password. Preserve the Compose override's `default` database network **and IPv6-enabled `egress` network**. Earlier IPv4-only container egress caused intermittent add-on/RD connection stalls even when host IPv6 requests succeeded; dual-stack egress was part of the accepted reliability correction. Other hosts must verify their route rather than copying this assumption blindly.
 
 ## Latest rollout
+
+October 17 playback/RD fallback rollout: deployed the tested working tree to the preview after the owner reported that the running service still produced the old error. The new resolver first retains all-file season selection, then uses a separate exact-episode RD entry if unrestrict confirms a single RAR archive. Native failure logging and schema 42–44 are included. Docker image built on the home server from the immutable source release above; no local Colima instance or CasaOS service was started/replaced.
+
+Consistent stopped-app backup: `backups/pre-20261017-playback-rd-fallback-r2/` contains PostgreSQL custom-format dump, archive contents listing, `.env`, Compose files, metadata, Media and retained recovery files. Restored the dump into a separate bind-mounted PostgreSQL 18 container with `--network none`, ran only the migration helper to reach schema 44 and compared account/current/history/mapping/file row fingerprints. No restored application or synchronization worker started. The test container was stopped/removed; its stopped cluster remains privately under `restore-checks/20261017-playback-rd-fallback-r2/`.
+
+Live pre/post upgrade fingerprints also matched, with 5 accounts, 21,048 current rows, 16,231 history rows, 2 mappings and 1 local file. Readiness HTTP 200, exact preview version and image ID verified; healthy with zero restarts. Original Config/Media mounts and default/IPv6 egress networks retained. CasaOS image/container startup identity unchanged. Evidence: `.devbox/preview-playback-20261017`. This proves the deployment/upgrade, not end-to-end playback in the owner's current Teddy session; retry the same source for acceptance.
+
+The first isolated restore attempt failed because its new host bind root was mode 0700 owned by the SSH user, so PostgreSQL could not traverse it after dropping privileges. The old preview automatically restarted; its database was untouched. Retained the first backup and failure log, then corrected only the new restore bind's ownership to the container PostgreSQL user before the successful second rehearsal. No checks were skipped or relaxed. Previous image `ted-home:20261015-person-cursor` and both backups remain. Returning to schema 41 requires a matching restore plus reconciliation of newer state, not an unreviewed image-only downgrade.
+
+### Previous person-page rollout
 
 October 15 person-page fix: terminal filmography responses omit the optional cursor instead of returning an invalid empty token. API behavior and race regressions passed. Deployed after owner stopped playback; backup `backups/pre-person-cursor-20261015.dump`, override `backups/compose.home.pre-person-cursor.yaml`. Schema 41 and before/after counts preserved: 5 users, 20,623 current, 15,806 history, 2 mappings, 1 local file. Healthy, zero restarts, LAN HTTP 200. Previous image `ted-home:20261015-folder-split` retained. Existing Teddy build works with this server fix. Evidence: `.devbox/person-cursor-20261015`.
 
@@ -83,6 +94,6 @@ The Mac preview moved to this server on October 13/14. The stopped migration sna
 
 All Colima VMs were deliberately stopped; inventory found one running profile (`default`) and helper processes. Disks/data were preserved. The Mac fixture remains `.devbox/test-evidence/2026-10-10T20-35-36.441Z-ted-native-test-89464-35183799`, migration evidence `.devbox/test-evidence/ted-home-server-2026-10-14`. Starting it now would introduce stale state and duplicate sync. Do not treat it as an active dependency or current rollback without reconciliation.
 
-.devbox/joint-filter-20261015 holds the latest web/API/race/deployment evidence; `.devbox/home-watch-20261015` holds the previous Home/watch evidence; retirement evidence `.devbox/retirement`. The temporary home-server `ted-source-cache-test` database was tmpfs-only with no volumes; it and its dedicated 37968 SSHforward were removed after checks. Production 33043 remains.
+Latest deployment evidence is `.devbox/preview-playback-20261017`; `.devbox/joint-filter-20261015` and `.devbox/home-watch-20261015` retain earlier evidence; retirement evidence is `.devbox/retirement`. The temporary home-server `ted-source-cache-test` database and its dedicated 37968 SSH forward were removed after those checks. The preview remains on 33043; CasaOS is separate on 33044.
 
 Historical 14–22 second decode-command wall times included network/open/range/resume work, not demonstrated decoder computation. Subsequent network/startup/prefetch fixes were owner-accepted. Further opportunities are in [the startup review](../startup-and-account-review-2026-10-14.md); do not report old failure measurements as current native first-frame timings.

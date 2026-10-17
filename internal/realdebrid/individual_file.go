@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/url"
-	"strconv"
 	"time"
 
 	"entertainmentdistrict/internal/database"
@@ -21,7 +20,6 @@ func individualTorrentFile(d Detail, want FileRequest) (File, error) {
 	return File{}, ErrMismatch
 }
 
-// Called only after the ordinary all-files resolution confirmed a RAR pack.
 // The caller holds lockSource. Existing entries are read-only; only a separately
 // journaled TED-owned entry may receive the individual-file selection.
 func (s *Inventory) resolveIndividualFile(ctx context.Context, conn *pgxpool.Conn, c *Client, scope string, want FileRequest, allowAdd bool) (FileRequest, Resolved, error) {
@@ -71,7 +69,7 @@ func (s *Inventory) resolveIndividualFile(ctx context.Context, conn *pgxpool.Con
 		if d.Hash != want.Hash {
 			return want, Resolved{}, ErrMismatch
 		}
-		file, err := individualTorrentFile(d, want)
+		_, err := individualTorrentFile(d, want)
 		if err != nil {
 			return want, Resolved{}, err
 		}
@@ -79,7 +77,7 @@ func (s *Inventory) resolveIndividualFile(ctx context.Context, conn *pgxpool.Con
 			if !allowAdd {
 				return want, Resolved{}, ErrPending
 			}
-			_, err = c.request(ctx, "POST", "torrents/selectFiles/"+url.PathEscape(d.ID), url.Values{"files": {strconv.FormatInt(file.ID, 10)}}, nil)
+			err = c.selectFile(ctx, d, want)
 			if err != nil {
 				return want, Resolved{}, err
 			}
@@ -132,9 +130,6 @@ func (s *Inventory) resolveIndividualFile(ctx context.Context, conn *pgxpool.Con
 		}
 		file, err := individualTorrentFile(d, want)
 		if err != nil || !file.Selected {
-			if sourceReady(d) == ErrPending {
-				pending = true
-			}
 			continue
 		}
 		pinned, result, err := finish(d)
