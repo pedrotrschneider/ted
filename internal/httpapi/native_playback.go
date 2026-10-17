@@ -263,6 +263,9 @@ func (a *API) nativePlaybackFailure(w http.ResponseWriter, r *http.Request, err 
 		a.nativeFail(w, r, err)
 		return
 	}
+	if a.logger != nil {
+		a.logger.WarnContext(r.Context(), "native playback request failed", "operation", r.Pattern, "status", status, "code", code)
+	}
 	respond(w, status, map[string]string{"code": code, "error": err.Error()})
 }
 

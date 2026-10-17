@@ -10,6 +10,7 @@ import (
 
 var ErrPending = errors.New("RD source is not ready")
 var ErrMismatch = errors.New("RD source identity does not match saved mapping")
+var ErrArchive = errors.New("RD returned an archive instead of individual media files")
 
 // Resolved never crosses a public JSON boundary. The URL is a secret.
 type Resolved struct {
@@ -72,10 +73,39 @@ func (c *Client) ResolveFile(ctx context.Context, want FileRequest) (Resolved, e
 	if !chosen {
 		return Resolved{}, ErrMismatch
 	}
-	if len(raw.Links) != count || index < 0 || index >= len(raw.Links) {
+	if len(raw.Links) != count {
+		// Selecting a whole season can give RD one compressed pack rather than
+		// one link per selected file. Confirm that shape through unrestrict;
+		// never guess which episode a mismatched link represents.
+		if count > 1 && len(raw.Links) == 1 {
+			result, e := c.unrestrictFile(ctx, raw.Links[0])
+			if e != nil {
+				return Resolved{}, e
+			}
+			if strings.EqualFold(path.Ext(result.Filename), ".rar") {
+				return Resolved{}, ErrArchive
+			}
+		}
 		return Resolved{}, ErrIncomplete
 	}
-	link, err := url.Parse(raw.Links[index])
+	if index < 0 || index >= len(raw.Links) {
+		return Resolved{}, ErrIncomplete
+	}
+	result, err := c.unrestrictFile(ctx, raw.Links[index])
+	if err != nil {
+		return Resolved{}, err
+	}
+	if result.Filename != path.Base(want.Path) || result.Bytes != want.Bytes {
+		return Resolved{}, ErrMismatch
+	}
+	if !ValidDownloadURL(result.URL) {
+		return Resolved{}, ErrIncomplete
+	}
+	return result, nil
+}
+
+func (c *Client) unrestrictFile(ctx context.Context, raw string) (Resolved, error) {
+	link, err := url.Parse(raw)
 	if err != nil || link.Scheme != "https" || link.Host != "real-debrid.com" || link.User != nil || !strings.HasPrefix(link.Path, "/d/") {
 		return Resolved{}, ErrIncomplete
 	}
@@ -86,12 +116,6 @@ func (c *Client) ResolveFile(ctx context.Context, want FileRequest) (Resolved, e
 	}
 	if _, err = c.request(ctx, "POST", "unrestrict/link", url.Values{"link": {link.String()}}, &result); err != nil {
 		return Resolved{}, err
-	}
-	if result.Filename != path.Base(want.Path) || result.Filesize != want.Bytes {
-		return Resolved{}, ErrMismatch
-	}
-	if !ValidDownloadURL(result.Download) {
-		return Resolved{}, ErrIncomplete
 	}
 	return Resolved{URL: result.Download, Bytes: result.Filesize, Filename: result.Filename}, nil
 }

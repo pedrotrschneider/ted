@@ -118,6 +118,9 @@ func (s *Inventory) resolveSelection(ctx context.Context, w TorrentSelection, al
 		}
 		want := FileRequest{AccountID: account, TorrentID: d.ID, Hash: w.Hash, Path: f.Path, Bytes: f.Bytes}
 		resolved, e := c.ResolveFile(ctx, want)
+		if errors.Is(e, ErrArchive) {
+			return s.resolveIndividualFile(ctx, conn, c, scope, want, allowAdd)
+		}
 		if e == nil {
 			tx, err := conn.Begin(ctx)
 			if err != nil {
@@ -321,7 +324,17 @@ func (s *Inventory) ResolvePinned(ctx context.Context, scope string, w FileReque
 		if _, e = conn.Exec(ctx, `INSERT INTO rd_addon_torrents(scope,hash,owned_id,add_attempted,detail,verified_at) SELECT $3,hash,owned_id,add_attempted,detail,verified_at FROM rd_addon_torrents WHERE scope=$1 AND hash=$2 ON CONFLICT DO NOTHING`, scope, w.Hash, currentScope); e != nil {
 			return w, Resolved{}, e
 		}
+		if _, e = conn.Exec(ctx, `INSERT INTO rd_addon_file_torrents(scope,hash,path,bytes,owned_id,add_attempted,detail,verified_at) SELECT $3,hash,path,bytes,owned_id,add_attempted,detail,verified_at FROM rd_addon_file_torrents WHERE scope=$1 AND hash=$2 ON CONFLICT DO NOTHING`, scope, w.Hash, currentScope); e != nil {
+			return w, Resolved{}, e
+		}
 		scope = currentScope
+	}
+	var individual bool
+	if e = conn.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM rd_addon_file_torrents WHERE scope=$1 AND hash=$2 AND path=$3 AND bytes=$4 AND (owned_id!='' OR add_attempted))`, scope, w.Hash, w.Path, w.Bytes).Scan(&individual); e != nil {
+		return w, Resolved{}, e
+	}
+	if individual {
+		return s.resolveIndividualFile(ctx, conn, c, scope, w, true)
 	}
 	prepared, e := c.PrepareFile(ctx, w, owned, func(id string) error {
 		_, e := conn.Exec(ctx, `UPDATE rd_addon_torrents SET owned_id=$3,updated_at=now() WHERE scope=$1 AND hash=$2`, scope, w.Hash, id)
@@ -331,6 +344,9 @@ func (s *Inventory) ResolvePinned(ctx context.Context, scope string, w FileReque
 		return w, Resolved{}, e
 	}
 	result, e := c.ResolveFile(ctx, prepared)
+	if errors.Is(e, ErrArchive) {
+		return s.resolveIndividualFile(ctx, conn, c, scope, prepared, true)
+	}
 	return prepared, result, e
 }
 
@@ -355,7 +371,7 @@ func (s *Inventory) ReadyFor(ctx context.Context, selections []TorrentSelection)
 	for _, w := range selections {
 		hashes = append(hashes, w.Hash)
 	}
-	rows, e := s.pool.Query(ctx, `SELECT detail FROM rd_inventory_torrents WHERE scope=$1 AND hash=ANY($2::text[]) AND detail_generation=generation AND detail IS NOT NULL UNION ALL SELECT detail FROM rd_addon_torrents WHERE scope=$1 AND hash=ANY($2::text[]) AND detail IS NOT NULL AND verified_at>now()-interval '1 minute'`, c.CredentialScope(), hashes)
+	rows, e := s.pool.Query(ctx, `SELECT detail FROM rd_inventory_torrents WHERE scope=$1 AND hash=ANY($2::text[]) AND detail_generation=generation AND detail IS NOT NULL UNION ALL SELECT detail FROM rd_addon_torrents WHERE scope=$1 AND hash=ANY($2::text[]) AND detail IS NOT NULL AND verified_at>now()-interval '1 minute' UNION ALL SELECT detail FROM rd_addon_file_torrents WHERE scope=$1 AND hash=ANY($2::text[]) AND detail IS NOT NULL AND verified_at>now()-interval '1 minute'`, c.CredentialScope(), hashes)
 	if e != nil {
 		return values, "", e
 	}

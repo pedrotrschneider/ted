@@ -71,6 +71,30 @@ func TestLiveSelectedDownloadPreparation(t *testing.T) {
 		t.Fatal("invalid private probe input")
 	}
 	s, auth, grant, remote, _ := fixture(t)
+	// A live probe may add a separately owned RD entry. Retain its ownership
+	// journal outside the disposable test schema before fixture cleanup runs.
+	if report := os.Getenv("TED_LIVE_RD_OWNERSHIP_REPORT"); report != "" {
+		t.Cleanup(func() {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			var raw []byte
+			err := s.pool.QueryRow(ctx, `SELECT json_build_object('all_files',(SELECT coalesce(json_agg(t),'[]') FROM rd_addon_torrents t),'individual_files',(SELECT coalesce(json_agg(t),'[]') FROM rd_addon_file_torrents t))`).Scan(&raw)
+			if err != nil {
+				t.Error("live ownership journal could not be read")
+				return
+			}
+			file, err := os.OpenFile(report, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+			if err != nil {
+				t.Error("live ownership journal could not be created")
+				return
+			}
+			_, err = file.Write(raw)
+			closeErr := file.Close()
+			if err != nil || closeErr != nil {
+				t.Error("live ownership journal could not be saved")
+			}
+		})
+	}
 	descriptor, _ := json.Marshal(entries[0].Descriptor)
 	remote.collection = []json.RawMessage{descriptor}
 	s.http, s.media = PublicClient(), mediaClient()

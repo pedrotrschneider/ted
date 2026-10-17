@@ -104,6 +104,8 @@ func (a *API) nativeSubtitle(w http.ResponseWriter, r *http.Request, g accounts.
 func (a *API) nativeSourceFailure(w http.ResponseWriter, r *http.Request, err error) {
 	code, status := "", 503
 	switch {
+	case errors.Is(err, realdebrid.ErrArchive):
+		code, status = "source_archive", 422
 	case errors.Is(err, realdebrid.ErrInfringing):
 		code, status = "rd_infringing", 422
 	case errors.Is(err, realdebrid.ErrRejected):
@@ -139,6 +141,9 @@ func (a *API) nativeSourceFailure(w http.ResponseWriter, r *http.Request, err er
 	default:
 		a.nativePlaybackFailure(w, r, err)
 		return
+	}
+	if a.logger != nil {
+		a.logger.WarnContext(r.Context(), "native source request failed", "operation", r.Pattern, "status", status, "code", code)
 	}
 	respond(w, status, map[string]string{"code": code})
 }
