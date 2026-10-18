@@ -10,7 +10,7 @@ import (
 	"entertainmentdistrict/internal/watchstate"
 )
 
-func (a *API) nativeShowWatch(w http.ResponseWriter, r *http.Request, g accounts.NativeGrant) {
+func (a *API) nativeSeriesTitleWatch(w http.ResponseWriter, r *http.Request, g accounts.NativeGrant) {
 	a.nativeSeriesWatch(w, r, g, nil)
 }
 
@@ -85,9 +85,15 @@ func (a *API) nativeSeriesWatch(w http.ResponseWriter, r *http.Request, g accoun
 		a.nativeFail(w, r, err)
 		return
 	}
+	other, err := a.watch.OtherSeasonIndicators(r.Context(), g.User.ID, id, season, today)
+	if err != nil {
+		a.nativeFail(w, r, err)
+		return
+	}
 	a.respondNativeCatalog(w, r, struct {
 		watchstate.NativeSeriesWatch
-		JointCounts  map[string][]jointWatch         `json:"joint_counts"`
-		SeasonCounts map[string]*nativeEpisodeCounts `json:"season_counts"`
-	}{state, joint, counts})
+		UserCounts   map[string][]watchstate.UserIndicator `json:"user_counts,omitempty"`
+		JointCounts  map[string][]jointWatch               `json:"joint_counts"`
+		SeasonCounts map[string]*nativeEpisodeCounts       `json:"season_counts"`
+	}{state, other, joint, counts})
 }

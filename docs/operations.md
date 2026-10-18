@@ -1,6 +1,6 @@
 # TED operations and recovery
 
-Updated October 16, 2026. Read [README](../README.md) for a new installation and [the home-server record](deployments/home-server.md) before operating the owner's actual service. Commands here assume the repository's default Compose project/files; add the installed project's name/override flags where required. Run development-machine commands in Devbox; the deployment server already has Docker/Compose.
+Updated October 17, 2026. Read [README](../README.md) for a new installation and [the home-server record](deployments/home-server.md) before operating the owner's actual service. Commands here assume the repository's default Compose project/files; add the installed project's name/override flags where required. Run development-machine commands in Devbox; the deployment server already has Docker/Compose.
 
 ## Configuration
 
@@ -30,7 +30,7 @@ Updated October 16, 2026. Read [README](../README.md) for a new installation and
 
 Provider settings store RD/TMDb/TVDB secrets in the database; Stremio discovery and history credentials are separate database state. Saved values are not returned to the browser. Browser SCS defaults are 24-hour absolute/30-minute idle sessions; native tokens have separate lifetimes above.
 
-Startup applies embedded forward-only migrations under a PostgreSQL advisory lock, then starts services/workers. Failed migration stops startup; inspect the redacted phase/SQLSTATE, do not reset the database. Schema 43 is the current source checkpoint (account pictures; schema 42 added update-notice dismissal). This does not imply the installed server has been upgraded. An older binary cannot safely run against a newer incompatible schema.
+Startup applies embedded forward-only migrations under a PostgreSQL advisory lock, then starts services/workers. Failed migration stops startup; inspect the redacted phase/SQLSTATE, do not reset the database. Schema 44 is the current source checkpoint (RD exact-file ownership journal; schema 43 added account pictures and schema 42 update-notice dismissal). The home-server record identifies each installed service; source version alone does not establish a deployment. An older binary cannot safely run against a newer incompatible schema.
 
 ## Persistent boundaries
 

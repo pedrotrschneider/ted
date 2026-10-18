@@ -8,7 +8,7 @@ import { assignEpisode, matchPattern, orderedEpisodes, orderedFiles } from './ep
 import { assignSeasonStep, seasonSteps, skipSeasonStep, skipMappingStep } from './season-step';
 import type { EpisodeAssignments } from './episode-matching';
 type Mode='Manual'|'Season Range'|'Pattern';
-export function EpisodeMappingEditor({show,source,existing,allDraft,changeDraft}:{show:Series;source:TorrentDetail;existing:SeriesMappings;allDraft:EpisodeDraft;changeDraft:(draft:EpisodeDraft)=>void}) {
+export function EpisodeMappingEditor({series,source,existing,allDraft,changeDraft}:{series:Series;source:TorrentDetail;existing:SeriesMappings;allDraft:EpisodeDraft;changeDraft:(draft:EpisodeDraft)=>void}) {
  const fileList=useRef<HTMLUListElement>(null),scrollTarget=useRef<number|undefined>(undefined);
  useLayoutEffect(()=>{
   const id=scrollTarget.current;scrollTarget.current=undefined;
@@ -20,9 +20,9 @@ export function EpisodeMappingEditor({show,source,existing,allDraft,changeDraft}
  const [mode,setMode]=useState<Mode>('Manual');
  const draft=sourceAssignments(allDraft,source);
  function setDraft(next:EpisodeAssignments|((old:EpisodeAssignments)=>EpisodeAssignments)){changeDraft(mergeSourceAssignments(allDraft,source,typeof next==='function'?next(draft):next))}
- const [cursor,setCursor]=useState(()=>{const available=orderedEpisodes(show.episodes);const first=available.findIndex(e=>!allDraft[e.id]);return first<0?available.length:first}),[extras,setExtras]=useState(false);
+ const [cursor,setCursor]=useState(()=>{const available=orderedEpisodes(series.episodes);const first=available.findIndex(e=>!allDraft[e.id]);return first<0?available.length:first}),[extras,setExtras]=useState(false);
  const [pattern,setPattern]=useState('S{%s.2}E{%e.2}'),[message,setMessage]=useState(''),[error,setError]=useState('');
- const episodes=orderedEpisodes(show.episodes),occupied=new Set(existing.mappings.map(m=>m.episode_id));
+ const episodes=orderedEpisodes(series.episodes),occupied=new Set(existing.mappings.map(m=>m.episode_id));
  const manual=episodes,current=manual[cursor];
  const seasons=seasonSteps(episodes);
  const [seasonIndex,setSeasonIndex]=useState(0);

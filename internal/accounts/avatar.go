@@ -48,3 +48,20 @@ func (s *Service) Avatar(ctx context.Context, who Identity) ([]byte, error) {
 	}
 	return image, err
 }
+
+// VisibleAvatar shares only the enabled person's normalized picture. It does
+// not grant access to their credentials, settings, raw history or mutations.
+func (s *Service) VisibleAvatar(ctx context.Context, who Identity, target int64) ([]byte, string, error) {
+	if _, err := s.Current(ctx, who); err != nil {
+		return nil, "", err
+	}
+	var image []byte
+	var version string
+	err := s.pool.QueryRow(ctx, `SELECT a.image,u.avatar_version FROM users u LEFT JOIN account_avatars a ON a.user_id=u.id
+ WHERE u.id=$3 AND NOT u.disabled AND (u.id=$1 OR NOT EXISTS(SELECT 1 FROM joint_account_members j WHERE j.joint_id=u.id))
+ AND EXISTS(SELECT 1 FROM users actor WHERE actor.id=$1 AND actor.session_version=$2 AND NOT actor.disabled)`, who.ID, who.Version, target).Scan(&image, &version)
+	if err == pgx.ErrNoRows {
+		err = ErrNotFound
+	}
+	return image, version, err
+}

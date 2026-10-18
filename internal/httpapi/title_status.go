@@ -4,6 +4,7 @@ import (
 	"entertainmentdistrict/internal/accounts"
 	"entertainmentdistrict/internal/catalog"
 	"entertainmentdistrict/internal/cinemeta"
+	"entertainmentdistrict/internal/watchstate"
 	"net/http"
 	"strings"
 	"time"
@@ -22,16 +23,17 @@ type posterWatch struct {
 }
 
 type titleStatus struct {
-	JointWatches    []jointWatch `json:"joint_watches,omitempty"`
-	PublicationMode string       `json:"publication_mode"`
-	WatchCatalog    bool         `json:"-"`
-	Watch           posterWatch  `json:"watch"`
-	ID              string       `json:"id"`
-	State           string       `json:"state"`
-	Added           int          `json:"added"`
-	Total           *int         `json:"total"`
-	Phase           string       `json:"phase"`
-	Validated       int          `json:"validated"`
+	UserWatches     []watchstate.UserIndicator `json:"user_watches,omitempty"`
+	JointWatches    []jointWatch               `json:"joint_watches,omitempty"`
+	PublicationMode string                     `json:"publication_mode"`
+	WatchCatalog    bool                       `json:"-"`
+	Watch           posterWatch                `json:"watch"`
+	ID              string                     `json:"id"`
+	State           string                     `json:"state"`
+	Added           int                        `json:"added"`
+	Total           *int                       `json:"total"`
+	Phase           string                     `json:"phase"`
+	Validated       int                        `json:"validated"`
 }
 
 // Read only public progress, never source names, credentials, or operation errors.
@@ -187,7 +189,13 @@ func (a *API) titleStatuses(w http.ResponseWriter, r *http.Request, u accounts.U
 		a.fail(w, r, err)
 		return
 	}
+	other, err := a.watch.OtherIndicators(r.Context(), u.ID, media, time.Now().In(a.CalendarLocation).Format(time.DateOnly))
+	if err != nil {
+		a.fail(w, r, err)
+		return
+	}
 	for i := range result {
+		result[i].UserWatches = other[kind+"/"+result[i].ID]
 		result[i].JointWatches = joint[kind+"/"+result[i].ID]
 	}
 	if a.recheck(w, r, u, false) {

@@ -61,6 +61,8 @@ Administrator RD mapping starts from a selected account torrent/file, not guesse
 
 When playback needs to add a torrent to RD, TED selects only the requested episode/movie file. It reuses valid existing file links and preserves account selections; it no longer selects the entire pack before trying an individual episode. This is a server change and requires no Teddy update.
 
+Posters also show other server users’ viewing through their profile pictures or initials. Partial series show an episode ratio; partial movies/episodes show progress beside the picture. Each person includes their joint viewing except joint accounts you already share with them. People stack vertically, shrinking to a readable minimum before a final +X badge counts anyone who cannot fit. Your own and direct joint badges keep their current appearance. This shares read-only indicators across the server; it does not change personal history, resume, Person Watched grouping or the Watched filter.
+
 Device downloads in Teddy are separate from web/server-managed local copies. Web local-download actions operate on mapped server media and persistent transfer/validation/publication jobs. Never delete a file to fix a job manually; use the owning removal/retry workflow. Shared destructive actions require administrators. Removing an owned copy preserves personal history; whole-title removal retains tombstones and stable identity.
 
 Watch edits offer dated or undated watched state where supported. Ordinary Unwatched retains history; confirmed Never watched clears only that user's title-scoped viewing/resume/counts. Stremio receives flags, not native resume positions. Failed reads retain previous state and must not lock controls merely because an obsolete response field is absent.

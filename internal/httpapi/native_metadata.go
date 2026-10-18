@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"entertainmentdistrict/internal/watchstate"
 	"errors"
 	"net/http"
 	"strconv"
@@ -158,14 +159,21 @@ func (a *API) nativeMetadataFilmography(w http.ResponseWriter, r *http.Request, 
 		a.nativeFail(w, r, err)
 		return
 	}
+	other, err := a.watch.OtherIndicators(r.Context(), g.User.ID, media, time.Now().In(a.CalendarLocation).Format(time.DateOnly))
+	if err != nil {
+		a.nativeFail(w, r, err)
+		return
+	}
 	type entryView struct {
 		metadata.FilmographyEntry
-		JointWatches []jointWatch `json:"joint_watches,omitempty"`
+		UserWatches  []watchstate.UserIndicator `json:"user_watches,omitempty"`
+		JointWatches []jointWatch               `json:"joint_watches,omitempty"`
 	}
 	items := make([]entryView, len(v.Items))
 	for i, entry := range v.Items {
 		items[i].FilmographyEntry = entry
 		if entry.Media != nil {
+			items[i].UserWatches = other[entry.Media.Kind+"/"+entry.Media.ID]
 			items[i].JointWatches = joint[entry.Media.Kind+"/"+entry.Media.ID]
 		}
 	}

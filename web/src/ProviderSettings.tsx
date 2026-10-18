@@ -7,7 +7,7 @@ import {RDCacheStatus} from './RDCacheStatus';
 const fields=[
  {key:'rd_key',flag:'rd_configured',label:'Real-Debrid API key',help:'Used for mappings, RD-backed add-on playback and downloads.',url:'https://real-debrid.com/apitoken'},
  {key:'tmdb_token',flag:'tmdb_configured',label:'TMDb API Read Access Token',help:'Movie metadata, cast, and person filmographies.',url:'https://www.themoviedb.org/settings/api'},
- {key:'tvdb_key',flag:'tvdb_configured',label:'TVDB API key',help:'Show, season, episode and cast metadata.',url:'https://thetvdb.com/dashboard/account/apikey'},
+ {key:'tvdb_key',flag:'tvdb_configured',label:'TVDB API key',help:'Series, season, episode and cast metadata.',url:'https://thetvdb.com/dashboard/account/apikey'},
  {key:'tvdb_pin',flag:'tvdb_pin_configured',label:'TVDB subscriber PIN',help:'Only needed when your TVDB key requires a subscriber PIN.',url:'https://thetvdb.com/dashboard/account/subscription'},
 ] as const;
 export function ProviderSettings({expired}:{expired:()=>void}) {

@@ -105,7 +105,12 @@ func (a *API) decorateJointWatch(ctx context.Context, user int64, titles []nativ
 	if err != nil {
 		return err
 	}
+	other, err := a.watch.OtherIndicators(ctx, user, media, time.Now().In(a.CalendarLocation).Format(time.DateOnly))
+	if err != nil {
+		return err
+	}
 	for i := range titles {
+		titles[i].UserWatches = other[titles[i].Media.Kind+"/"+titles[i].Media.ID]
 		titles[i].JointWatches = values[titles[i].Media.Kind+"/"+titles[i].Media.ID]
 	}
 	return nil

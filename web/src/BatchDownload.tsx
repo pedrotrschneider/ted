@@ -9,5 +9,5 @@ export function BatchDownload({id,season,disabled,expired,queued}:{id:string;sea
   catch(e){if(e instanceof ApiError&&e.status===401)expired();else setError(errorMessage(e))}
   finally{setBusy(false);queued()}
  }
- return <div className="batch-download"><div className="actions"><button disabled={disabled||busy} onClick={()=>void download()}>{busy?'Queueing…':season===undefined?'Download show':'Download season'}</button><label className="check"><input type="checkbox" checked={readyOnly} disabled={disabled||busy} onChange={e=>setReadyOnly(e.target.checked)}/>Ready episodes only</label></div>{message&&<p role="status">{message}</p>}{error&&<p className="notice error" role="alert">{error}</p>}</div>;
+ return <div className="batch-download"><div className="actions"><button disabled={disabled||busy} onClick={()=>void download()}>{busy?'Queueing…':season===undefined?'Download series':'Download season'}</button><label className="check"><input type="checkbox" checked={readyOnly} disabled={disabled||busy} onChange={e=>setReadyOnly(e.target.checked)}/>Ready episodes only</label></div>{message&&<p role="status">{message}</p>}{error&&<p className="notice error" role="alert">{error}</p>}</div>;
 }

@@ -11,6 +11,7 @@ import (
 )
 
 func (a *API) avatarRoutes(mux *http.ServeMux) {
+	mux.HandleFunc("GET /api/accounts/{id}/avatar", a.protected(false, a.visibleAvatar))
 	mux.HandleFunc("PUT /api/account/avatar", a.protected(false, a.uploadAvatar))
 	mux.HandleFunc("GET /api/account/avatar", a.protected(false, a.avatar))
 }
@@ -47,6 +48,32 @@ func (a *API) avatar(w http.ResponseWriter, r *http.Request, u accounts.User) {
 	}
 	if len(image) == 0 {
 		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+	w.Header().Set("Content-Type", "image/png")
+	w.Header().Set("Content-Length", strconv.Itoa(len(image)))
+	w.Write(image)
+}
+
+func (a *API) visibleAvatar(w http.ResponseWriter, r *http.Request, u accounts.User) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil || id <= 0 {
+		http.NotFound(w, r)
+		return
+	}
+	image, version, err := a.accounts.VisibleAvatar(r.Context(), identity(u), id)
+	if err != nil {
+		a.fail(w, r, err)
+		return
+	}
+	if len(image) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Set("ETag", `"`+version+`"`)
+	if r.Header.Get("If-None-Match") == `"`+version+`"` {
+		w.WriteHeader(http.StatusNotModified)
 		return
 	}
 	w.Header().Set("Content-Type", "image/png")

@@ -37,3 +37,22 @@ test('poster reads reject malformed viewing state instead of showing an unwatche
  for(const watch of [undefined,{seen:true,watched:2,available:1,progress:null},{seen:true,watched:0,available:0,progress:101}])assert.throws(()=>parseTitleStatuses({statuses:[{...pending,watch}]},[pending.id]));
  assert.match(watchLabel({seen:true,watched:0,available:1,progress:25},'movie'),/25%/);
 });
+
+test('other-user indicators are optional, validated and preserve personal watch state',()=>{
+ const user={account_id:2,name:'Clara',avatar_version:'a'.repeat(64),watch:{seen:true,watched:2,available:3,progress:null}};
+ const result=parseTitleStatuses({statuses:[{...pending,user_watches:[user]}]},[pending.id]);
+ assert.deepEqual(result[0].watch,pending.watch);
+ assert.equal(result[0].user_watches?.[0].name,'Clara');
+ for(const user_watches of [[{...user,account_id:0}],[{...user,avatar_version:'https://private.example'}],[{...user,watch:{...user.watch,watched:4}}],[user,user]]){
+  assert.throws(()=>parseTitleStatuses({statuses:[{...pending,user_watches}]},[pending.id]));
+ }
+});
+test('other-user labels distinguish episode counts, partial playback and completion',async()=>{
+ const {userWatchLabel,userWatchProgress}=await import('../src/title-status-api.ts');
+ const user={account_id:2,name:'Clara',watch:{seen:true,watched:2,available:3,progress:null as number|null}};
+ assert.equal(userWatchProgress(user,'series'),'2 / 3');assert.match(userWatchLabel(user,'series'),/^Clara: 2 \/ 3/);
+ const partial={...user,watch:{...user.watch,watched:0,available:1,progress:35}};
+ assert.equal(userWatchProgress(partial,'movie'),'35%');assert.equal(userWatchLabel(partial,'movie'),'Clara: 35% playback progress');
+ const complete={...partial,watch:{...partial.watch,watched:1,progress:null}};
+ assert.equal(userWatchProgress(complete,'movie'),null);assert.equal(userWatchLabel(complete,'movie'),'Clara: Watched');
+});

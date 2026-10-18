@@ -35,7 +35,7 @@ function WatchDateDialog({label,disabled,choose,close}:{label:string;disabled:bo
  useEffect(()=>{dialog.current?.showModal()},[]);
  return createPortal(<dialog ref={dialog} className="watch-date-dialog" aria-labelledby={heading} onClose={close}>
   <h2 id={heading}>Mark watched</h2><p>{label}</p>
-  <p className="hint">Choose whether to record a viewing date. For a season or show, this applies only to episodes not already watched.</p>
+  <p className="hint">Choose whether to record a viewing date. For a season or series, this applies only to episodes not already watched.</p>
   <div className="actions"><button autoFocus disabled={disabled} onClick={()=>choose('now')}>Watched now</button><button disabled={disabled} onClick={()=>choose('undated')}>Watched without a date</button><button onClick={close}>Cancel</button></div>
  </dialog>,document.body);
 }
