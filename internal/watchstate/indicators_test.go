@@ -92,7 +92,35 @@ func TestOtherIndicatorsExcludeSharedJointsAndDeduplicateReleasedEpisodes(t *tes
 		t.Fatalf("missing %s in %v", name, values)
 		return UserIndicator{}
 	}
+	// Personal ratings win even when lower; otherwise choose the highest
+	// included joint rating. Rating-only unseen users must remain invisible.
+	for _, v := range []struct {
+		name, kind, id string
+		rating         int
+	}{
+		{"clara", "movie", movie, 3}, {"private", "movie", movie, 6}, {"private2", "movie", movie, 5}, {"shared", "movie", movie, 7},
+		{"private", "series", series, 4}, {"private2", "series", series, 6}, {"shared", "series", series, 7},
+		{"lucas", "movie", movie, 7},
+	} {
+		exec(`INSERT INTO account_title_preferences(user_id,kind,title_id,rating,metadata) VALUES($1,$2,$3,$4,'{}')`, users[v.name], v.kind, v.id, v.rating)
+	}
 	lucas := get("lucas")
+	if rating := find(lucas["movie/"+movie], "clara").Rating; rating == nil || *rating != 3 {
+		t.Fatal("personal rating lost precedence", rating)
+	}
+	if rating := find(lucas["series/"+series], "clara").Rating; rating == nil || *rating != 7 {
+		t.Fatal("highest included joint rating missing", rating)
+	}
+	pedroRatings := get("pedro")
+	if rating := find(pedroRatings["series/"+series], "clara").Rating; rating == nil || *rating != 6 {
+		t.Fatal("shared joint rating leaked into peer projection", rating)
+	}
+	for _, person := range get("clara")["movie/"+movie] {
+		if person.Name == "lucas" {
+			t.Fatal("unwatched rating exposed")
+		}
+	}
+
 	if len(lucas["series/"+series]) != 2 {
 		t.Fatal("joint hosts/disabled users leaked", lucas)
 	}

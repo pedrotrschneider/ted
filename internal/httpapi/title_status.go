@@ -4,6 +4,7 @@ import (
 	"entertainmentdistrict/internal/accounts"
 	"entertainmentdistrict/internal/catalog"
 	"entertainmentdistrict/internal/cinemeta"
+	"entertainmentdistrict/internal/titleprefs"
 	"entertainmentdistrict/internal/watchstate"
 	"net/http"
 	"strings"
@@ -23,6 +24,8 @@ type posterWatch struct {
 }
 
 type titleStatus struct {
+	Watchlist       bool                       `json:"watchlist"`
+	UserRating      *int                       `json:"user_rating"`
 	UserWatches     []watchstate.UserIndicator `json:"user_watches,omitempty"`
 	JointWatches    []jointWatch               `json:"joint_watches,omitempty"`
 	PublicationMode string                     `json:"publication_mode"`
@@ -184,6 +187,11 @@ func (a *API) titleStatuses(w http.ResponseWriter, r *http.Request, u accounts.U
 	for i := range result {
 		media[i] = catalog.MediaIdentity{Kind: kind, ID: result[i].ID}
 	}
+	prefs, err := titleprefs.New(a.pool).States(r.Context(), u.ID, media)
+	if err != nil {
+		a.fail(w, r, err)
+		return
+	}
 	joint, err := a.jointWatches(r.Context(), u.ID, media)
 	if err != nil {
 		a.fail(w, r, err)
@@ -195,6 +203,8 @@ func (a *API) titleStatuses(w http.ResponseWriter, r *http.Request, u accounts.U
 		return
 	}
 	for i := range result {
+		state := prefs[kind+"/"+result[i].ID]
+		result[i].Watchlist, result[i].UserRating = state.Watchlist, state.Rating
 		result[i].UserWatches = other[kind+"/"+result[i].ID]
 		result[i].JointWatches = joint[kind+"/"+result[i].ID]
 	}

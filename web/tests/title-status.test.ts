@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {parseTitleStatuses,showTitleCount,titleStatusLabel,titleStatusProgress,showWatchCount,watchLabel} from '../src/title-status-api.ts';
-const pending={publication_mode:'native' as const,watch:{seen:false,watched:0,available:0,progress:null},id:'tt1245698',state:'pending' as const,added:12,total:26,validated:20,phase:'validating' as const};
+const pending={watchlist:false,user_rating:null,publication_mode:'native' as const,watch:{seen:false,watched:0,available:0,progress:null},id:'tt1245698',state:'pending' as const,added:12,total:26,validated:20,phase:'validating' as const};
 test('pending series always show confirmed progress, including final confirmation',()=>{
  assert.equal(showTitleCount(pending,'series'),true);
  assert.equal(showTitleCount({...pending,added:26},'series'),true);
@@ -39,7 +39,7 @@ test('poster reads reject malformed viewing state instead of showing an unwatche
 });
 
 test('other-user indicators are optional, validated and preserve personal watch state',()=>{
- const user={account_id:2,name:'Clara',avatar_version:'a'.repeat(64),watch:{seen:true,watched:2,available:3,progress:null}};
+ const user={rating:null,account_id:2,name:'Clara',avatar_version:'a'.repeat(64),watch:{seen:true,watched:2,available:3,progress:null}};
  const result=parseTitleStatuses({statuses:[{...pending,user_watches:[user]}]},[pending.id]);
  assert.deepEqual(result[0].watch,pending.watch);
  assert.equal(result[0].user_watches?.[0].name,'Clara');
@@ -49,10 +49,18 @@ test('other-user indicators are optional, validated and preserve personal watch 
 });
 test('other-user labels distinguish episode counts, partial playback and completion',async()=>{
  const {userWatchLabel,userWatchProgress}=await import('../src/title-status-api.ts');
- const user={account_id:2,name:'Clara',watch:{seen:true,watched:2,available:3,progress:null as number|null}};
+ const user={rating:null,account_id:2,name:'Clara',watch:{seen:true,watched:2,available:3,progress:null as number|null}};
  assert.equal(userWatchProgress(user,'series'),'2 / 3');assert.match(userWatchLabel(user,'series'),/^Clara: 2 \/ 3/);
  const partial={...user,watch:{...user.watch,watched:0,available:1,progress:35}};
  assert.equal(userWatchProgress(partial,'movie'),'35%');assert.equal(userWatchLabel(partial,'movie'),'Clara: 35% playback progress');
  const complete={...partial,watch:{...partial.watch,watched:1,progress:null}};
  assert.equal(userWatchProgress(complete,'movie'),null);assert.equal(userWatchLabel(complete,'movie'),'Clara: Watched');
+});
+test('direct joint ratings retain their account value and validate the nullable field',()=>{
+ const joint={account_id:7,name:'Joint',color:'#59C6F2',rating:2,watch:{seen:true,watched:1,available:1,progress:null}};
+ const result=parseTitleStatuses({statuses:[{...pending,user_rating:7,joint_watches:[joint]}]},[pending.id]);
+ assert.equal(result[0].user_rating,7);
+ assert.equal(result[0].joint_watches?.[0].rating,2);
+ assert.equal(parseTitleStatuses({statuses:[{...pending,joint_watches:[{...joint,rating:null}]}]},[pending.id])[0].joint_watches?.[0].rating,null);
+ for(const rating of [0,8,1.5,'4'])assert.throws(()=>parseTitleStatuses({statuses:[{...pending,joint_watches:[{...joint,rating}]}]},[pending.id]));
 });

@@ -8,14 +8,14 @@ import (
 )
 
 func TestNativeCompatibilityBoundary(t *testing.T) {
-	for _, major := range []string{tedversion.Major(), "999999", "invalid"} {
+	for _, major := range []string{tedversion.Compatibility(), "0.1", "", "999999", "invalid"} {
 		called := false
 		h := compatibilityHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { called = true; w.WriteHeader(204) }))
 		r := httptest.NewRequest("POST", "/api/client/v1/auth/login", nil)
-		r.Header.Set("X-Teddy-Compatibility-Major", major)
+		r.Header.Set("X-Teddy-Compatibility-Version", major)
 		w := httptest.NewRecorder()
 		h.ServeHTTP(w, r)
-		match := major == tedversion.Major()
+		match := major == tedversion.Compatibility()
 		if called != match {
 			t.Fatalf("major %q reached login=%v", major, called)
 		}

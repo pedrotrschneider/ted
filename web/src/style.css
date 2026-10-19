@@ -142,8 +142,8 @@ footer{padding:2rem 1.25rem}
 .movie-grid li{min-width:0}
 .movie-card{display:flex;flex-direction:column;text-decoration:none;color:inherit;border-radius:10px;overflow:hidden;background:#1c2429;height:100%;border:1px solid #354046}
 .movie-card:hover{border-color:#f9ab78}
-.movie-card strong,.movie-card span{display:block;padding:.65rem .75rem 0;overflow-wrap:anywhere}
-.movie-card span{font-size:.8rem;padding-bottom:.85rem;color:#b9c2c4}
+.movie-card>strong,.movie-card>span{display:block;padding:.65rem .75rem 0;overflow-wrap:anywhere}
+.movie-card>span{font-size:.8rem;padding-bottom:.85rem;color:#b9c2c4}
 .poster{display:block;width:100%;aspect-ratio:2/3;object-fit:cover;background:#283238;border-radius:8px}
 .poster-empty{display:grid;place-items:center;color:#aab5b8;letter-spacing:.3em;font-size:1.5rem}
 .movie-detail{display:grid;grid-template-columns:200px 1fr;gap:2rem;margin:2rem 0;align-items:start}
@@ -414,8 +414,9 @@ footer{overflow-anchor:none}
 @media(max-width:600px){.update-notice{flex-direction:column;align-items:flex-start;gap:12px;}}
 
 .other-user-watch{pointer-events:auto;display:flex;align-items:center;gap:.25rem;padding-right:.35rem;height:var(--person-badge-height);box-sizing:border-box;border:1px solid #ffffffb3;border-radius:999px;background:#111d;color:white;box-shadow:0 1px 5px #0008}
-.other-user-avatar{display:flex;align-items:center;justify-content:center;flex:none;width:calc(var(--person-badge-height) - 4px);height:calc(var(--person-badge-height) - 4px);border-radius:50%;background:#594d43;font-size:max(.65rem,calc(var(--person-badge-height) * .43));font-weight:650;overflow:hidden}
+.other-user-avatar{display:flex;align-items:center;justify-content:center;flex:none;width:calc(var(--person-badge-height) - 4px);height:calc(var(--person-badge-height) - 4px);border-radius:50%;background:#594d43;font-size:max(.65rem,calc(var(--person-badge-height) * .43));font-weight:650;line-height:1;overflow:hidden}
 .other-user-avatar img{width:100%;height:100%;object-fit:cover}
+.other-user-profile{position:relative;display:flex;align-items:center;justify-content:center;flex:none;width:calc(var(--person-badge-height) - 2px);height:calc(var(--person-badge-height) - 2px)}
 .other-user-progress{font-size:max(.65rem,calc(var(--person-badge-height) * .4));font-weight:650;line-height:1;white-space:nowrap}
 .other-user-watch:not(:has(.other-user-progress)){padding-right:0}
 
@@ -425,3 +426,14 @@ footer{overflow-anchor:none}
 .person-badge-measure{position:absolute;visibility:hidden;pointer-events:none;width:0;height:1.85rem}
 .person-badge-minimum{height:1.5rem}
 .other-user-overflow{justify-content:center;min-width:var(--person-badge-height);padding-inline:.3rem!important;font-size:max(.65rem,calc(var(--person-badge-height) * .4));font-weight:650;line-height:1;white-space:nowrap}
+
+/* Account-local watch lists and seven-point ratings. */
+.watchlist-badge,.personal-rating{display:inline-flex;align-items:center;justify-content:center;width:1.85rem;height:1.85rem;padding:0;box-sizing:border-box;border-radius:50%;color:white;box-shadow:0 1px 5px #0008;flex-shrink:0}
+.watchlist-badge{background:#16834c}.watchlist-badge svg,.personal-rating svg{display:block;flex:none;width:72%;height:72%}
+.poster-publication{display:flex;align-items:flex-start;gap:.3rem}.poster-personal-rating{position:absolute;bottom:.45rem;left:.35rem;z-index:3}
+.other-user-watch,.joint-watch{position:relative}.other-user-rating{position:absolute;right:calc(var(--person-badge-height) * -.15);top:calc(var(--person-badge-height) * -.15);display:flex;z-index:2}.personal-rating-small{width:calc(var(--person-badge-height) * .69);height:calc(var(--person-badge-height) * .69);border:1px solid #fff9}.joint-watch{--person-badge-height:1.85rem}
+.personal-save-button,.personal-rate-button{display:inline-flex;align-items:center;gap:.5rem}.personal-save-button>svg{width:1.2rem;height:1.2rem}
+.rating-dialog{max-width:min(30rem,90vw);border:1px solid var(--border,#566);border-radius:1rem;background:#1c2428;color:inherit;padding:1.5rem}.rating-dialog::backdrop{background:#000a}
+.rating-options{display:flex;flex-direction:column;gap:.5rem}.rating-options button{display:flex;align-items:center;gap:.75rem;text-align:left}.rating-options [aria-pressed=true]{outline:2px solid white}
+.rating-section{margin:1.5rem 0}.rating-section summary{cursor:pointer;display:flex;gap:.75rem;align-items:center;font-size:1.3rem;margin-bottom:1rem}.rating-section summary:before{content:'▸'}.rating-section[open] summary:before{content:'▾'}
+.collection-type{display:flex;align-items:center;gap:.75rem;margin:1rem 0}

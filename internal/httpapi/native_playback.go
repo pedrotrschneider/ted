@@ -104,6 +104,8 @@ type nativeMetadata struct {
 	Episode *cinemeta.Episode `json:"episode,omitempty"`
 }
 type nativeTitleDetail struct {
+	Watchlist      bool                       `json:"watchlist"`
+	UserRating     *int                       `json:"user_rating"`
 	UserWatches    []watchstate.UserIndicator `json:"user_watches,omitempty"`
 	JointWatches   []jointWatch               `json:"joint_watches,omitempty"`
 	Media          catalog.MediaIdentity      `json:"media"`

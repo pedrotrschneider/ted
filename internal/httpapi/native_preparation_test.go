@@ -33,6 +33,7 @@ func TestNativeSourceLookupExtendsOrdinaryWriteDeadline(t *testing.T) {
 	defer server.Close()
 	body, _ := json.Marshal(map[string]any{"media": catalog.MediaIdentity{Kind: "movie", ID: "tt8888888"}, "provider": "stremio"})
 	req, _ := http.NewRequest("POST", server.URL+"/api/client/v1/playback/sources", bytes.NewReader(body))
+	req.Header.Set("X-Teddy-Compatibility-Version", "0.2")
 	req.Header.Set("Authorization", "Bearer "+tokens.AccessToken)
 	res, err := server.Client().Do(req)
 	if err != nil {
@@ -81,6 +82,7 @@ func TestNativeSlowSelectedMediaPreparesPinnedDownloadOnRealConnection(t *testin
 	defer server.Close()
 	body, _ := json.Marshal(map[string]any{"media": catalog.MediaIdentity{Kind: "movie", ID: "tt8888888"}, "source_id": sourceID})
 	req, _ := http.NewRequest("POST", server.URL+"/api/client/v1/playback/sessions", bytes.NewReader(body))
+	req.Header.Set("X-Teddy-Compatibility-Version", "0.2")
 	req.Header.Set("Authorization", "Bearer "+tokens.AccessToken)
 	res, err := server.Client().Do(req)
 	if err != nil {
@@ -98,6 +100,7 @@ func TestNativeSlowSelectedMediaPreparesPinnedDownloadOnRealConnection(t *testin
 		t.Fatal("missing validated download descriptor")
 	}
 	rangeRequest := httptest.NewRequest("GET", descriptor.MediaURL, nil)
+	rangeRequest.Header.Set("X-Teddy-Compatibility-Version", "0.2")
 	rangeRequest.Header.Set("Authorization", "Bearer "+tokens.AccessToken)
 	rangeRequest.Header.Set("If-Match", descriptor.ETag)
 	rangeRequest.Header.Set("Range", "bytes=100-199")

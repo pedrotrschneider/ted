@@ -83,6 +83,7 @@ func createNativeHTTPPlayback(t *testing.T, h http.Handler, token string) stream
 
 func nativeMediaCall(h http.Handler, method, path, token, rangeHeader string) *httptest.ResponseRecorder {
 	r := httptest.NewRequest(method, "https://ted.example"+path, nil)
+	r.Header.Set("X-Teddy-Compatibility-Version", "0.2")
 	if token != "" {
 		r.Header.Set("Authorization", "Bearer "+token)
 	}
@@ -186,6 +187,7 @@ func TestNativeMediaExpiryRefreshOpenBodyAndRangePinning(t *testing.T) {
 		}
 	}
 	r := httptest.NewRequest("GET", "https://ted.example"+session.MediaURL, nil)
+	r.Header.Set("X-Teddy-Compatibility-Version", "0.2")
 	r.Header.Set("Authorization", "Bearer "+pair.AccessToken)
 	w := httptest.NewRecorder()
 	held := &heldNativeBody{ResponseWriter: w, entered: make(chan struct{}), release: make(chan struct{})}

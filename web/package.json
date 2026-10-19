@@ -1,13 +1,14 @@
 {
   "name": "ted-web",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && vite build",
     "test": "node --test tests/*.test.ts",
+    "test:layout": "node --test tests/poster-layout.browser.ts",
     "prebuild": "node scripts/sync-icon.mjs"
   },
   "dependencies": {

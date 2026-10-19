@@ -85,6 +85,14 @@ devbox run -- npm --prefix web test
 devbox run -- npm --prefix web run build
 ```
 
+Poster geometry also has a rendered regression check using an existing headless Chrome installation, with a fresh temporary profile and synthetic media only:
+
+```sh
+devbox run -- npm --prefix web run test:layout
+```
+
+On macOS it uses `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`; elsewhere it uses `google-chrome`. Set `TED_TEST_BROWSER` to another existing Chrome/Chromium executable when needed. This adds no application/browser-test dependency and does not operate the owner's browser session.
+
 Go behavior/race checks require FFmpeg and ffprobe on PATH, including the account-picture tests. Devbox supplies both; hosted Go test jobs explicitly install the FFmpeg package. `scripts/check.sh` fails before Go starts when a media tool is missing; vet does not require media tools. Go tests requiring persistence need a **disposable** PostgreSQL database. Never point `TED_TEST_DATABASE_URL` at production. The helper below starts only its own tmpfs PostgreSQL 18 container and removes it afterward; it requires an explicitly available Docker runtime. Do not run it by starting the owner's retired Mac deployment.
 
 ```sh
@@ -110,7 +118,7 @@ The Mac build requires full Xcode and emits a unique immutable app path. Quit th
 - **Cast loads but person page fails:** the October 15 server fix restores the optional filmography pagination cursor. Reopen the person or use Retry after updating TED; no Teddy rebuild or metadata-cache reset is needed.
 
 - **Incomplete watched state after integration removal:** the web validator previously required an obsolete sequence field. The October 15 update removes that requirement, retaining revision/version/flag validation. Reload the deployed web assets; do not reset watch state as a workaround.
-- **Blank/loading Home after restart:** the new Teddy build uses scoped persistent snapshots for all five rows and refreshes them independently. A first use with no cache still requires a successful fetch. An auth failure retains offline downloads and reports sign-in needs.
+- **Blank/loading Home after restart:** the new Teddy build uses scoped persistent snapshots for all six rows and refreshes them independently. A first use with no cache still requires a successful fetch. An auth failure retains offline downloads and reports sign-in needs.
 - **Source lookup/stream latency:** retain the home's dual-stack Docker egress configuration. Previously repeated IPv4 stalls contributed to unreliable RD/add-on requests. A cached badge/HTTP 200 is not proof of playable content. Use the source picker Reload for fresh results; report title, episode, exact release and position when comparing startup.
 - **Keychain errors:** use Request keychain access and permit the OS prompt. Other storage/persistence failures require their actual diagnostic; do not delete all profile data or repeatedly rotate refresh tokens.
 - **Playback seek/resume:** transient EOF must not advance episodes. Report a reproducible source/position; preserve exact release and diagnostics. Old 18–22 second measurements included network/open work, not demonstrated decoder computation.

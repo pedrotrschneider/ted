@@ -15,6 +15,7 @@ type IndicatorWatch struct {
 	Progress  *float64 `json:"progress"`
 }
 type UserIndicator struct {
+	Rating        *int           `json:"rating"`
 	AccountID     int64          `json:"account_id"`
 	Name          string         `json:"name"`
 	AvatarVersion string         `json:"avatar_version,omitempty"`
@@ -102,7 +103,10 @@ func (s *Store) otherIndicators(ctx context.Context, viewer int64, keys, kinds, 
  CASE WHEN t.kind IN ('movie','episode') THEN 1 ELSE (SELECT count(DISTINCT e.id)::int FROM catalog_episode_schedules sh
  CROSS JOIN LATERAL jsonb_to_recordset(sh.episodes) AS e(id text,season int,release_date date)
  WHERE sh.title_id=t.id AND e.release_date<=$6::date AND ((t.kind='series' AND e.season>0) OR (t.kind='season' AND e.season=t.season))) END,
- CASE WHEN t.kind IN ('movie','episode') AND NOT bool_or(m.played) THEN max(m.progress) END
+ CASE WHEN t.kind IN ('movie','episode') AND NOT bool_or(m.played) THEN max(m.progress) END,
+ CASE WHEN t.kind IN ('movie','series') THEN COALESCE(
+ (SELECT rating FROM account_title_preferences pref WHERE pref.user_id=p.id AND pref.kind=t.kind AND pref.title_id=t.id),
+ (SELECT max(pref.rating) FROM sources src JOIN account_title_preferences pref ON pref.user_id=src.source_id AND pref.kind=t.kind AND pref.title_id=t.id WHERE src.account_id=p.id AND src.source_id<>p.id)) END
  FROM per_media m JOIN people p ON p.id=m.account_id JOIN targets t ON t.key=m.key
  GROUP BY t.key,t.kind,t.id,t.season,p.id,p.display_name,p.avatar_version HAVING bool_or(m.seen)
  ORDER BY lower(p.display_name),p.id`, viewer, keys, kinds, ids, seasons, today)
@@ -113,7 +117,7 @@ func (s *Store) otherIndicators(ctx context.Context, viewer int64, keys, kinds, 
 	for rows.Next() {
 		var key string
 		var v UserIndicator
-		if err = rows.Scan(&key, &v.AccountID, &v.Name, &v.AvatarVersion, &v.Watch.Seen, &v.Watch.Watched, &v.Watch.Available, &v.Watch.Progress); err != nil {
+		if err = rows.Scan(&key, &v.AccountID, &v.Name, &v.AvatarVersion, &v.Watch.Seen, &v.Watch.Watched, &v.Watch.Available, &v.Watch.Progress, &v.Rating); err != nil {
 			return nil, err
 		}
 		out[key] = append(out[key], v)

@@ -1,3 +1,5 @@
+import {RatingBadge,SavedIcon} from './RatingIcon';
+import {ratingNames} from './personal-rating';
 import {useEffect,useLayoutEffect,useRef,useState} from 'react';
 import type {CSSProperties} from 'react';
 import {titleStatuses,titleStatusLabel,showTitleCount,titleStatusProgress,watchLabel,watchIndicatorText,userWatchLabel,userWatchProgress} from './title-status-api';
@@ -6,6 +8,8 @@ import type {MediaTitle} from './media-browser-api';
 import {peopleWatchLayout} from './people-watch-layout';
 export function useTitleStatuses(titles:MediaTitle[]){
  const key=JSON.stringify(titles.map(t=>[t.type,t.id]));
+ const [epoch,setEpoch]=useState(0);
+ useEffect(()=>{const changed=()=>setEpoch(v=>v+1);window.addEventListener('ted-preferences-changed',changed);return()=>window.removeEventListener('ted-preferences-changed',changed)},[]);
  const [states,setStates]=useState<Record<string,Status>>({}),[error,setError]=useState('');
  useEffect(()=>{
   const c=new AbortController();let timer:ReturnType<typeof setTimeout>;
@@ -21,7 +25,7 @@ export function useTitleStatuses(titles:MediaTitle[]){
   }
   if(pairs.length)void refresh();
   return()=>{c.abort();clearTimeout(timer)};
- },[key]);
+ },[key,epoch]);
  return {states,error};
 }
 export function TitleStatusBadge({status,kind}:{status?:Status;kind:'movie'|'series'}){
@@ -32,9 +36,11 @@ export function TitleStatusBadge({status,kind}:{status?:Status;kind:'movie'|'ser
   <span className="title-status-icon" aria-hidden="true">{status.state==='pending'?<i className="status-spinner"/>:status.state==='failed'?'!':'✓'}</span>
   {showTitleCount(status,kind)&&<span className="title-status-count" aria-hidden="true">{status.state==='pending'&&<small>{status.phase==='publishing'?'Adding':'Validating'}</small>}{titleStatusProgress(status)} / {status.total??'?'}</span>}
  </div>}
- </div><div className="poster-indicators">
- {[{name:'You',color:'#FFFFFF',watch:status.watch},...(status.joint_watches??[])].filter(j=>j.watch.seen).map((j,i)=><div key={i} className="title-status title-status-watched" role="img" aria-label={`${j.name}: ${watchLabel(j.watch,kind)}`} title={`${j.name}: ${watchLabel(j.watch,kind)}`}>
+ {status.watchlist&&<span className="watchlist-badge" role="img" aria-label="In your Watch List" title="In your Watch List"><SavedIcon/></span>}
+ </div>{status.user_rating!==null&&<span className="poster-personal-rating"><RatingBadge rating={status.user_rating}/></span>}<div className="poster-indicators">
+ {[{name:'You',color:'#FFFFFF',watch:status.watch,rating:null},...(status.joint_watches??[])].filter(j=>j.watch.seen).map((j,i)=><div key={i} className="title-status title-status-watched joint-watch" role="img" aria-label={`${j.name}: ${watchLabel(j.watch,kind)}`} title={`${j.name}: ${watchLabel(j.watch,kind)}`}>
  <span className="title-status-icon" style={{backgroundColor:j.color,color:'#111'}} aria-hidden="true">{watchIndicatorText(j.watch,kind)}</span>
+ {j.rating!=null&&<span className="other-user-rating"><RatingBadge rating={j.rating} small/></span>}
  </div>)}
  <OtherUserIndicators users={(status.user_watches??[]).filter(user=>user.watch.seen)} kind={kind}/>
  </div>
@@ -77,10 +83,12 @@ function OtherUserIndicators({users,kind}:{users:UserWatch[];kind:'movie'|'serie
 function OtherUserBadge({user,kind}:{user:UserWatch;kind:'movie'|'series'}){
  const [failed,setFailed]=useState('');
  const version=`${user.account_id}/${user.avatar_version??''}`;
- const label=userWatchLabel(user,kind),progress=userWatchProgress(user,kind);
+ const label=userWatchLabel(user,kind)+(user.rating===null?'':` · ${ratingNames[user.rating-1]}`),progress=userWatchProgress(user,kind);
  return <div className="other-user-watch" role="img" aria-label={label} title={label}>
-  <span className="other-user-avatar" aria-hidden="true">
+  <span className="other-user-profile"><span className="other-user-avatar" aria-hidden="true">
    {user.avatar_version&&failed!==version?<img src={`/api/accounts/${user.account_id}/avatar?v=${user.avatar_version}`} alt="" onError={()=>setFailed(version)}/>:user.name.trim().slice(0,1).toUpperCase()}
+  </span>
+  {user.rating!==null&&<span className="other-user-rating"><RatingBadge rating={user.rating} small/></span>}
   </span>
   {progress&&<span className="other-user-progress" aria-hidden="true">{progress}</span>}
  </div>;

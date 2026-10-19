@@ -88,6 +88,7 @@ func (a *API) Handler() http.Handler {
 	auth := http.NewServeMux()
 	a.artworkRoutes(auth)
 	a.avatarRoutes(auth)
+	a.titlePreferenceRoutes(auth, false)
 	a.stremioCopyRoutes(auth)
 	auth.HandleFunc("GET /api/account/joint", a.protected(false, a.jointAccounts))
 	auth.HandleFunc("POST /api/account/joint", a.protected(false, a.jointAccounts))

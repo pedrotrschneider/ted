@@ -15,6 +15,7 @@ import (
 func (a *API) nativeHandler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/client/v1/accounts/{id}/avatar", a.nativeProtected(func(w http.ResponseWriter, r *http.Request, g accounts.NativeGrant) { a.visibleAvatar(w, r, g.User) }))
+	a.titlePreferenceRoutes(mux, true)
 	a.nativePlaybackRoutes(mux)
 	a.nativeMetadataRoutes(mux)
 	mux.HandleFunc("POST /api/client/v1/auth/login", a.nativeLogin)

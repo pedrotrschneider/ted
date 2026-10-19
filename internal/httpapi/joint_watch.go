@@ -3,6 +3,7 @@ package httpapi
 import (
 	"context"
 	"entertainmentdistrict/internal/catalog"
+	"entertainmentdistrict/internal/titleprefs"
 	"time"
 )
 
@@ -11,6 +12,7 @@ type jointWatch struct {
 	Name      string      `json:"name"`
 	Color     string      `json:"color"`
 	Watch     posterWatch `json:"watch"`
+	Rating    *int        `json:"rating"`
 }
 
 // Members may read only their own direct joint accounts. A joint login does not
@@ -54,6 +56,10 @@ func (a *API) jointWatches(ctx context.Context, user int64, media []catalog.Medi
 		}
 	}
 	for _, person := range people {
+		prefs, e := titleprefs.New(a.pool).States(ctx, person.AccountID, media)
+		if e != nil {
+			return nil, e
+		}
 		counts, e := a.catalog.ReleasedCounts(ctx, shows, person.AccountID, time.Now().In(a.CalendarLocation).Format(time.DateOnly))
 		if e != nil {
 			return nil, e
@@ -91,6 +97,9 @@ func (a *API) jointWatches(ctx context.Context, user int64, media []catalog.Medi
 		for _, m := range media {
 			v := person
 			v.Watch = states[m.ID]
+			if v.Watch.Seen {
+				v.Rating = prefs[m.Kind+"/"+m.ID].Rating
+			}
 			out[m.Kind+"/"+m.ID] = append(out[m.Kind+"/"+m.ID], v)
 		}
 	}
@@ -101,6 +110,10 @@ func (a *API) decorateJointWatch(ctx context.Context, user int64, titles []nativ
 	for i := range titles {
 		media[i] = titles[i].Media
 	}
+	prefs, err := titleprefs.New(a.pool).States(ctx, user, media)
+	if err != nil {
+		return err
+	}
 	values, err := a.jointWatches(ctx, user, media)
 	if err != nil {
 		return err
@@ -110,6 +123,8 @@ func (a *API) decorateJointWatch(ctx context.Context, user int64, titles []nativ
 		return err
 	}
 	for i := range titles {
+		state := prefs[titles[i].Media.Kind+"/"+titles[i].Media.ID]
+		titles[i].Watchlist, titles[i].UserRating = state.Watchlist, state.Rating
 		titles[i].UserWatches = other[titles[i].Media.Kind+"/"+titles[i].Media.ID]
 		titles[i].JointWatches = values[titles[i].Media.Kind+"/"+titles[i].Media.ID]
 	}

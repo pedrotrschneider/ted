@@ -26,6 +26,7 @@ func TestNativePlaybackFailureDiagnostics(t *testing.T) {
 			var log bytes.Buffer
 			a := &API{logger: slog.New(slog.NewJSONHandler(&log, nil))}
 			request := httptest.NewRequest("POST", "/api/client/v1/playback/sessions?token=PRIVATE", nil)
+			request.Header.Set("X-Teddy-Compatibility-Version", "0.2")
 			request.Header.Set("Authorization", "Bearer PRIVATE")
 			request.Pattern = "POST /api/client/v1/playback/sessions"
 			recorder := httptest.NewRecorder()

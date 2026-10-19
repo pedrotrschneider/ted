@@ -14,6 +14,7 @@ import (
 	"entertainmentdistrict/internal/catalog"
 	"entertainmentdistrict/internal/cinemeta"
 	"entertainmentdistrict/internal/metadata"
+	"entertainmentdistrict/internal/titleprefs"
 	"entertainmentdistrict/internal/watchstate"
 	"github.com/jackc/pgx/v5"
 )
@@ -541,6 +542,13 @@ func (a *API) nativeEpisodes(w http.ResponseWriter, r *http.Request, g accounts.
 }
 
 func (a *API) personalNative(ctx context.Context, user int64, row, after string) (nativePersonalPage, error) {
+	if row == "watchlist" {
+		page, err := titleprefs.New(a.pool).List(ctx, user, "watchlist", "", after, true)
+		if err != nil {
+			return nativePersonalPage{}, err
+		}
+		return a.preferenceNativePage(ctx, user, page)
+	}
 	loc := a.CalendarLocation
 	if loc == nil {
 		loc = time.UTC
@@ -619,8 +627,8 @@ func (a *API) nativeHome(w http.ResponseWriter, r *http.Request, g accounts.Nati
 		Issues      []nativeCatalogIssue `json:"issues"`
 		Unavailable bool                 `json:"unavailable"`
 	}
-	rows := make([]homeRow, 0, 5)
-	for _, name := range []string{"continue-watching", "new-releases", "next-up"} {
+	rows := make([]homeRow, 0, 6)
+	for _, name := range []string{"continue-watching", "new-releases", "next-up", "watchlist"} {
 		page, err := a.personalNative(r.Context(), g.User.ID, name, "")
 		if err != nil {
 			a.nativeWatchFailure(w, r, err)

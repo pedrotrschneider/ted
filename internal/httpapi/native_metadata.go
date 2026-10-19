@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"entertainmentdistrict/internal/titleprefs"
 	"entertainmentdistrict/internal/watchstate"
 	"errors"
 	"net/http"
@@ -164,7 +165,14 @@ func (a *API) nativeMetadataFilmography(w http.ResponseWriter, r *http.Request, 
 		a.nativeFail(w, r, err)
 		return
 	}
+	prefs, err := titleprefs.New(a.pool).States(r.Context(), g.User.ID, media)
+	if err != nil {
+		a.nativeFail(w, r, err)
+		return
+	}
 	type entryView struct {
+		Watchlist  bool `json:"watchlist"`
+		UserRating *int `json:"user_rating"`
 		metadata.FilmographyEntry
 		UserWatches  []watchstate.UserIndicator `json:"user_watches,omitempty"`
 		JointWatches []jointWatch               `json:"joint_watches,omitempty"`
@@ -173,6 +181,8 @@ func (a *API) nativeMetadataFilmography(w http.ResponseWriter, r *http.Request, 
 	for i, entry := range v.Items {
 		items[i].FilmographyEntry = entry
 		if entry.Media != nil {
+			state := prefs[entry.Media.Kind+"/"+entry.Media.ID]
+			items[i].Watchlist, items[i].UserRating = state.Watchlist, state.Rating
 			items[i].UserWatches = other[entry.Media.Kind+"/"+entry.Media.ID]
 			items[i].JointWatches = joint[entry.Media.Kind+"/"+entry.Media.ID]
 		}
