@@ -15,6 +15,12 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
+// Playback thresholds apply to live reports and durable offline replay.
+const (
+	ViewingQualificationPercent = 5
+	CompletionPercent           = 95
+)
+
 type NativeState struct {
 	Media      catalog.MediaIdentity `json:"media"`
 	Revision   int64                 `json:"revision"`
@@ -296,13 +302,13 @@ func (s *Store) applyNative(ctx context.Context, tx pgx.Tx, grant accounts.Nativ
 	}
 	// A brief preview is not viewing history or resume progress. Keep its
 	// immutable receipt and ordering so offline replay remains safe, but do not
-	// publish state until this session reaches 15%. Once qualified, seeking
+	// publish state until this session reaches 5%. Once qualified, seeking
 	// backwards remains legitimate progress. Explicit Next is a user decision.
 	qualificationDuration := duration
 	if qualificationDuration == 0 {
 		qualificationDuration = actual
 	}
-	qualified := started || e.Kind == "complete" || qualificationDuration > 0 && e.PositionMS*100 >= qualificationDuration*15 || qualificationDuration == 0 && e.NaturalEOF
+	qualified := started || e.Kind == "complete" || qualificationDuration > 0 && e.PositionMS*100 >= qualificationDuration*ViewingQualificationPercent || qualificationDuration == 0 && e.NaturalEOF
 	if !qualified {
 		if _, err = tx.Exec(ctx, `INSERT INTO native_watch_events(id,user_id,session_id,sequence,envelope,outcome) VALUES($1,$2,$3,$4,$5,'ignored')`, e.ID, grant.User.ID, e.SessionID, e.Sequence, raw); err != nil {
 			return NativeEventResult{}, err
@@ -345,7 +351,7 @@ func (s *Store) applyNative(ctx context.Context, tx pgx.Tx, grant accounts.Nativ
 	// an interruption, not evidence that the user finished the title.
 	// Next Episode is a deliberate completion action, with the actual offset
 	// retained in the immutable report. It never fabricates viewing duration.
-	complete := e.Kind == "complete" || e.Kind != "start" && (duration > 0 && e.PositionMS*10 >= duration*9 || duration == 0 && e.NaturalEOF)
+	complete := e.Kind == "complete" || e.Kind != "start" && (duration > 0 && e.PositionMS*100 >= duration*CompletionPercent || duration == 0 && e.NaturalEOF)
 	historyKind := ""
 	if !started {
 		if err = sourceprefs.RecordStarted(ctx, tx, e.SessionID, e.ID, e.ObservedAt); err != nil {
@@ -363,7 +369,7 @@ func (s *Store) applyNative(ctx context.Context, tx pgx.Tx, grant accounts.Nativ
 	} else if e.Kind == "stop" {
 		historyKind = "playback_stopped"
 	} else if e.Kind == "complete" {
-		// An explicit Next action after the 90% event still supplies a new,
+		// An explicit Next action after the 95% event still supplies a new,
 		// legitimate recency anchor without counting the same viewing twice.
 		historyKind = "ted_watched"
 	}

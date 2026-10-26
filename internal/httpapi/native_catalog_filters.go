@@ -38,7 +38,7 @@ func (a *API) nativeFilteredCatalog(w http.ResponseWriter, r *http.Request, gran
 	viewed := strings.ReplaceAll(previouslyViewedSQL, "wc.", "w.")
 	rows, err := a.pool.Query(r.Context(), `WITH media AS (
  SELECT c.cinemeta_id,EXISTS(SELECT 1 FROM media_mappings m WHERE m.movie_id=c.id) AS mapped,
- ($1!='series' OR NULLIF(split_part(c.cinemeta_id,':',2),'')::int>0) AND (`+viewed+` OR COALESCE((`+watchstate.NativeUnfinishedWatchSQL+`),false)) AS viewed,
+ ($1!='series' OR ted_episode_season(c.cinemeta_id)>0) AND (`+viewed+` OR COALESCE((`+watchstate.NativeUnfinishedWatchSQL+`),false)) AS viewed,
  COALESCE((w.state->>'played')::boolean,false) AS played,
  COALESCE((`+watchstate.NativeUnfinishedWatchSQL+`),false) AS unfinished
  FROM catalog_media c LEFT JOIN watch_current w ON w.media_id=c.id AND w.user_id=$3

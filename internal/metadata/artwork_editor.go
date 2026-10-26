@@ -96,7 +96,8 @@ func (s *Service) TitleArtwork(ctx context.Context, kind, id string, retry bool)
 	rows, err := s.pool.Query(ctx, `SELECT a.id::text,a.image_type,a.image_index,a.status,a.digest,a.error_code,a.generation,a.user_modified,e.id::text,COALESCE(e.item->>'Name',''),e.kind,e.provider,e.request,a.source_url<>''
  FROM metadata_artwork a JOIN metadata_entities e ON e.id=a.entity_id
  WHERE a.image_index=0 AND ((e.id=$1 AND a.image_type IN ('Primary','Logo','Banner','Backdrop'))
- OR ($3='series' AND e.request->>'title_id'=$2 AND e.kind='season' AND a.image_type='Primary'))
+ OR ($3='series' AND e.request->>'title_id'=$2 AND e.kind='season' AND a.image_type='Primary'
+ AND (NOT EXISTS(SELECT 1 FROM metadata_series_layouts WHERE title_id=$2) OR EXISTS(SELECT 1 FROM metadata_episode_layout l WHERE l.title_id=$2 AND l.season=(e.request->>'season')::int))))
  ORDER BY CASE e.kind WHEN 'season' THEN 1 ELSE 0 END,
  CASE WHEN e.kind='season' AND COALESCE((e.request->>'season')::int,0)=0 THEN 1 ELSE 0 END,
  COALESCE((e.request->>'season')::int,0),
@@ -177,6 +178,9 @@ func (s *Service) UploadArtwork(ctx context.Context, user int64, id string, gene
 	}
 	defer tx.Rollback(ctx)
 	if err = lockArtworkEditor(ctx, tx, user); err != nil {
+		return err
+	}
+	if err = lockArtworkSeries(ctx, tx, id); err != nil {
 		return err
 	}
 	slot, err := lockEditableSlot(ctx, tx, id)

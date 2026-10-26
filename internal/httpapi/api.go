@@ -87,6 +87,7 @@ func (a *API) Handler() http.Handler {
 	})
 	auth := http.NewServeMux()
 	a.artworkRoutes(auth)
+	a.seriesMetadataProviderRoutes(auth)
 	a.avatarRoutes(auth)
 	a.titlePreferenceRoutes(auth, false)
 	a.stremioCopyRoutes(auth)

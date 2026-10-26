@@ -40,6 +40,14 @@ func TestNewReleasesUsesNextUpAnchorAndCalendarWatchDate(t *testing.T) {
 	if err != nil || len(utc.Items) != 0 {
 		t.Fatal("same-day release qualified", utc, err)
 	}
+	localNext, err := s.PersonalRows(ctx, 1, "next-up", "", "2026-10-10", loc)
+	if err != nil || len(localNext.Items) != 0 {
+		t.Fatal("new release duplicated in Next Up", localNext, err)
+	}
+	utcNext, err := s.PersonalRows(ctx, 1, "next-up", "", "2026-10-10")
+	if err != nil || len(utcNext.Items) != 1 || utcNext.Items[0].Media.ID != "tt9100001:1:2" {
+		t.Fatal("same-day successor missing from Next Up", utcNext, err)
+	}
 	future, err := s.PersonalRows(ctx, 1, "new-releases", "", "2026-10-09", loc)
 	if err != nil || len(future.Items) != 0 {
 		t.Fatal("future episode qualified", future, err)
@@ -165,6 +173,27 @@ func TestNewReleasesFiltersBeforePaginationAndBindsItsCursor(t *testing.T) {
 	}
 	if _, err = s.PersonalRows(ctx, 1, "next-up", first.Next, "2026-10-13"); !errors.Is(err, ErrInvalid) {
 		t.Fatal("cross-row cursor accepted", err)
+	}
+	// Both partitions must fill pages before LIMIT, even when the other shelf
+	// has more than one page of newer anchors.
+	firstUp, err := s.PersonalRows(ctx, 1, "next-up", "", "2026-10-13")
+	if err != nil || len(firstUp.Items) != 50 || firstUp.Next == "" {
+		t.Fatal(firstUp, err)
+	}
+	nextUp, err := s.PersonalRows(ctx, 1, "next-up", firstUp.Next, "2026-10-13")
+	if err != nil || len(nextUp.Items) != 10 || nextUp.Next != "" {
+		t.Fatal(nextUp, err)
+	}
+	for _, page := range []NativeRowPage{firstUp, nextUp} {
+		for _, item := range page.Items {
+			if seen[item.Media.ID] {
+				t.Fatal("episode appears in both shelves or repeated Next Up page", item.Media)
+			}
+			seen[item.Media.ID] = true
+		}
+	}
+	if len(seen) != 120 {
+		t.Fatal("partition lost an eligible episode", len(seen))
 	}
 }
 

@@ -12,6 +12,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"entertainmentdistrict/internal/cinemeta"
 )
 
 var (
@@ -84,21 +86,29 @@ type Item struct {
 	LockedFields                 []string          `json:"LockedFields,omitempty"`
 }
 type Request struct {
-	OriginalLanguage         string          `json:"original_language,omitempty"`
-	OriginalLanguageChecked  bool            `json:"original_language_checked,omitempty"`
-	Kind                     string          `json:"kind"`
-	TitleID                  string          `json:"title_id,omitempty"`
-	ProviderID               string          `json:"provider_id,omitempty"`
-	ParentProviderID         string          `json:"parent_provider_id,omitempty"`
-	Season                   int             `json:"season,omitempty"`
-	Number                   int             `json:"number,omitempty"`
-	EpisodeName              string          `json:"episode_name,omitempty"`
-	EpisodeDate              string          `json:"episode_date,omitempty"`
-	TMDBBiographyChecked     bool            `json:"tmdb_biography_checked,omitempty"`
-	TMDBBiographyNameChecked bool            `json:"tmdb_biography_name_checked,omitempty"`
-	TVDBCastTypesChecked     bool            `json:"tvdb_cast_types_checked,omitempty"`
-	TVDBAppearanceChecked    bool            `json:"tvdb_appearance_checked,omitempty"`
-	BiographyMatch           *BiographyMatch `json:"biography_match,omitempty"`
+	OriginalLanguage         string             `json:"original_language,omitempty"`
+	OriginalLanguageChecked  bool               `json:"original_language_checked,omitempty"`
+	Kind                     string             `json:"kind"`
+	TitleID                  string             `json:"title_id,omitempty"`
+	ProviderID               string             `json:"provider_id,omitempty"`
+	ParentProviderID         string             `json:"parent_provider_id,omitempty"`
+	Season                   int                `json:"season,omitempty"`
+	Number                   int                `json:"number,omitempty"`
+	VideoID                  string             `json:"video_id,omitempty"`
+	FilmographyProviders     bool               `json:"filmography_providers,omitempty"`
+	FilmographyRevision      int64              `json:"filmography_revision,omitempty"`
+	EpisodeName              string             `json:"episode_name,omitempty"`
+	EpisodeDate              string             `json:"episode_date,omitempty"`
+	TMDBBiographyChecked     bool               `json:"tmdb_biography_checked,omitempty"`
+	TMDBBiographyNameChecked bool               `json:"tmdb_biography_name_checked,omitempty"`
+	TVDBCastTypesChecked     bool               `json:"tvdb_cast_types_checked,omitempty"`
+	TVDBAppearanceChecked    bool               `json:"tvdb_appearance_checked,omitempty"`
+	ScopedCastRequested      bool               `json:"scoped_cast_requested,omitempty"`
+	ScopedCastChecked        bool               `json:"scoped_cast_checked,omitempty"`
+	ScopedCastSignature      string             `json:"scoped_cast_signature,omitempty"`
+	SkipCast                 bool               `json:"skip_cast,omitempty"`
+	CanonicalEpisodes        []cinemeta.Episode `json:"-"`
+	BiographyMatch           *BiographyMatch    `json:"biography_match,omitempty"`
 }
 
 // BiographyMatch describes a heuristic text source, never a verified person ID.
@@ -128,12 +138,16 @@ type Document struct {
 	TMDBBiographyNameChecked bool
 	TVDBCastTypesChecked     bool
 	TVDBAppearanceChecked    bool
+	ScopedCastChecked        bool
 	BiographyMatch           *BiographyMatch
 	ProviderID               string
 	People                   []PersonSummary // nil means not fetched; empty means a confirmed complete list.
 	Credits                  []Credit
 	Images                   []Image
 	Children                 []Child
+	Structure                *cinemeta.Series
+	StructureCanonical       []cinemeta.Episode
+	FilmographyRevision      int64
 }
 type Child struct {
 	Request Request
@@ -156,6 +170,7 @@ type Asset struct {
 	UserModified bool   `json:"user_modified"`
 }
 type Snapshot struct {
+	ScopedCast       bool              `json:"scoped_cast"`
 	OriginalLanguage string            `json:"original_language,omitempty"`
 	Item             Item              `json:"item"`
 	Status           string            `json:"status"`

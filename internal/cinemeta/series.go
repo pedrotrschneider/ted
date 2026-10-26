@@ -2,9 +2,11 @@ package cinemeta
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -21,10 +23,13 @@ type Episode struct {
 	ReleaseDate string `json:"release_date,omitempty"`
 	Description string `json:"description,omitempty"`
 	Image       string `json:"image,omitempty"`
+	TVDBID      int64  `json:"tvdb_id,omitempty"`
+	TMDBID      int64  `json:"tmdb_id,omitempty"`
 }
 type Series struct {
 	Movie
-	Episodes []Episode `json:"episodes"`
+	Episodes        []Episode `json:"episodes"`
+	IdentityVersion int       `json:"-"`
 }
 type SeriesPage struct {
 	Series   []Movie `json:"series"`
@@ -44,15 +49,17 @@ func (c *Client) Series(ctx context.Context, id string) (Series, error) {
 		Meta *struct {
 			rawMovie
 			Videos *[]struct {
-				ID          string `json:"id"`
-				Name        string `json:"name"`
-				Title       string `json:"title"`
-				Season      *int   `json:"season"`
-				Episode     *int   `json:"episode"`
-				Released    string `json:"released"`
-				Overview    string `json:"overview"`
-				Description string `json:"description"`
-				Thumbnail   string `json:"thumbnail"`
+				ID          string          `json:"id"`
+				Name        string          `json:"name"`
+				Title       string          `json:"title"`
+				Season      *int            `json:"season"`
+				Episode     *int            `json:"episode"`
+				Released    string          `json:"released"`
+				Overview    string          `json:"overview"`
+				Description string          `json:"description"`
+				Thumbnail   string          `json:"thumbnail"`
+				TVDBID      json.RawMessage `json:"tvdb_id"`
+				TMDBID      json.RawMessage `json:"moviedb_id"`
 			} `json:"videos"`
 		} `json:"meta"`
 	}
@@ -90,13 +97,30 @@ func (c *Client) Series(ctx context.Context, id string) (Series, error) {
 		if !textOK(description, 20000) {
 			description = ""
 		}
-		result.Episodes = append(result.Episodes, Episode{ID: v.ID, Name: name, Season: *v.Season, Number: *v.Episode, ReleaseDate: episodeReleaseDate(v.Released), Description: description, Image: PosterURL(v.Thumbnail)})
+		result.Episodes = append(result.Episodes, Episode{ID: v.ID, Name: name, Season: *v.Season, Number: *v.Episode, ReleaseDate: episodeReleaseDate(v.Released), Description: description, Image: PosterURL(v.Thumbnail), TVDBID: externalEpisodeID(v.TVDBID), TMDBID: externalEpisodeID(v.TMDBID)})
 	}
 	sort.Slice(result.Episodes, func(i, j int) bool {
 		a, b := result.Episodes[i], result.Episodes[j]
 		return a.Season < b.Season || a.Season == b.Season && a.Number < b.Number
 	})
 	return result, nil
+}
+
+// External IDs are hints for verified provider association, never TED identity.
+// Cinemeta emits both JSON numbers and strings; malformed optional hints stay absent.
+func externalEpisodeID(raw json.RawMessage) int64 {
+	var n int64
+	if json.Unmarshal(raw, &n) == nil && n > 0 && n < 1000000000000000 {
+		return n
+	}
+	var text string
+	if json.Unmarshal(raw, &text) == nil {
+		n, err := strconv.ParseInt(text, 10, 64)
+		if err == nil && n > 0 && n < 1000000000000000 {
+			return n
+		}
+	}
+	return 0
 }
 
 // RegularEpisodeCount excludes specials from show library-completion indicators.

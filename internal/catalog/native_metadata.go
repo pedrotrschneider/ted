@@ -36,8 +36,15 @@ func (s *Store) NativeTitle(ctx context.Context, kind, id string) (cinemeta.Movi
 func (s *Store) NativeSeries(ctx context.Context, id string) (cinemeta.Series, error) {
 	var show cinemeta.Series
 	// One statement gives metadata and schedule from the same snapshot.
-	err := s.pool.QueryRow(ctx, `SELECT n.metadata,sh.episodes FROM native_catalog_titles n JOIN catalog_episode_schedules sh ON sh.title_id=n.title_id WHERE n.kind='series' AND n.title_id=$1`, id).Scan(&show.Movie, &show.Episodes)
+	err := s.pool.QueryRow(ctx, `SELECT n.metadata,sh.episodes,sh.identity_version FROM native_catalog_titles n JOIN catalog_episode_schedules sh ON sh.title_id=n.title_id WHERE n.kind='series' AND n.title_id=$1`, id).Scan(&show.Movie, &show.Episodes, &show.IdentityVersion)
 	return show, err
+}
+
+// CanonicalSeries retains source identities independently of provider ordering.
+func (s *Store) CanonicalSeries(ctx context.Context, id string) (cinemeta.Series, error) {
+	var series cinemeta.Series
+	err := s.pool.QueryRow(ctx, `SELECT n.metadata,COALESCE(sh.canonical_episodes,sh.episodes) FROM native_catalog_titles n JOIN catalog_episode_schedules sh ON sh.title_id=n.title_id WHERE n.kind='series' AND n.title_id=$1`, id).Scan(&series.Movie, &series.Episodes)
+	return series, err
 }
 
 func saveNativeTitleTx(ctx context.Context, tx pgx.Tx, title cinemeta.Movie, started time.Time) error {

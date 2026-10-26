@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"strconv"
 	"strings"
 
 	"entertainmentdistrict/internal/accounts"
@@ -24,6 +23,7 @@ type TitleItem struct {
 	Error     string `json:"error"`
 	Revision  int64  `json:"revision"`
 	State     State  `json:"-"`
+	Season    *int   `json:"season,omitempty"`
 }
 type TitleState struct {
 	Items   []TitleItem `json:"items"`
@@ -32,7 +32,7 @@ type TitleState struct {
 
 func titleState(ctx context.Context, tx pgx.Tx, user int64, id string, all ...bool) (TitleState, error) {
 	out := TitleState{Items: []TitleItem{}}
-	rows, err := tx.Query(ctx, `SELECT c.cinemeta_id,c.id::text,COALESCE(w.state,'{"played":false,"position_ticks":0,"play_count":0,"last_played":null}'),COALESCE(w.revision,0),COALESCE(s.published,false),true,false,''
+	rows, err := tx.Query(ctx, `SELECT c.cinemeta_id,c.id::text,COALESCE(w.state,'{"played":false,"position_ticks":0,"play_count":0,"last_played":null}'),COALESCE(w.revision,0),COALESCE(s.published,false),true,false,'',CASE WHEN c.kind='episode' THEN ted_episode_season(c.cinemeta_id) END
  FROM catalog_media c
  LEFT JOIN streaming_items s ON s.movie_id=c.id
  LEFT JOIN watch_current w ON w.media_id=c.id AND w.user_id=$1
@@ -45,7 +45,7 @@ func titleState(ctx context.Context, tx pgx.Tx, user int64, id string, all ...bo
 	defer rows.Close()
 	for rows.Next() {
 		var item TitleItem
-		if err = rows.Scan(&item.ID, &item.Media, &item.State, &item.Revision, &item.Available, &item.Writable, &item.Pending, &item.Error); err != nil {
+		if err = rows.Scan(&item.ID, &item.Media, &item.State, &item.Revision, &item.Available, &item.Writable, &item.Pending, &item.Error, &item.Season); err != nil {
 			return out, err
 		}
 		item.Played = item.State.Played
@@ -129,8 +129,7 @@ func (s *Store) SetTitle(ctx context.Context, who accounts.Identity, id, version
 			continue
 		}
 		if season != nil {
-			parts := strings.Split(item.ID, ":")
-			if len(parts) != 3 || parts[1] != strconv.Itoa(*season) {
+			if item.Season == nil || *item.Season != *season {
 				continue
 			}
 		}

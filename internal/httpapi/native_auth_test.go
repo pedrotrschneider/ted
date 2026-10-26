@@ -23,7 +23,7 @@ func nativeCall(t *testing.T, h http.Handler, method, path, token string, input 
 		body = string(b)
 	}
 	r := httptest.NewRequest(method, "https://ted.example"+path, strings.NewReader(body))
-	r.Header.Set("X-Teddy-Compatibility-Version", "0.2")
+	r.Header.Set("X-Teddy-Compatibility-Version", "0.3")
 	r.Header.Set("X-Teddy-Compatibility-Version", tedversion.Compatibility())
 	r.RemoteAddr = "127.0.0.1:54321"
 	if token != "" {
@@ -64,7 +64,7 @@ func TestNativeHTTPRotationIsolationAndLogoutScopes(t *testing.T) {
 	requireStatus(t, nativeCall(t, h, "GET", "/api/client/v1/auth/me", a.AccessToken, nil, browser), 401)
 	// Browser APIs refuse bearer credentials rather than ignore a competing user.
 	r := httptest.NewRequest("GET", "https://ted.example/api/auth/me", nil)
-	r.Header.Set("X-Teddy-Compatibility-Version", "0.2")
+	r.Header.Set("X-Teddy-Compatibility-Version", "0.3")
 	r.AddCookie(browser)
 	r.Header.Set("Authorization", "Bearer "+a.AccessToken)
 	w := httptest.NewRecorder()
@@ -109,14 +109,14 @@ func TestNativeHTTPPurposeHeaderOriginAndSharedLoginLimits(t *testing.T) {
 		}
 	}
 	r := httptest.NewRequest("GET", "https://ted.example/api/client/v1/auth/me", nil)
-	r.Header.Set("X-Teddy-Compatibility-Version", "0.2")
+	r.Header.Set("X-Teddy-Compatibility-Version", "0.3")
 	r.Header.Add("Authorization", "Bearer "+pair.AccessToken)
 	r.Header.Add("Authorization", "Bearer "+pair.AccessToken)
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, r)
 	requireStatus(t, w, 401)
 	r = httptest.NewRequest("POST", "https://ted.example/api/client/v1/auth/refresh", strings.NewReader(`{"refresh_token":"`+pair.RefreshToken+`"}`))
-	r.Header.Set("X-Teddy-Compatibility-Version", "0.2")
+	r.Header.Set("X-Teddy-Compatibility-Version", "0.3")
 	r.Header.Set("Origin", "https://attacker.example")
 	w = httptest.NewRecorder()
 	h.ServeHTTP(w, r)

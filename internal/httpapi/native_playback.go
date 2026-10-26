@@ -104,21 +104,22 @@ type nativeMetadata struct {
 	Episode *cinemeta.Episode `json:"episode,omitempty"`
 }
 type nativeTitleDetail struct {
-	Watchlist      bool                       `json:"watchlist"`
-	UserRating     *int                       `json:"user_rating"`
-	UserWatches    []watchstate.UserIndicator `json:"user_watches,omitempty"`
-	JointWatches   []jointWatch               `json:"joint_watches,omitempty"`
-	Media          catalog.MediaIdentity      `json:"media"`
-	Metadata       nativeMetadata             `json:"metadata"`
-	State          watchstate.NativeState     `json:"watch_state"`
-	EpisodeCounts  *nativeEpisodeCounts       `json:"episode_counts,omitempty"`
-	Ready          bool                       `json:"mapped_ready"`
-	Local          bool                       `json:"local_available"`
-	Parent         *catalog.MediaIdentity     `json:"parent,omitempty"`
-	Seasons        []int                      `json:"seasons,omitempty"`
-	MetadataStatus string                     `json:"metadata_status"`
-	Issues         []nativeCatalogIssue       `json:"issues"`
-	Enrichment     *metadata.Snapshot         `json:"enrichment,omitempty"`
+	CanChangeMetadataProvider bool                       `json:"can_change_metadata_provider"`
+	Watchlist                 bool                       `json:"watchlist"`
+	UserRating                *int                       `json:"user_rating"`
+	UserWatches               []watchstate.UserIndicator `json:"user_watches,omitempty"`
+	JointWatches              []jointWatch               `json:"joint_watches,omitempty"`
+	Media                     catalog.MediaIdentity      `json:"media"`
+	Metadata                  nativeMetadata             `json:"metadata"`
+	State                     watchstate.NativeState     `json:"watch_state"`
+	EpisodeCounts             *nativeEpisodeCounts       `json:"episode_counts,omitempty"`
+	Ready                     bool                       `json:"mapped_ready"`
+	Local                     bool                       `json:"local_available"`
+	Parent                    *catalog.MediaIdentity     `json:"parent,omitempty"`
+	Seasons                   []int                      `json:"seasons,omitempty"`
+	MetadataStatus            string                     `json:"metadata_status"`
+	Issues                    []nativeCatalogIssue       `json:"issues"`
+	Enrichment                *metadata.Snapshot         `json:"enrichment,omitempty"`
 }
 
 // A known schedule may have zero released main-season episodes. Missing counts

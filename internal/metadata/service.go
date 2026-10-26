@@ -83,6 +83,7 @@ func New(pool *pgxpool.Pool, reader Reader, imageDir string, logger *slog.Logger
 	river.AddWorker(workers, &creditWorker{s: s})
 	river.AddWorker(workers, &choiceWorker{s: s})
 	river.AddWorker(workers, &overrideWorker{s: s})
+	river.AddWorker(workers, &seriesLayoutWorker{s: s})
 	q, e := river.NewClient(riverpgxv5.New(pool), &river.Config{Schema: schema, Workers: workers, Queues: map[string]river.QueueConfig{"native_metadata": {MaxWorkers: workerConcurrency}, "native_artwork": {MaxWorkers: workerConcurrency}}, JobTimeout: 2 * time.Minute, RescueStuckJobsAfter: 4 * time.Minute, Logger: s.logger})
 	if e != nil {
 		s.Close()
@@ -118,6 +119,12 @@ func identity(provider string, r Request) (string, error) {
 			return fmt.Sprintf("season:%s:%d", r.TitleID, r.Season), nil
 		}
 	case "episode":
+		if r.VideoID != "" {
+			if cinemeta.ValidVideoID(r.VideoID) && strings.HasPrefix(r.VideoID, r.TitleID+":") {
+				return "episode:" + r.VideoID, nil
+			}
+			return "", ErrInvalid
+		}
 		if titleID.MatchString(r.TitleID) && r.Season >= 0 && r.Season <= 9999 && r.Number >= 0 && r.Number <= 99999 {
 			return fmt.Sprintf("episode:%s:%d:%d", r.TitleID, r.Season, r.Number), nil
 		}
@@ -164,22 +171,28 @@ func (s *Service) Ensure(ctx context.Context, provider string, r Request, fallba
 	if provider != "Tmdb" && provider != "Tvdb" {
 		return Snapshot{}, ErrInvalid
 	}
-	if r.Kind == "movie" && provider != "Tmdb" || (r.Kind == "series" || r.Kind == "season" || r.Kind == "episode") && provider != "Tvdb" {
+	if r.Kind == "movie" && provider != "Tmdb" {
 		return Snapshot{}, ErrInvalid
-	}
-	enabled, e := s.Configured(ctx, provider)
-	if e != nil {
-		return Snapshot{}, e
 	}
 	tx, e := s.pool.Begin(ctx)
 	if e != nil {
 		return Snapshot{}, e
 	}
 	defer tx.Rollback(ctx)
+	if r.Kind == "series" || r.Kind == "season" || r.Kind == "episode" {
+		provider, e = lockSeriesProvider(ctx, tx, r.TitleID)
+		if e != nil {
+			return Snapshot{}, e
+		}
+	}
+	enabled, e := s.Configured(ctx, provider)
+	if e != nil {
+		return Snapshot{}, e
+	}
 	parent := ""
 	if r.Kind == "season" || r.Kind == "episode" {
 		pr := Request{Kind: "series", TitleID: r.TitleID}
-		parent, e = s.insert(ctx, tx, "Tvdb", pr, seed(pr), "")
+		parent, e = s.insert(ctx, tx, provider, pr, seed(pr), "")
 		if e != nil {
 			return Snapshot{}, e
 		}
@@ -203,6 +216,28 @@ func (s *Service) Ensure(ctx context.Context, provider string, r Request, fallba
 	}
 	if e = s.queueEntity(ctx, tx, id, false, enabled); e != nil {
 		return Snapshot{}, e
+	}
+	if (r.Kind == "season" || r.Kind == "episode") && !r.SkipCast {
+		var requested bool
+		var skipped bool
+		var status, previous string
+		if e = tx.QueryRow(ctx, `SELECT COALESCE((request->>'scoped_cast_requested')::boolean,false),COALESCE((request->>'skip_cast')::boolean,false),status,COALESCE(request->>'scoped_cast_signature','') FROM metadata_entities WHERE id=$1 FOR UPDATE`, id).Scan(&requested, &skipped, &status, &previous); e != nil {
+			return Snapshot{}, e
+		}
+		_, signature, err := castScope(ctx, tx, r)
+		if err != nil {
+			return Snapshot{}, err
+		}
+		if skipped || !requested || previous != signature {
+			if _, e = tx.Exec(ctx, `UPDATE metadata_entities SET request=(request-'skip_cast')||jsonb_build_object('scoped_cast_requested',true,'scoped_cast_signature',$2::text) WHERE id=$1`, id, signature); e != nil {
+				return Snapshot{}, e
+			}
+			if skipped || status == "ready" || status == "partial" || status == "failed" || status == "missing" || requested && previous != "" && previous != signature {
+				if e = s.queueEntity(ctx, tx, id, true, enabled); e != nil {
+					return Snapshot{}, e
+				}
+			}
+		}
 	}
 	if e = tx.Commit(ctx); e != nil {
 		return Snapshot{}, e
@@ -319,7 +354,9 @@ func (s *Service) Get(ctx context.Context, id string) (Snapshot, error) {
 	if e != nil {
 		return v, e
 	}
+	v.normalizeTMDBCast()
 	v.BiographyMatch = request.BiographyMatch
+	v.ScopedCast = request.ScopedCastChecked
 	v.OriginalLanguage = request.OriginalLanguage
 	if v.OriginalLanguage == "" && (request.Kind == "season" || request.Kind == "episode") {
 		// Audio follows the show's origin, not the language of translated descriptions.
@@ -438,6 +475,16 @@ func (s *Service) RequestPerson(ctx context.Context, id string) (Snapshot, error
 	}
 	nameFallbackPending := item.ProviderIDs["Tmdb"] == "" && item.ProviderIDs["Imdb"] == "" && !request.TMDBBiographyNameChecked
 	force := fallbackEnabled && status == "ready" && strings.TrimSpace(item.Overview) == "" && (!request.TMDBBiographyChecked || nameFallbackPending) && !biographyLocked
+	var filmographyRevision int64
+	if e = tx.QueryRow(ctx, `SELECT COALESCE(sum(revision),0)::bigint FROM metadata_series_providers`).Scan(&filmographyRevision); e != nil {
+		return Snapshot{}, e
+	}
+	if filmographyRevision > request.FilmographyRevision && (status == "ready" || status == "partial" || status == "failed") {
+		force = true
+		if _, e = tx.Exec(ctx, `UPDATE metadata_entities SET request=request||jsonb_build_object('filmography_revision',$2::bigint,'filmography_providers',true) WHERE id=$1`, id, filmographyRevision); e != nil {
+			return Snapshot{}, e
+		}
+	}
 	// Upgrade old filmographies once, retaining cached data during the job.
 	if enabled && v.Provider == "Tvdb" && !request.TVDBAppearanceChecked && (status == "ready" || status == "partial") && !(item.LockData != nil && *item.LockData) {
 		force = true
@@ -461,22 +508,28 @@ func (s *Service) Refresh(ctx context.Context, id string) (Snapshot, error) {
 	if e != nil {
 		return Snapshot{}, e
 	}
-	enabled, e := s.Configured(ctx, v.Provider)
-	if e != nil {
-		return Snapshot{}, e
-	}
 	tx, e := s.pool.Begin(ctx)
 	if e != nil {
 		return Snapshot{}, e
 	}
 	defer tx.Rollback(ctx)
+	if v.Kind != "person" {
+		if _, e = lockSeriesProvider(ctx, tx, v.Request.TitleID); e != nil {
+			return Snapshot{}, e
+		}
+	}
 	var kind, imdb string
-	if e = tx.QueryRow(ctx, `SELECT kind,COALESCE(request->>'title_id','') FROM metadata_entities WHERE id=$1 FOR UPDATE`, id).Scan(&kind, &imdb); e != nil {
+	var provider string
+	if e = tx.QueryRow(ctx, `SELECT kind,COALESCE(request->>'title_id',''),provider FROM metadata_entities WHERE id=$1 FOR UPDATE`, id).Scan(&kind, &imdb, &provider); e != nil {
+		return Snapshot{}, e
+	}
+	enabled, e := s.Configured(ctx, provider)
+	if e != nil {
 		return Snapshot{}, e
 	}
 	ids := []string{id}
 	if kind == "series" {
-		rows, e := tx.Query(ctx, `SELECT id::text FROM metadata_entities WHERE request->>'title_id'=$1 AND id<>$2 AND kind IN ('season','episode') AND generation>0 ORDER BY id`, imdb, id)
+		rows, e := tx.Query(ctx, `SELECT id::text FROM metadata_entities WHERE request->>'title_id'=$1 AND id<>$2 AND kind IN ('season','episode') AND (status<>'new' OR applied_generation>0) ORDER BY id`, imdb, id)
 		if e != nil {
 			return Snapshot{}, e
 		}
@@ -540,12 +593,29 @@ func (s *Service) apply(ctx context.Context, v entity, d Document, partial error
 	}
 	defer tx.Rollback(ctx)
 	var generation int64
+	if v.Kind != "person" && v.Request.TitleID != "" {
+		if _, e = lockSeriesProvider(ctx, tx, v.Request.TitleID); e != nil {
+			return e
+		}
+	}
 	var old Item
 	if e = tx.QueryRow(ctx, `SELECT generation,item FROM metadata_entities WHERE id=$1 FOR UPDATE`, v.ID).Scan(&generation, &old); e != nil {
 		return e
 	}
 	if generation != v.Generation {
 		return nil
+	}
+	if v.Kind == "series" {
+		aliases, _ := json.Marshal(map[string]string{v.Provider: d.ProviderID})
+		if _, e = tx.Exec(ctx, `UPDATE metadata_series_providers SET provider_ids=provider_ids||$2::jsonb WHERE title_id=$1 AND provider=$3`, v.Request.TitleID, aliases, v.Provider); e != nil {
+			return e
+		}
+	}
+	if d.Structure != nil {
+		v.ProviderID = d.ProviderID
+		if e = s.applySeriesStructure(ctx, tx, v, d.Structure, d.StructureCanonical, d.Children); e != nil {
+			return e
+		}
 	}
 	d.Item.ID = v.ID
 	d.Item.Type = old.Type
@@ -582,7 +652,7 @@ func (s *Service) apply(ctx context.Context, v entity, d Document, partial error
 	if d.Credits != nil {
 		refs := []string{}
 		for _, c := range d.Credits {
-			if !positiveID.MatchString(c.ID) || (c.Kind != "movie" && c.Kind != "series") || c.Item.Name == "" || c.Provider != v.Provider {
+			if !positiveID.MatchString(c.ID) || (c.Kind != "movie" && c.Kind != "series") || c.Item.Name == "" || (c.Provider != "Tmdb" && c.Provider != "Tvdb") {
 				return ErrPartial
 			}
 			ref := guid(v.ID + ":" + c.Provider + ":" + c.Kind + ":" + c.ID)
@@ -626,6 +696,11 @@ func (s *Service) apply(ctx context.Context, v entity, d Document, partial error
 					partial = errors.Join(partial, ErrAmbiguous)
 					continue
 				}
+				if r.VideoID != "" && r.VideoID != ep.ID || v.Provider == "Tmdb" && ep.TMDBID > 0 && r.ProviderID != fmt.Sprint(ep.TMDBID) || v.Provider == "Tvdb" && ep.TVDBID > 0 && r.ProviderID != fmt.Sprint(ep.TVDBID) {
+					partial = errors.Join(partial, ErrAmbiguous)
+					continue
+				}
+				r.VideoID = ep.ID
 				r.EpisodeName = ep.Name
 				r.EpisodeDate = ep.ReleaseDate
 				fallback = seed(r)
@@ -677,6 +752,12 @@ func (s *Service) apply(ctx context.Context, v entity, d Document, partial error
 	}
 	provenance, _ := json.Marshal(sources)
 	requestValues := map[string]any{}
+	if d.FilmographyRevision > 0 {
+		requestValues["filmography_revision"] = d.FilmographyRevision
+	}
+	if d.ScopedCastChecked {
+		requestValues["scoped_cast_checked"] = true
+	}
 	if d.OriginalLanguageChecked || (partial == nil && (v.Kind == "movie" || v.Kind == "series")) {
 		requestValues["original_language_checked"] = true
 		requestValues["original_language"] = d.OriginalLanguage

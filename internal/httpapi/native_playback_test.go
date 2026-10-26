@@ -83,7 +83,7 @@ func createNativeHTTPPlayback(t *testing.T, h http.Handler, token string) stream
 
 func nativeMediaCall(h http.Handler, method, path, token, rangeHeader string) *httptest.ResponseRecorder {
 	r := httptest.NewRequest(method, "https://ted.example"+path, nil)
-	r.Header.Set("X-Teddy-Compatibility-Version", "0.2")
+	r.Header.Set("X-Teddy-Compatibility-Version", "0.3")
 	if token != "" {
 		r.Header.Set("Authorization", "Bearer "+token)
 	}
@@ -187,7 +187,7 @@ func TestNativeMediaExpiryRefreshOpenBodyAndRangePinning(t *testing.T) {
 		}
 	}
 	r := httptest.NewRequest("GET", "https://ted.example"+session.MediaURL, nil)
-	r.Header.Set("X-Teddy-Compatibility-Version", "0.2")
+	r.Header.Set("X-Teddy-Compatibility-Version", "0.3")
 	r.Header.Set("Authorization", "Bearer "+pair.AccessToken)
 	w := httptest.NewRecorder()
 	held := &heldNativeBody{ResponseWriter: w, entered: make(chan struct{}), release: make(chan struct{})}
@@ -278,7 +278,7 @@ func TestNativeMappedRewatchResumesAndCompletionClearsPosition(t *testing.T) {
 	}
 	finish := []watchstate.NativeEvent{
 		{ID: "55555555-5555-4555-8555-555555555555", SessionID: resume.ID, Sequence: 1, Media: resume.Media, Kind: "start", PositionMS: 40000, ObservedAt: at, Origin: "live"},
-		{ID: "66666666-6666-4666-8666-666666666666", SessionID: resume.ID, Sequence: 2, Media: resume.Media, Kind: "stop", PositionMS: 90000, ObservedAt: at, Origin: "live"},
+		{ID: "66666666-6666-4666-8666-666666666666", SessionID: resume.ID, Sequence: 2, Media: resume.Media, Kind: "stop", PositionMS: 95000, ObservedAt: at, Origin: "live"},
 	}
 	requireStatus(t, nativeCall(t, h, "POST", "/api/client/v1/playback/events", pair.AccessToken, map[string]any{"events": finish}, nil), 200)
 	completed := createNativeHTTPPlayback(t, h, pair.AccessToken)

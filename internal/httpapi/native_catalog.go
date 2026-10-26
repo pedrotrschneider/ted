@@ -335,9 +335,9 @@ func (a *API) loadNativeSeries(ctx context.Context, id string, refresh bool) (ci
 		return cinemeta.Series{}, "", cinemeta.ErrInvalid
 	}
 	if !refresh {
-		if cached, err := a.catalog.NativeSeries(ctx, id); err == nil {
+		if cached, err := a.catalog.NativeSeries(ctx, id); err == nil && cached.IdentityVersion > 0 {
 			return cached, "cached", nil
-		} else if !errors.Is(err, pgx.ErrNoRows) {
+		} else if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 			return cinemeta.Series{}, "", err
 		}
 	}
@@ -350,7 +350,11 @@ func (a *API) loadNativeSeries(ctx context.Context, id string, refresh bool) (ci
 		if err = a.catalog.SaveSchedule(ctx, show, started); err != nil {
 			return cinemeta.Series{}, "", err
 		}
-		return show, "fresh", nil
+		projected, readErr := a.catalog.NativeSeries(ctx, id)
+		if readErr != nil {
+			return cinemeta.Series{}, "", readErr
+		}
+		return projected, "fresh", nil
 	}
 	cached, cacheErr := a.catalog.NativeSeries(ctx, id)
 	if cacheErr == nil {
@@ -371,6 +375,7 @@ func (a *API) nativeCatalogDetail(w http.ResponseWriter, r *http.Request, g acco
 			return
 		}
 		detail := nativeDetail(show.Movie, status)
+		detail.CanChangeMetadataProvider = g.User.Role == "admin" && a.Metadata != nil
 		seen := map[int]bool{}
 		for _, e := range show.Episodes {
 			if !seen[e.Season] {
@@ -459,8 +464,25 @@ func (a *API) nativeCatalogDetail(w http.ResponseWriter, r *http.Request, g acco
 				}
 			}
 			if !found {
-				a.catalogFailure(w, r, cinemeta.ErrNotFound)
-				return
+				// A provider may exclude an episode that still has retained viewing
+				// or a saved source. Keep its original identity directly accessible.
+				canonical, readErr := a.catalog.CanonicalSeries(r.Context(), show.ID)
+				if readErr != nil {
+					a.catalogFailure(w, r, readErr)
+					return
+				}
+				for _, ep := range canonical.Episodes {
+					if ep.ID == id {
+						detail = nativeEpisodeDetail(show.Movie, ep, "retained")
+						detail.Issues = append(detail.Issues, nativeCatalogIssue{Code: "episode_outside_provider_structure"})
+						found = true
+						break
+					}
+				}
+				if !found {
+					a.catalogFailure(w, r, cinemeta.ErrNotFound)
+					return
+				}
 			}
 			if status == "cached" {
 				detail.Issues = append(detail.Issues, nativeCatalogIssue{Code: "catalog_cached"})
@@ -529,7 +551,7 @@ func (a *API) nativeEpisodes(w http.ResponseWriter, r *http.Request, g accounts.
 	if a.Metadata != nil {
 		for i := range page.Titles {
 			ep := page.Titles[i].Metadata.Episode
-			v, e := a.Metadata.Lookup(r.Context(), metadata.Request{Kind: "episode", TitleID: show.ID, Season: ep.Season, Number: ep.Number})
+			v, e := a.Metadata.Lookup(r.Context(), metadata.Request{Kind: "episode", TitleID: show.ID, VideoID: ep.ID, Season: ep.Season, Number: ep.Number})
 			if e == nil {
 				page.Titles[i].Enrichment = &v
 			} else if !errors.Is(e, pgx.ErrNoRows) {

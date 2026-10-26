@@ -24,7 +24,7 @@ func (p *Providers) Artwork(ctx context.Context, provider string, r Request) ([]
 	}
 	switch provider {
 	case "Tmdb":
-		if r.Kind != "movie" {
+		if r.Kind != "movie" && r.Kind != "series" && r.Kind != "season" {
 			return nil, ErrInvalid
 		}
 		type image struct {
@@ -41,11 +41,29 @@ func (p *Providers) Artwork(ctx context.Context, provider string, r Request) ([]
 			return nil, ErrUnconfigured
 		}
 		// Descriptions stay English; an artwork editor offers every language.
-		if err := p.request(ctx, "GET", p.tmdbURL+"/movie/"+r.ProviderID+"/images", p.config.TMDBToken, nil, &v); err != nil {
+		path := "/movie/" + r.ProviderID + "/images"
+		if r.Kind == "series" {
+			path = "/tv/" + r.ProviderID + "/images"
+		}
+		if r.Kind == "season" {
+			if !positiveID.MatchString(r.ParentProviderID) {
+				return nil, ErrInvalid
+			}
+			path = fmt.Sprintf("/tv/%s/season/%d/images", r.ParentProviderID, r.Season)
+		}
+		if err := p.request(ctx, "GET", p.tmdbURL+path, p.config.TMDBToken, nil, &v); err != nil {
 			return nil, err
 		}
-		if fmt.Sprint(v.ID) != r.ProviderID || v.Posters == nil || v.Backdrops == nil || v.Logos == nil {
+		if fmt.Sprint(v.ID) != r.ProviderID || v.Posters == nil || (r.Kind != "season" && (v.Backdrops == nil || v.Logos == nil)) {
 			return nil, ErrPartial
+		}
+		if v.Backdrops == nil {
+			empty := []image{}
+			v.Backdrops = &empty
+		}
+		if v.Logos == nil {
+			empty := []image{}
+			v.Logos = &empty
 		}
 		for _, group := range []struct {
 			kind   string

@@ -14,16 +14,21 @@ import (
 )
 
 type NativeSeriesWatch struct {
-	Version      string            `json:"version"`
-	Items        []NativeState     `json:"items"`
-	ReleaseDates map[string]string `json:"-"`
+	Version      string                  `json:"version"`
+	Items        []NativeSeriesWatchItem `json:"items"`
+	ReleaseDates map[string]string       `json:"-"`
+	Seasons      map[string]int          `json:"-"`
+}
+type NativeSeriesWatchItem struct {
+	NativeState
+	Season int `json:"season"`
 }
 
 func nativeSeriesWatch(ctx context.Context, tx pgx.Tx, user int64, id string, season *int) (NativeSeriesWatch, error) {
 	if !cinemeta.ValidID(id) || season != nil && (*season < 0 || *season > 9999) {
 		return NativeSeriesWatch{}, ErrInvalid
 	}
-	rows, err := tx.Query(ctx, `SELECT ep.id,COALESCE(ep.release_date,''),COALESCE(w.revision,0),COALESCE(w.state,'{"played":false,"position_ticks":0,"play_count":0,"last_played":null}'::jsonb),w.duration_ms
+	rows, err := tx.Query(ctx, `SELECT ep.id,COALESCE(ep.release_date,''),COALESCE(w.revision,0),COALESCE(w.state,'{"played":false,"position_ticks":0,"play_count":0,"last_played":null}'::jsonb),w.duration_ms,ep.season
  FROM catalog_episode_schedules sh CROSS JOIN LATERAL jsonb_to_recordset(sh.episodes) ep(id text,season int,number int,release_date text)
  LEFT JOIN catalog_media c ON c.kind='episode' AND c.cinemeta_id=ep.id
  LEFT JOIN watch_current w ON w.media_id=c.id AND w.user_id=$1
@@ -32,17 +37,19 @@ func nativeSeriesWatch(ctx context.Context, tx pgx.Tx, user int64, id string, se
 		return NativeSeriesWatch{}, err
 	}
 	defer rows.Close()
-	out := NativeSeriesWatch{Items: []NativeState{}, ReleaseDates: map[string]string{}}
+	out := NativeSeriesWatch{Items: []NativeSeriesWatchItem{}, ReleaseDates: map[string]string{}, Seasons: map[string]int{}}
 	for rows.Next() {
 		var ep, released string
 		var rev int64
 		var state State
 		var duration *int64
-		if err = rows.Scan(&ep, &released, &rev, &state, &duration); err != nil {
+		var displaySeason int
+		if err = rows.Scan(&ep, &released, &rev, &state, &duration, &displaySeason); err != nil {
 			return out, err
 		}
 		out.ReleaseDates[ep] = released
-		out.Items = append(out.Items, nativeState(catalog.MediaIdentity{Kind: "episode", ID: ep}, rev, state, duration))
+		out.Seasons[ep] = displaySeason
+		out.Items = append(out.Items, NativeSeriesWatchItem{nativeState(catalog.MediaIdentity{Kind: "episode", ID: ep}, rev, state, duration), displaySeason})
 	}
 	if err = rows.Err(); err != nil {
 		return out, err

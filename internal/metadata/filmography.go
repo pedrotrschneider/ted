@@ -26,6 +26,7 @@ type FilmographyEntry struct {
 	} `json:"episode_counts,omitempty"`
 }
 type Filmography struct {
+	Pending   bool               `json:"pending"`
 	Items     []FilmographyEntry `json:"items"`
 	NextAfter string             `json:"next_after,omitempty"`
 }
@@ -41,7 +42,16 @@ func (s *Service) Filmography(ctx context.Context, user int64, person, after str
 	}
 	defer tx.Rollback(ctx)
 	// Serialize first-time identifier requests without keeping a read cursor open.
-	rows, e := tx.Query(ctx, `SELECT reference_id::text,summary,kind,cinemeta_id,identity_status,roles,provider FROM metadata_credits WHERE person_id=$1 AND ($2='' OR reference_id>NULLIF($2,'')::uuid) ORDER BY reference_id LIMIT 21`, person, after)
+	var hasChoices bool
+	if e = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM metadata_series_providers)`).Scan(&hasChoices); e != nil {
+		return result, e
+	}
+	rows, e := tx.Query(ctx, `SELECT c.reference_id::text,c.summary,c.kind,COALESCE(NULLIF(c.cinemeta_id,''),choice.title_id,''),c.identity_status,c.roles,c.provider
+ FROM metadata_credits c JOIN metadata_entities p ON p.id=c.person_id
+ LEFT JOIN LATERAL (SELECT title_id,provider FROM metadata_series_providers choice WHERE c.kind='series' AND (choice.title_id=c.cinemeta_id OR choice.provider_ids->>c.provider=c.provider_id) ORDER BY (choice.title_id=c.cinemeta_id) DESC,title_id LIMIT 1) choice ON true
+ WHERE c.person_id=$1 AND ($2='' OR c.reference_id>NULLIF($2,'')::uuid)
+ AND c.provider=COALESCE(choice.provider,p.provider)
+ ORDER BY c.reference_id LIMIT 21`, person, after)
 	if e != nil {
 		return result, e
 	}
@@ -71,6 +81,12 @@ func (s *Service) Filmography(ctx context.Context, user int64, person, after str
 	}
 	for _, v := range entries {
 		row := FilmographyEntry{Item: v.item, Roles: v.roles, Images: []Asset{}, IdentityStatus: v.status}
+		if v.provider == "Tmdb" {
+			row.Roles = []string{}
+			for _, role := range v.roles {
+				row.Roles = appendRole(row.Roles, tmdbCharacter(role))
+			}
+		}
 		assets, err := tx.Query(ctx, `SELECT id::text,image_type,image_index,status,digest,error_code FROM metadata_artwork WHERE credit_id=$1 ORDER BY image_type,image_index`, v.id)
 		if err != nil {
 			return result, err
@@ -144,6 +160,12 @@ func (s *Service) Filmography(ctx context.Context, user int64, person, after str
 			}
 			row.IdentityStatus = "queued"
 		}
+		// Unknown cross-provider series must be identified before presentation;
+		// otherwise a merged anthology can briefly leak back into the page.
+		if hasChoices && v.kind == "series" && v.imdb == "" {
+			result.Pending = result.Pending || row.IdentityStatus == "new" || row.IdentityStatus == "queued"
+			continue
+		}
 		result.Items = append(result.Items, row)
 	}
 	if e = tx.Commit(ctx); e != nil {
@@ -169,6 +191,15 @@ func (w *creditWorker) Work(ctx context.Context, job *river.Job[creditArgs]) err
 	}
 	if status == "ready" && (provider != "Tvdb" || language == "en") || generation != job.Args.Generation {
 		return nil
+	}
+	if kind == "series" {
+		var excluded bool
+		if e = w.s.pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM metadata_series_providers p JOIN metadata_credits c ON c.reference_id=$1 WHERE (p.title_id=c.cinemeta_id OR p.provider_ids->>c.provider=c.provider_id) AND p.provider<>c.provider)`, job.Args.ID).Scan(&excluded); e != nil {
+			return e
+		}
+		if excluded {
+			return nil
+		}
 	}
 	var imdb string
 	var summary Item

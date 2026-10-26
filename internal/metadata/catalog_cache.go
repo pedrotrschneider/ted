@@ -39,6 +39,7 @@ func (s *Service) CatalogSnapshots(ctx context.Context, media []catalog.MediaIde
 		if err = rows.Scan(&id, &v.Item, &v.Status, &v.Provider, &v.Generation, &v.FetchedAt, &v.Error, &v.FieldSources); err != nil {
 			break
 		}
+		v.normalizeTMDBCast()
 		v.Item.ImageTags = map[string]string{}
 		v.Item.BackdropImageTags = []string{}
 		result[identities[id]] = v

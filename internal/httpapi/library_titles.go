@@ -76,7 +76,7 @@ func (a *API) libraryTitles(w http.ResponseWriter, r *http.Request, u accounts.U
 	rows, err := a.pool.Query(r.Context(), `WITH allowed AS (`+libraryWatchAccountsSQL+`), selected AS (
  SELECT id FROM allowed WHERE $8::bigint[] IS NULL OR id=ANY($8)
  ), media AS (
- SELECT c.cinemeta_id,EXISTS(SELECT 1 FROM media_mappings m WHERE m.movie_id=c.id) AS saved,($1!='series' OR NULLIF(split_part(c.cinemeta_id,':',2),'')::int>0) AND
+ SELECT c.cinemeta_id,EXISTS(SELECT 1 FROM media_mappings m WHERE m.movie_id=c.id) AS saved,($1!='series' OR ted_episode_season(c.cinemeta_id)>0) AND
  EXISTS(SELECT 1 FROM selected viewer LEFT JOIN watch_current wc ON wc.user_id=viewer.id AND wc.media_id=c.id WHERE `+viewed+`) AS viewed
  FROM catalog_media c
  WHERE ($1='movie' AND c.kind='movie') OR ($1='series' AND c.kind='episode')

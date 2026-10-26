@@ -86,6 +86,9 @@ type tmCredit struct {
 }
 
 func (p *Providers) tmdb(ctx context.Context, r Request) (Document, error) {
+	if r.Kind == "series" || r.Kind == "season" || r.Kind == "episode" {
+		return p.tmdbTV(ctx, r)
+	}
 	var d Document
 	id := r.ProviderID
 	if r.Kind == "movie" && id == "" {
@@ -176,7 +179,7 @@ func (p *Providers) tmdb(ctx context.Context, r Request) (Document, error) {
 			}
 			sourceID := strconv.FormatInt(c.ID, 10)
 			key := kind + ":" + sourceID
-			role := c.Character
+			role := tmdbCharacter(c.Character)
 			if role == "" {
 				role = c.Job
 			}
@@ -252,7 +255,7 @@ func (p *Providers) tmdb(ctx context.Context, r Request) (Document, error) {
 			d.People = nil
 			return d, ErrPartial
 		}
-		d.People = append(d.People, PersonSummary{"Tmdb", strconv.FormatInt(person.ID, 10), person.Name, person.Character, "Actor", tmImage(person.Profile)})
+		d.People = append(d.People, PersonSummary{"Tmdb", strconv.FormatInt(person.ID, 10), person.Name, tmdbCharacter(person.Character), "Actor", tmImage(person.Profile)})
 	}
 	for _, person := range *v.Credits.Crew {
 		if person.ID <= 0 || person.Name == "" {
@@ -302,4 +305,28 @@ func (p *Providers) tmdb(ctx context.Context, r Request) (Document, error) {
 		}
 	}
 	return d, nil
+}
+
+// TMDb appends this performance annotation to character names. Keep the
+// character itself in customer-facing cast/filmography labels.
+func tmdbCharacter(role string) string {
+	role = strings.TrimSpace(role)
+	const suffix = "(voice)"
+	if len(role) >= len(suffix) && strings.EqualFold(role[len(role)-len(suffix):], suffix) {
+		role = strings.TrimSpace(role[:len(role)-len(suffix)])
+	}
+	return role
+}
+
+// Apply the same presentation rule to retained data without refetching every
+// cached title. The stored provider payload/identity is left intact.
+func (v *Snapshot) normalizeTMDBCast() {
+	if v.Provider != "Tmdb" && v.FieldSources["People"] != "Tmdb" {
+		return
+	}
+	for i := range v.Item.People {
+		if v.Item.People[i].Type == "Actor" {
+			v.Item.People[i].Role = tmdbCharacter(v.Item.People[i].Role)
+		}
+	}
 }

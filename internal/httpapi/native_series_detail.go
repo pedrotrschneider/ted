@@ -3,7 +3,6 @@ package httpapi
 import (
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"entertainmentdistrict/internal/accounts"
@@ -65,15 +64,15 @@ func (a *API) nativeSeriesWatch(w http.ResponseWriter, r *http.Request, g accoun
 	counts := map[string]*nativeEpisodeCounts{}
 	today := time.Now().In(a.CalendarLocation).Format(time.DateOnly)
 	for _, item := range state.Items {
-		parts := strings.Split(item.Media.ID, ":")
 		released := state.ReleaseDates[item.Media.ID]
-		if len(parts) != 3 || released == "" || released > today {
+		if released == "" || released > today {
 			continue
 		}
-		count := counts[parts[1]]
+		key := strconv.Itoa(state.Seasons[item.Media.ID])
+		count := counts[key]
 		if count == nil {
 			count = &nativeEpisodeCounts{}
-			counts[parts[1]] = count
+			counts[key] = count
 		}
 		count.Total++
 		if item.Played {

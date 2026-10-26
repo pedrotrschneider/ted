@@ -1,6 +1,6 @@
 # TED operations and recovery
 
-Updated October 17, 2026. Read [README](../README.md) for a new installation and [the home-server record](deployments/home-server.md) before operating the owner's actual service. Commands here assume the repository's default Compose project/files; add the installed project's name/override flags where required. Run development-machine commands in Devbox; the deployment server already has Docker/Compose.
+Updated October 25, 2026. Read [README](../README.md) for a new installation and [the home-server record](deployments/home-server.md) before operating the owner's actual service. Commands here assume the repository's default Compose project/files; add the installed project's name/override flags where required. Run development-machine commands in Devbox; the deployment server already has Docker/Compose.
 
 ## Configuration
 
@@ -30,7 +30,19 @@ Updated October 17, 2026. Read [README](../README.md) for a new installation and
 
 Provider settings store RD/TMDb/TVDB secrets in the database; Stremio discovery and history credentials are separate database state. Saved values are not returned to the browser. Browser SCS defaults are 24-hour absolute/30-minute idle sessions; native tokens have separate lifetimes above.
 
-Startup applies embedded forward-only migrations under a PostgreSQL advisory lock, then starts services/workers. Failed migration stops startup; inspect the redacted phase/SQLSTATE, do not reset the database. Schema 44 is the current source checkpoint (RD exact-file ownership journal; schema 43 added account pictures and schema 42 update-notice dismissal). The home-server record identifies each installed service; source version alone does not establish a deployment. An older binary cannot safely run against a newer incompatible schema.
+Startup applies embedded forward-only migrations under a PostgreSQL advisory lock, then starts services/workers. Failed migration stops startup; inspect the redacted phase/SQLSTATE, do not reset the database. Schema 48 is the current source checkpoint: 45 added watch lists/ratings, 46 was the withdrawn playback-cache preview, 47 retires its disposable tables/unfinished jobs, and 48 adds per-series provider choices, original schedule snapshots and verified display ordering. The home-server record identifies each installed service; source version alone does not establish a deployment. An older binary cannot safely run against a newer incompatible schema.
+
+## Withdrawn cache preview
+
+Stop the old preview app before upgrading. Keep migration 46 in the history and apply forward migrations 47 and 48; do not restore an old database or run an old binary that skips retirement. Accounts, playback reports/history, mappings, downloads, watch lists and ratings are preserved. Use matching cache-free TED/Teddy 0.3 builds for the new provider-structure contract. The experimental October 20 cache build also used an unreleased 0.3 version but has a different required contract; replace both artifacts together.
+
+The current Compose templates no longer mount playback-cache. Existing cache files on a preview host are disposable but are not deleted by a database migration. After stopping all old cache workers and removing the dedicated mount, an operator may remove only the verified owned Config/playback-cache directory. Preserve Media, metadata, PostgreSQL and recovery archives. The next rollout must record its backup/restore and actual schema, rather than assuming the preview already changed.
+
+## Series metadata choices
+
+Administrators choose a provider on whole-series details through **⋮ → Change metadata provider**. Configure the target key under Server providers first. Confirmation applies to every account, queues a complete verified provider structure and fetches child metadata with River. The previous complete layout survives a missing/conflicting external episode association; inspect the metadata failure and retry after correcting provider data rather than forcing numbering. Original IDs, reports/history, source selections and existing offline copies remain authoritative. Do not manually rewrite their IDs to match provider tuples or move history between distinct IMDb series.
+
+The database owns choices, retained provider aliases, original schedule snapshots and display layouts; include them in normal backups. Custom artwork stays on disk and survives provider changes. Chosen structures follow daily source schedule refreshes through a durable metadata notification; there is no new service, mount or environment setting. Person filmographies use verified person IDs and the shared title policy; an unresolved association may retain the prior biography/cast while the job reports failure.
 
 ## Persistent boundaries
 

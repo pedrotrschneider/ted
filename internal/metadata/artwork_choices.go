@@ -175,6 +175,9 @@ func (s *Service) SelectArtwork(ctx context.Context, user int64, id string, gene
 	if err = lockArtworkEditor(ctx, tx, user); err != nil {
 		return err
 	}
+	if err = lockArtworkSeries(ctx, tx, id); err != nil {
+		return err
+	}
 	slot, err := lockEditableSlot(ctx, tx, id)
 	if err != nil {
 		return err

@@ -7,7 +7,8 @@ const title={id:'tt1245698',type:'series' as const,name:'Birdy',year:'2008',desc
 test('series reads reject missing episodes, wrong identity and unstable pagination',async()=>{
  const original=globalThis.fetch;try{
  globalThis.fetch=async()=>Response.json(title);await assert.rejects(seriesApi.detail(title.id));
- globalThis.fetch=async()=>Response.json({...title,episodes:[{id:title.id+':2:1',season:1,number:1,name:'Wrong'}]});await assert.rejects(seriesApi.detail(title.id));
+ globalThis.fetch=async()=>Response.json({...title,episodes:[{id:'tt9999999:2:1',season:1,number:1,name:'Wrong parent'}]});await assert.rejects(seriesApi.detail(title.id));
+ globalThis.fetch=async()=>Response.json({...title,episodes:[{id:title.id+':21:1',season:20,number:451,name:'Reorganized'}]});assert.equal((await seriesApi.detail(title.id)).episodes[0].id,title.id+':21:1');
  globalThis.fetch=async()=>Response.json({...title,episodes:[]});assert.deepEqual((await seriesApi.detail(title.id)).episodes,[]);
  assert.throws(()=>appendSeries({series:[title],skip:0,next_skip:50},{series:[title],skip:50,next_skip:100}));
  }finally{globalThis.fetch=original}

@@ -5,7 +5,7 @@ import {titleArtworkURL} from './artwork-url.ts';
 import type { Movie } from './catalog-api.ts';
 export interface SeriesTitle extends Omit<Movie,'type'> { type:'series' }
 export interface Episode { id:string; name:string; season:number; number:number; release_date?:string }
-export interface Series extends SeriesTitle { episodes:Episode[] }
+export interface Series extends SeriesTitle { episodes:Episode[];metadata_pending?:boolean }
 export interface SeriesPage { series:SeriesTitle[]; skip:number; next_skip?:number }
 export interface EpisodeMapping { source_name:string; episode_id:string; media_id:string; torrent_id:string; hash:string; file_id:number; path:string; bytes:number }
 export interface SeriesMappings { category:''|'shows'|'anime'; mappings:EpisodeMapping[] }
@@ -27,7 +27,7 @@ export const seriesApi={
  async detail(id:string,signal?:AbortSignal):Promise<Series>{
   const v=await request(`/api/series/${encodeURIComponent(id)}`,'GET',undefined,signal);const s=title(v);
   if(!object(v)||s.id!==id||!Array.isArray(v.episodes))throw invalid();
-  const episodes=v.episodes.map(e=>{if(!object(e)||!Number.isSafeInteger(e.season)||Number(e.season)<0||!Number.isSafeInteger(e.number)||Number(e.number)<0||e.id!==`${id}:${e.season}:${e.number}`||typeof e.name!=='string'||(e.release_date!==undefined&&(typeof e.release_date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(e.release_date))))throw invalid();return e as unknown as Episode});
+  const episodes=v.episodes.map(e=>{if(!object(e)||!Number.isSafeInteger(e.season)||Number(e.season)<0||!Number.isSafeInteger(e.number)||Number(e.number)<0||typeof e.id!=='string'||!e.id.startsWith(id+':')||!/^tt[0-9]{7,12}:[0-9]{1,4}:[0-9]{1,5}$/.test(e.id)||typeof e.name!=='string'||(e.release_date!==undefined&&(typeof e.release_date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(e.release_date))))throw invalid();return e as unknown as Episode});
   if(new Set(episodes.map(e=>e.id)).size!==episodes.length)throw invalid();return {...s,episodes};
  },
  async mappings(id:string,signal?:AbortSignal):Promise<SeriesMappings>{

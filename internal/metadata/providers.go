@@ -155,14 +155,40 @@ func (p *Providers) token(ctx context.Context) (string, error) {
 }
 func (p *Providers) Fetch(ctx context.Context, provider string, req Request) (Document, error) {
 	if provider == "Tmdb" {
-		return p.tmdb(ctx, req)
+		doc, err := p.tmdb(ctx, req)
+		if err == nil && req.Kind == "person" && req.FilmographyProviders {
+			doc, err = p.personFilmographyProviders(ctx, provider, doc)
+			if err != nil {
+				doc.Credits = nil
+			} else {
+				doc.FilmographyRevision = req.FilmographyRevision
+			}
+		}
+		return doc, err
 	}
 	if provider == "Tvdb" {
 		doc, err := p.tvdb(ctx, req)
+		if !req.SkipCast && (req.Kind == "season" || req.Kind == "episode") && doc.ProviderID != "" && (err == nil || errors.Is(err, errTVDBCast)) && p.Enabled("Tmdb") {
+			var scoped error
+			doc, scoped = p.tmdbTVDBCast(ctx, req, doc)
+			if scoped == nil && errors.Is(err, errTVDBCast) {
+				err = nil
+			} else {
+				err = errors.Join(err, scoped)
+			}
+		}
 		if req.Kind == "person" && doc.Item.Name != "" && (err == nil || errors.Is(err, ErrPartial)) {
 			var fallbackErr error
 			doc, fallbackErr = p.personBiographyFallback(ctx, doc)
 			err = errors.Join(err, fallbackErr)
+		}
+		if err == nil && req.Kind == "person" && req.FilmographyProviders {
+			doc, err = p.personFilmographyProviders(ctx, provider, doc)
+			if err != nil {
+				doc.Credits = nil
+			} else {
+				doc.FilmographyRevision = req.FilmographyRevision
+			}
 		}
 		return doc, err
 	}

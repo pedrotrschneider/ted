@@ -25,9 +25,17 @@ import (
 )
 
 type fixtureReader struct {
-	fetch   func(context.Context, string, Request) (Document, error)
-	resolve func(context.Context, string, string, string) (string, error)
-	artwork func(context.Context, string, Request) ([]ArtworkChoice, error)
+	fetch     func(context.Context, string, Request) (Document, error)
+	resolve   func(context.Context, string, string, string) (string, error)
+	artwork   func(context.Context, string, Request) ([]ArtworkChoice, error)
+	structure func(context.Context, string, cinemeta.Series, Document) (cinemeta.Series, error)
+}
+
+func (r *fixtureReader) SeriesStructure(ctx context.Context, provider string, show cinemeta.Series, doc Document) (cinemeta.Series, error) {
+	if r.structure == nil {
+		return show, nil
+	}
+	return r.structure(ctx, provider, show, doc)
 }
 
 func (*fixtureReader) Enabled(string) bool { return true }

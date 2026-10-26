@@ -12,6 +12,9 @@ import (
 )
 
 type tvRemote struct{ ID, SourceName string }
+
+var errTVDBCast = fmt.Errorf("TVDB cast unavailable: %w", ErrPartial)
+
 type tvTranslation struct {
 	Language, Name, Overview string
 	IsPrimary, IsAlias       bool
@@ -465,13 +468,13 @@ func (p *Providers) tvdb(ctx context.Context, r Request) (Document, error) {
 	}
 	if r.Kind != "season" {
 		if v.Characters == nil {
-			return d, ErrPartial
+			return d, errTVDBCast
 		}
 		d.People = []PersonSummary{}
 		for _, c := range *v.Characters {
 			if c.PeopleID <= 0 || c.PersonName == "" {
 				d.People = nil
-				return d, ErrPartial
+				return d, errTVDBCast
 			}
 			kind := personKind(c.PeopleType)
 			if kind == "Unknown" {

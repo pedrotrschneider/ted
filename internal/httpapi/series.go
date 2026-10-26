@@ -11,6 +11,7 @@ import (
 	"entertainmentdistrict/internal/accounts"
 	"entertainmentdistrict/internal/catalog"
 	"entertainmentdistrict/internal/cinemeta"
+	"entertainmentdistrict/internal/metadata"
 )
 
 type SeriesReader interface {
@@ -57,6 +58,12 @@ func (a *API) seriesDetail(w http.ResponseWriter, r *http.Request, u accounts.Us
 		a.fail(w, r, err)
 		return
 	}
+	if projected, readErr := a.catalog.NativeSeries(r.Context(), s.ID); readErr == nil {
+		s = projected
+	} else {
+		a.fail(w, r, readErr)
+		return
+	}
 	if _, err = a.pool.Exec(r.Context(), `UPDATE catalog_series SET metadata=jsonb_set(jsonb_set(metadata,'{episode_count}',to_jsonb($2::int)),'{regular_episode_count}',to_jsonb($3::int)) WHERE cinemeta_id=$1`, s.ID, len(s.Episodes), cinemeta.RegularEpisodeCount(s.Episodes)); err != nil {
 		a.fail(w, r, err)
 		return
@@ -72,7 +79,42 @@ func (a *API) seriesDetail(w http.ResponseWriter, r *http.Request, u accounts.Us
 			return
 		}
 		s.Movie = titles[0]
-		respond(w, 200, s)
+		pending := false
+		if a.Metadata != nil {
+			v, e := a.Metadata.Ensure(r.Context(), "Tvdb", metadata.Request{Kind: "series", TitleID: s.ID}, metadata.CinemetaSeed(s.Movie))
+			if e != nil {
+				a.metadataFailure(w, r, e)
+				return
+			}
+			pending = v.Status == "new" || v.Status == "queued"
+			if v.Status == "ready" || v.Status == "partial" {
+				if v.Item.Name != "" {
+					s.Name = v.Item.Name
+				}
+				if v.Item.Overview != "" {
+					s.Description = v.Item.Overview
+				}
+				for _, image := range v.Images {
+					if image.Type != "Primary" || image.Index != 0 {
+						continue
+					}
+					if image.Tag != "" {
+						s.Poster = "/api/metadata/images/" + image.ID + "?v=" + image.Tag
+					} else if image.Status == "new" || image.Status == "queued" {
+						asset, err := a.Metadata.RequestImage(r.Context(), image.ID, false)
+						if err != nil {
+							a.metadataFailure(w, r, err)
+							return
+						}
+						pending = pending || asset.Status == "queued" || asset.Status == "new" && asset.Error == ""
+					}
+				}
+			}
+		}
+		respond(w, 200, struct {
+			cinemeta.Series
+			MetadataPending bool `json:"metadata_pending"`
+		}{s, pending})
 	}
 }
 func (a *API) episodeMappings(w http.ResponseWriter, r *http.Request, u accounts.User) {
@@ -143,6 +185,11 @@ func (a *API) rememberWatchSeries(ctx context.Context, who accounts.Identity, s 
 	if err := a.catalog.SaveSchedule(ctx, s, started); err != nil {
 		return err
 	}
+	projected, err := a.catalog.NativeSeries(ctx, s.ID)
+	if err != nil {
+		return err
+	}
+	s = projected
 	entries := make([]watchstate.CatalogEntry, 0, len(s.Episodes))
 	for _, episode := range s.Episodes {
 		raw, err := json.Marshal(map[string]any{"name": episode.Name, "series_name": s.Name, "poster": s.Poster, "series": s.Movie})

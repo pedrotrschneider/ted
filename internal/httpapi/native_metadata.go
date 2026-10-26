@@ -16,6 +16,8 @@ import (
 )
 
 func (a *API) nativeMetadataRoutes(mux *http.ServeMux) {
+	mux.HandleFunc("GET /api/client/v1/titles/series/{id}/metadata-provider", a.nativeProtected(a.nativeSeriesMetadataProvider))
+	mux.HandleFunc("POST /api/client/v1/titles/series/{id}/metadata-provider", a.nativeProtected(a.nativeSeriesMetadataProvider))
 	mux.HandleFunc("GET /api/client/v1/metadata/configuration", a.nativeProtected(a.nativeMetadataConfiguration))
 	mux.HandleFunc("GET /api/client/v1/metadata/items/{id}", a.nativeProtected(a.nativeMetadataItem))
 	mux.HandleFunc("POST /api/client/v1/metadata/items/{id}/refresh", a.nativeProtected(a.nativeMetadataRefresh))
@@ -43,6 +45,7 @@ func (a *API) enrichNativeDetail(r *http.Request, d *nativeTitleDetail) {
 		ep := d.Metadata.Episode
 		provider = "Tvdb"
 		req.TitleID = d.Parent.ID
+		req.VideoID = d.Media.ID
 		req.Season, req.Number, req.EpisodeName, req.EpisodeDate = ep.Season, ep.Number, ep.Name, ep.ReleaseDate
 		fallback = metadata.Item{Type: "Episode", Name: ep.Name, Overview: ep.Description, IndexNumber: &ep.Number, ParentIndexNumber: &ep.Season}
 	}
@@ -52,6 +55,30 @@ func (a *API) enrichNativeDetail(r *http.Request, d *nativeTitleDetail) {
 		return
 	}
 	d.Enrichment = &snapshot
+	if snapshot.Status == "ready" || snapshot.Status == "partial" {
+		if d.Media.Kind == "episode" && d.Metadata.Episode != nil {
+			if snapshot.Item.Name != "" {
+				d.Metadata.Episode.Name = snapshot.Item.Name
+			}
+			if snapshot.Item.Overview != "" {
+				d.Metadata.Episode.Description = snapshot.Item.Overview
+			}
+		} else {
+			if snapshot.Item.Name != "" {
+				d.Metadata.Name = snapshot.Item.Name
+			}
+			if snapshot.Item.Overview != "" {
+				d.Metadata.Description = snapshot.Item.Overview
+			}
+		}
+	}
+	if d.Media.Kind == "episode" && d.Parent != nil && d.Metadata.Series != nil {
+		if parent, e := a.Metadata.Lookup(r.Context(), metadata.Request{Kind: "series", TitleID: d.Parent.ID}); e == nil && (parent.Status == "ready" || parent.Status == "partial") {
+			if parent.Item.Name != "" {
+				d.Metadata.Series.Name = parent.Item.Name
+			}
+		}
+	}
 }
 
 func (a *API) metadataAvailable(w http.ResponseWriter) bool {
@@ -190,9 +217,10 @@ func (a *API) nativeMetadataFilmography(w http.ResponseWriter, r *http.Request, 
 	// Preserve the optional cursor contract when adding joint-watch decorations.
 	// An empty cursor is not a valid continuation token for native clients.
 	a.respondNativeCatalog(w, r, struct {
+		Pending   bool        `json:"pending"`
 		Items     []entryView `json:"items"`
 		NextAfter string      `json:"next_after,omitempty"`
-	}{Items: items, NextAfter: v.NextAfter})
+	}{Pending: v.Pending, Items: items, NextAfter: v.NextAfter})
 }
 func (a *API) nativeMetadataSeason(w http.ResponseWriter, r *http.Request, g accounts.NativeGrant) {
 	if !a.metadataAvailable(w) {
@@ -219,7 +247,7 @@ func (a *API) nativeMetadataSeason(w http.ResponseWriter, r *http.Request, g acc
 		a.metadataFailure(w, r, metadata.ErrMissing)
 		return
 	}
-	req := metadata.Request{Kind: "season", TitleID: show.ID, Season: season}
+	req := metadata.Request{Kind: "season", TitleID: show.ID, Season: season, SkipCast: r.URL.Query().Get("cast") == "0"}
 	v, err := a.Metadata.Ensure(r.Context(), "Tvdb", req, metadata.Item{Type: "Season", Name: "Season " + strconv.Itoa(season), IndexNumber: &season})
 	if err != nil {
 		a.metadataFailure(w, r, err)
@@ -287,6 +315,12 @@ func (a *API) serveMetadataImage(w http.ResponseWriter, r *http.Request, id stri
 }
 func (a *API) metadataFailure(w http.ResponseWriter, r *http.Request, err error) {
 	switch {
+	case errors.Is(err, metadata.ErrOverridesReview):
+		respond(w, 409, map[string]string{"code": "metadata_overrides_review_required", "error": "Manual overrides changed. Reopen the provider confirmation and choose whether to keep or remove them."})
+	case errors.Is(err, metadata.ErrProviderChanged):
+		respond(w, 409, map[string]string{"code": "metadata_provider_changed", "error": "The metadata provider changed. Reload the series before trying again."})
+	case errors.Is(err, metadata.ErrAmbiguous):
+		respond(w, 409, map[string]string{"code": "metadata_identity_ambiguous", "error": "The provider's episode identities could not be verified. Existing history and mappings are preserved."})
 	case errors.Is(err, metadata.ErrArtworkForbidden):
 		respond(w, 403, map[string]string{"code": "forbidden", "error": "administrator required"})
 	case errors.Is(err, metadata.ErrArtworkChanged):

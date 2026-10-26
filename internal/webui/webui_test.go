@@ -1,6 +1,7 @@
 package webui
 
 import (
+	"bytes"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -9,7 +10,8 @@ import (
 )
 
 func TestBuildDelivery(t *testing.T) {
-	files := fstest.MapFS{"index.html": {Data: []byte("<!doctype html><title>TED</title>")}, "assets/index-test1234.js": {Data: []byte("export {};")}, "private.txt": {Data: []byte("secret")}, "assets/index.js.map": {Data: []byte("source")}}
+	icon := []byte("\x89PNG\r\n\x1a\nTED icon")
+	files := fstest.MapFS{"index.html": {Data: []byte("<!doctype html><title>TED</title>")}, "icon.png": {Data: icon}, "assets/index-test1234.js": {Data: []byte("export {};")}, "private.txt": {Data: []byte("secret")}, "private.png": {Data: []byte("secret")}, "assets/private.png": {Data: []byte("secret")}, "assets/index.js.map": {Data: []byte("source")}}
 	ui, err := New(files)
 	if err != nil {
 		t.Fatal(err)
@@ -21,7 +23,10 @@ func TestBuildDelivery(t *testing.T) {
 	}{
 		{"GET", "/", 200, "text/html", "no-cache"}, {"HEAD", "/", 200, "text/html", "no-cache"},
 		{"GET", "/assets/index-test1234.js", 200, "javascript", "immutable"},
+		{"GET", "/icon.png", 200, "image/png", "no-cache"}, {"HEAD", "/icon.png", 200, "image/png", "no-cache"},
+		{"GET", "/icon.png?v=ted", 200, "image/png", "no-cache"}, {"POST", "/icon.png", 405, "text/plain", ""},
 		{"POST", "/", 405, "text/plain", ""}, {"GET", "/private.txt", 404, "text/plain", ""},
+		{"GET", "/private.png", 404, "text/plain", ""}, {"GET", "/assets/private.png", 404, "text/plain", ""},
 		{"GET", "/assets/../private.txt", 404, "text/plain", ""}, {"GET", "/assets/index.js.map", 404, "text/plain", ""}, {"GET", "/assets/", 404, "text/plain", ""},
 	} {
 		t.Run(tc.method+tc.path, func(t *testing.T) {
@@ -32,6 +37,9 @@ func TestBuildDelivery(t *testing.T) {
 			}
 			if tc.method == "HEAD" && r.Body.Len() != 0 {
 				t.Fatal("HEAD returned body")
+			}
+			if tc.method == "GET" && strings.HasPrefix(tc.path, "/icon.png") && !bytes.Equal(r.Body.Bytes(), icon) {
+				t.Fatal("favicon bytes were not served intact")
 			}
 			if strings.Contains(r.Body.String(), "secret") {
 				t.Fatal("exposed unrelated file")

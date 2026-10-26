@@ -85,8 +85,8 @@ func (s *Store) PersonalRows(ctx context.Context, user int64, row, after, today 
  FROM watch_current w JOIN catalog_media c ON c.id=w.media_id
  WHERE w.user_id=$1 AND ` + NativeUnfinishedWatchSQL + `
  ORDER BY c.kind,split_part(c.cinemeta_id,':',1),w.observed_at DESC,
- CASE WHEN c.kind='episode' THEN split_part(c.cinemeta_id,':',2)::int ELSE 0 END DESC,
- CASE WHEN c.kind='episode' THEN split_part(c.cinemeta_id,':',3)::int ELSE 0 END DESC,c.id::text DESC)
+ CASE WHEN c.kind='episode' THEN ted_episode_season(c.cinemeta_id) ELSE 0 END DESC,
+ CASE WHEN c.kind='episode' THEN ted_episode_number(c.cinemeta_id) ELSE 0 END DESC,c.id::text DESC)
  SELECT c.id::text,c.kind,c.cinemeta_id,COALESCE(n.metadata,c.metadata),COALESCE(p.metadata,c.metadata->'series','{}'::jsonb),ep.value,
  w.state,w.revision,w.duration_ms,
  EXISTS(SELECT 1 FROM streaming_items si JOIN media_mappings mm ON mm.id=si.mapping_id AND mm.movie_id=si.movie_id WHERE si.movie_id=c.id AND si.published AND si.phase='ready'),
@@ -106,7 +106,7 @@ func (s *Store) PersonalRows(ctx context.Context, user int64, row, after, today 
  SELECT DISTINCT split_part(c.cinemeta_id,':',1) AS title_id
  FROM watch_current w JOIN catalog_media c ON c.id=w.media_id
  WHERE w.user_id=$1 AND c.kind='episode' AND ` + NativeUnfinishedWatchSQL + `), watched AS (
- SELECT split_part(c.cinemeta_id,':',1) AS title_id,split_part(c.cinemeta_id,':',2)::int AS season,split_part(c.cinemeta_id,':',3)::int AS number,
+ SELECT split_part(c.cinemeta_id,':',1) AS title_id,ted_episode_season(c.cinemeta_id) AS season,ted_episode_number(c.cinemeta_id) AS number,
  COALESCE(GREATEST(h.at,r.watched_at),w.observed_at) AS at,h.at IS NOT NULL OR r.watched_at IS NOT NULL AS known,
  COALESCE((w.state->>'last_played')::timestamptz,CASE WHEN w.source IN ('StremioImport','StremioPoll') THEN r.watched_at END,u.created_at) AS watch_at
  FROM watch_current w JOIN catalog_media c ON c.id=w.media_id
@@ -119,7 +119,9 @@ func (s *Store) PersonalRows(ctx context.Context, user int64, row, after, today 
  AND h.kind IN ('playback_completed','ted_watched','manual_watched','watch_date_corrected','stremio_import','stremio_observed','baseline','state_observed','kept_imported')
  AND (h.native_event_id IS NULL OR e.outcome='applied')) h ON true
  WHERE w.user_id=$1 AND c.kind='episode' AND COALESCE((w.state->>'played')::boolean,false)
- AND COALESCE(NULLIF(split_part(c.cinemeta_id,':',2),''),'0')::int>0
+ AND COALESCE(ted_episode_season(c.cinemeta_id),0)>0
+ AND (NOT EXISTS(SELECT 1 FROM metadata_series_layouts layout WHERE layout.title_id=split_part(c.cinemeta_id,':',1))
+ OR EXISTS(SELECT 1 FROM metadata_episode_layout chosen WHERE chosen.episode_id=c.cinemeta_id))
  AND NOT EXISTS(SELECT 1 FROM unfinished u WHERE u.title_id=split_part(c.cinemeta_id,':',1))
  ), active AS (
  SELECT DISTINCT ON(title_id) title_id,season,number,at,watch_at
@@ -144,8 +146,14 @@ func (s *Store) PersonalRows(ctx context.Context, user int64, row, after, today 
  LEFT JOIN watch_current w ON w.media_id=c.id AND w.user_id=$1 LEFT JOIN local_files l ON l.movie_id=c.id
  WHERE (ep.value IS NOT NULL OR sh.title_id IS NULL) AND (a.at,a.title_id)<($2::timestamptz,$3::text)
  ORDER BY a.at DESC,a.title_id DESC LIMIT 51`
+		if row == "next-up" {
+			// Newly released representatives belong exclusively to New Releases.
+			// Partition before pagination, preserving missing-schedule placeholders.
+			query = strings.Replace(query, "WHERE (ep.value IS NOT NULL OR sh.title_id IS NULL)",
+				"WHERE (ep.value IS NOT NULL OR sh.title_id IS NULL) AND (ep.value IS NULL OR (ep.value->>'release_date')::date<=(a.watch_at AT TIME ZONE $5)::date)", 1)
+		}
 		if row == "new-releases" {
-			// Filter the same Next Up representative before applying LIMIT/cursor.
+			// Filter the same successor representative before applying LIMIT/cursor.
 			// Undated flags use TED account creation, never title intake or poll time.
 			query = strings.Replace(query, "WHERE (ep.value IS NOT NULL OR sh.title_id IS NULL)",
 				"WHERE ep.value IS NOT NULL AND (ep.value->>'release_date')::date>(a.watch_at AT TIME ZONE $5)::date", 1)
@@ -155,7 +163,7 @@ func (s *Store) PersonalRows(ctx context.Context, user int64, row, after, today 
 	if row == "next-up" || row == "new-releases" {
 		args = append(args, today)
 	}
-	if row == "new-releases" {
+	if row == "next-up" || row == "new-releases" {
 		loc := time.UTC
 		if len(calendar) > 0 && calendar[0] != nil {
 			loc = calendar[0]

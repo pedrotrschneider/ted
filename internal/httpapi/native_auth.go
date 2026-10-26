@@ -10,6 +10,7 @@ import (
 
 	"entertainmentdistrict/internal/accounts"
 	"entertainmentdistrict/internal/addons"
+	"entertainmentdistrict/internal/watchstate"
 )
 
 func (a *API) nativeHandler() http.Handler {
@@ -29,7 +30,7 @@ func (a *API) nativeHandler() http.Handler {
 		respond(w, 200, map[string]any{"user": g.User, "family_id": g.FamilyID, "device_id": g.DeviceID})
 	}))
 	mux.HandleFunc("GET /api/client/v1/capabilities", a.nativeProtected(func(w http.ResponseWriter, r *http.Request, g accounts.NativeGrant) {
-		respond(w, 200, map[string]any{"api_version": 1, "authentication": "opaque_rotating", "direct_play_only": true, "mapped_playback": a.Streaming != nil, "completion_fraction": 0.9})
+		respond(w, 200, map[string]any{"api_version": 1, "authentication": "opaque_rotating", "direct_play_only": true, "mapped_playback": a.Streaming != nil, "completion_fraction": float64(watchstate.CompletionPercent) / 100})
 	}))
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Vary", "Authorization")

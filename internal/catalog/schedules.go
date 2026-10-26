@@ -44,7 +44,13 @@ func (s *Store) SaveSchedule(ctx context.Context, show cinemeta.Series, started 
 	if err = saveNativeTitleTx(ctx, tx, show.Movie, started); err != nil {
 		return err
 	}
-	if _, err = tx.Exec(ctx, `INSERT INTO catalog_episode_schedules(title_id,episodes,observed_at,fetched_at) VALUES($1,$2,$3,now()) ON CONFLICT(title_id) DO UPDATE SET episodes=EXCLUDED.episodes,observed_at=EXCLUDED.observed_at,fetched_at=EXCLUDED.fetched_at WHERE catalog_episode_schedules.observed_at<EXCLUDED.observed_at`, show.ID, raw, started); err != nil {
+	if _, err = tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtextextended('metadata:series:'||$1,0))`, show.ID); err != nil {
+		return err
+	}
+	if err = s.queueLayoutRefresh(ctx, tx, show.ID, raw); err != nil {
+		return err
+	}
+	if _, err = tx.Exec(ctx, `INSERT INTO catalog_episode_schedules(title_id,episodes,canonical_episodes,identity_version,observed_at,fetched_at) VALUES($1,COALESCE((SELECT episodes FROM metadata_series_layouts WHERE title_id=$1),$2),$2,1,$3,now()) ON CONFLICT(title_id) DO UPDATE SET episodes=EXCLUDED.episodes,canonical_episodes=EXCLUDED.canonical_episodes,identity_version=1,observed_at=EXCLUDED.observed_at,fetched_at=EXCLUDED.fetched_at WHERE catalog_episode_schedules.observed_at<EXCLUDED.observed_at`, show.ID, raw, started); err != nil {
 		return err
 	}
 	return tx.Commit(ctx)

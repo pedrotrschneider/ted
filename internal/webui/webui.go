@@ -34,13 +34,13 @@ func New(files fs.FS) (http.Handler, error) {
 			name = "index.html"
 			data = index
 		} else {
-			if !fs.ValidPath(name) || !(strings.HasPrefix(name, "assets/") || name == "third-party-notices.txt") {
+			if !fs.ValidPath(name) || !(strings.HasPrefix(name, "assets/") || name == "third-party-notices.txt" || name == "icon.png") {
 				http.NotFound(w, r)
 				return
 			}
 			// No directory listings or source maps, and no files outside the build allowlist.
 			ext := path.Ext(name)
-			if ext != ".js" && ext != ".css" && ext != ".txt" {
+			if name != "icon.png" && ext != ".js" && ext != ".css" && ext != ".txt" {
 				http.NotFound(w, r)
 				return
 			}

@@ -25,7 +25,11 @@ func ExpectedRuntime(ctx context.Context, q runtimeReader, media catalog.MediaId
 	if media.Kind == "episode" {
 		p := strings.Split(media.ID, ":")
 		kind, title = "series", p[0]
-		if len(p) == 3 && p[1] != "0" {
+		var season *int
+		if err := q.QueryRow(ctx, `SELECT ted_episode_season($1)`, media.ID).Scan(&season); err != nil {
+			return 0, err
+		}
+		if len(p) == 3 && season != nil && *season > 0 {
 			keys = append(keys, "series:"+p[0])
 		}
 	}

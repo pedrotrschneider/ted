@@ -4,13 +4,15 @@ import (
 	"context"
 	"testing"
 	"time"
+
+	"entertainmentdistrict/internal/catalog"
 )
 
 func TestNativeMinimumViewingThresholdAndBackwardSeek(t *testing.T) {
 	s, a, g := nativeWatchFixture(t)
 	ctx := context.Background()
 	session := nativeWatchSession(t, s, g)
-	brief := []NativeEvent{nativeWatchEvent(session, 701, 1, "start", 0), nativeWatchEvent(session, 702, 2, "progress", 14999), nativeWatchEvent(session, 703, 3, "stop", 14999)}
+	brief := []NativeEvent{nativeWatchEvent(session, 701, 1, "start", 0), nativeWatchEvent(session, 702, 2, "progress", 4999), nativeWatchEvent(session, 703, 3, "stop", 4999)}
 	for _, result := range ingestNativeEvents(t, s, a, g, brief...) {
 		if result.Outcome != "ignored" {
 			t.Fatal(result)
@@ -34,13 +36,13 @@ func TestNativeMinimumViewingThresholdAndBackwardSeek(t *testing.T) {
 	}
 	session = nativeWatchSession(t, s, g)
 	ingestNativeEvents(t, s, a, g, nativeWatchEvent(session, 704, 1, "start", 0))
-	result := ingestNativeEvents(t, s, a, g, nativeWatchEvent(session, 705, 2, "progress", 15000))[0]
+	result := ingestNativeEvents(t, s, a, g, nativeWatchEvent(session, 705, 2, "progress", 5000))[0]
 	if result.Outcome != "applied" {
 		t.Fatal(result)
 	}
-	ingestNativeEvents(t, s, a, g, nativeWatchEvent(session, 706, 3, "progress", 5000), nativeWatchEvent(session, 707, 4, "stop", 5000))
+	ingestNativeEvents(t, s, a, g, nativeWatchEvent(session, 706, 3, "progress", 1000), nativeWatchEvent(session, 707, 4, "stop", 1000))
 	state, err = s.NativeState(ctx, g.User.ID, nativeMovie)
-	if err != nil || state.PositionMS != 5000 || state.Played {
+	if err != nil || state.PositionMS != 1000 || state.Played {
 		t.Fatal(state, err)
 	}
 	if err = s.pool.QueryRow(ctx, `SELECT count(*) FROM watch_history WHERE user_id=$1`, g.User.ID).Scan(&history); err != nil || history != 2 {
@@ -60,7 +62,7 @@ func TestOfflineMinimumViewingPreservesPreviousStateAndExplicitDecision(t *testi
 	start := nativeWatchEvent(session, 710, 1, "start", 0)
 	start.Origin = "offline"
 	start.ObservedAt = at
-	stop := nativeWatchEvent(session, 711, 2, "stop", 14000)
+	stop := nativeWatchEvent(session, 711, 2, "stop", 4999)
 	stop.Origin = "offline"
 	stop.ObservedAt = at.Add(time.Second)
 	results, err := s.IngestNativeOffline(ctx, a, g, []NativeEvent{start, stop}, []NativeOfflineSession{{ID: session, Media: nativeMovie, WatchRevision: original.Revision, StartedAt: at}})
@@ -79,5 +81,72 @@ func TestOfflineMinimumViewingPreservesPreviousStateAndExplicitDecision(t *testi
 	var history int
 	if err = s.pool.QueryRow(ctx, `SELECT count(*) FROM watch_history WHERE user_id=$1`, g.User.ID).Scan(&history); err != nil || history != 1 {
 		t.Fatal(history, err)
+	}
+}
+
+func TestNativeCompletionRequires95PercentForLiveAndOffline(t *testing.T) {
+	for _, origin := range []string{"live", "offline"} {
+		t.Run(origin, func(t *testing.T) {
+			s, a, g := nativeWatchFixture(t)
+			ctx := context.Background()
+			seedOutgoing(t, s, g.User.ID)
+			session := "77777777-7777-4777-8777-777777777777"
+			if origin == "live" {
+				session = nativeWatchSession(t, s, g)
+			}
+			at := time.Now().UTC().Add(-time.Minute).Truncate(time.Millisecond)
+			start := nativeWatchEvent(session, 720, 1, "start", 0)
+			start.Origin, start.ObservedAt = origin, at
+			apply := func(events ...NativeEvent) []NativeEventResult {
+				t.Helper()
+				var result []NativeEventResult
+				var err error
+				if origin == "offline" {
+					result, err = s.IngestNativeOffline(ctx, a, g, events, []NativeOfflineSession{{ID: session, Media: nativeMovie, StartedAt: at}})
+				} else {
+					result, err = s.IngestNative(ctx, a, g, events)
+				}
+				if err != nil {
+					t.Fatal(err)
+				}
+				return result
+			}
+			before := nativeWatchEvent(session, 721, 2, "progress", 94999)
+			before.Origin, before.ObservedAt = origin, at.Add(time.Second)
+			apply(start, before)
+			state, err := s.NativeState(ctx, g.User.ID, nativeMovie)
+			if err != nil || state.Played || state.PositionMS != 94999 || outgoingCount(t, s) != 0 {
+				t.Fatal("viewing completed below 95 percent", state, err)
+			}
+			finish := nativeWatchEvent(session, 722, 3, "progress", 95000)
+			finish.Origin, finish.ObservedAt = origin, at.Add(2*time.Second)
+			apply(finish)
+			if !apply(finish)[0].Duplicate {
+				t.Fatal("completion replay was not recognized")
+			}
+			state, err = s.NativeState(ctx, g.User.ID, nativeMovie)
+			if err != nil || !state.Played || state.PositionMS != 0 || state.PlayCount != 1 || outgoingCount(t, s) != 1 {
+				t.Fatal("95 percent completion was lost or duplicated", state, err)
+			}
+		})
+	}
+}
+
+func TestNativeExplicitNextCompletesBelowQualificationThreshold(t *testing.T) {
+	s, a, g := nativeWatchFixture(t)
+	ctx := context.Background()
+	media := catalog.MediaIdentity{Kind: "episode", ID: "tt1234567:1:1"}
+	seedPersonal(t, s, media.ID, false, 0, time.Now().Add(-time.Hour))
+	session := personalEpisodeSession(t, s, g.FamilyID, g.User.ID, g.DeviceID, media.ID)
+	start := nativeWatchEvent(session, 730, 1, "start", 0)
+	next := nativeWatchEvent(session, 731, 2, "complete", 1000)
+	start.Media, next.Media = media, media
+	results := ingestNativeEvents(t, s, a, g, start, next)
+	if results[0].Outcome != "ignored" || results[1].Outcome != "applied" {
+		t.Fatal(results)
+	}
+	state, err := s.NativeState(ctx, g.User.ID, media)
+	if err != nil || !state.Played || state.PlayCount != 1 || state.PositionMS != 0 {
+		t.Fatal("explicit Next must remain authoritative at any offset", state, err)
 	}
 }

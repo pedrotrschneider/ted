@@ -24,7 +24,7 @@ func TestNativeDownloadRangesPinsAndOwnership(t *testing.T) {
 	}
 	get := func(token, etag string) *httptest.ResponseRecorder {
 		req := httptest.NewRequest("GET", "https://ted.example"+d.MediaURL, nil)
-		req.Header.Set("X-Teddy-Compatibility-Version", "0.2")
+		req.Header.Set("X-Teddy-Compatibility-Version", "0.3")
 		req.Header.Set("Authorization", "Bearer "+token)
 		req.Header.Set("Range", "bytes=100-199")
 		req.Header.Set("If-Match", etag)

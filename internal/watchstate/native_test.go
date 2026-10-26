@@ -154,7 +154,7 @@ func TestNativeViewingResumeCompletionReplayAndStremio(t *testing.T) {
 	}
 	second := nativeWatchSession(t, s, g)
 	begin := nativeWatchEvent(second, 4, 1, "start", 60000)
-	finish := nativeWatchEvent(second, 5, 2, "progress", 90000)
+	finish := nativeWatchEvent(second, 5, 2, "progress", 95000)
 	stop := nativeWatchEvent(second, 6, 3, "stop", 100000)
 	ingestNativeEvents(t, s, a, g, begin, finish, stop)
 	for _, r := range ingestNativeEvents(t, s, a, g, begin, finish, stop) {

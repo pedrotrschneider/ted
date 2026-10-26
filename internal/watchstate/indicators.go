@@ -93,7 +93,7 @@ func (s *Store) otherIndicators(ctx context.Context, viewer int64, keys, kinds, 
  max(CASE WHEN wc.duration_ms>0 AND NOT COALESCE((wc.state->>'played')::bool,false) AND COALESCE((wc.state->>'position_ticks')::bigint,0)>0 THEN LEAST(100.0,(wc.state->>'position_ticks')::numeric/10000/wc.duration_ms*100) END)::float8 AS progress
  FROM targets t JOIN catalog_media c ON
  (t.kind IN ('movie','episode') AND c.kind=t.kind AND c.cinemeta_id=t.id) OR
- (t.kind IN ('series','season') AND c.kind='episode' AND split_part(c.cinemeta_id,':',1)=t.id AND (t.kind='series' OR split_part(c.cinemeta_id,':',2)::int=t.season))
+ (t.kind IN ('series','season') AND c.kind='episode' AND split_part(c.cinemeta_id,':',1)=t.id AND (t.kind='series' OR ted_episode_season(c.cinemeta_id)=t.season))
  CROSS JOIN sources src LEFT JOIN watch_current wc ON wc.media_id=c.id AND wc.user_id=src.source_id
  GROUP BY src.account_id,t.key,c.cinemeta_id
  ) SELECT t.key,p.id,p.display_name,p.avatar_version,bool_or(m.seen),

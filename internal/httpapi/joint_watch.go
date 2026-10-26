@@ -68,7 +68,7 @@ func (a *API) jointWatches(ctx context.Context, user int64, media []catalog.Medi
 		rows, e := a.pool.Query(ctx, `SELECT t.id,COALESCE(bool_or(COALESCE((wc.state->>'played')::bool,false) OR COALESCE((wc.state->>'position_ticks')::bigint,0)>0 OR COALESCE((wc.state->>'play_count')::int,0)>0 OR EXISTS(SELECT 1 FROM watch_history h WHERE h.user_id=$2 AND h.media_id=c.id AND (COALESCE((h.state->>'played')::bool,false) OR COALESCE((h.state->>'position_ticks')::bigint,0)>0 OR COALESCE((h.state->>'play_count')::int,0)>0))),false),
   count(*) FILTER(WHERE COALESCE((wc.state->>'played')::bool,false))::int,
   max(CASE WHEN wc.duration_ms>0 AND NOT COALESCE((wc.state->>'played')::bool,false) AND COALESCE((wc.state->>'position_ticks')::bigint,0)>0 THEN LEAST(100.0,(wc.state->>'position_ticks')::numeric/10000/wc.duration_ms*100) END)::float8
-  FROM unnest($1::text[]) t(id) LEFT JOIN catalog_media c ON c.cinemeta_id=t.id OR (t.id=ANY($3::text[]) AND c.kind='episode' AND split_part(c.cinemeta_id,':',1)=t.id AND split_part(c.cinemeta_id,':',2)::int>0)
+  FROM unnest($1::text[]) t(id) LEFT JOIN catalog_media c ON c.cinemeta_id=t.id OR (t.id=ANY($3::text[]) AND c.kind='episode' AND split_part(c.cinemeta_id,':',1)=t.id AND ted_episode_season(c.cinemeta_id)>0)
   LEFT JOIN watch_current wc ON wc.media_id=c.id AND wc.user_id=$2 GROUP BY t.id`, ids, person.AccountID, shows)
 		if e != nil {
 			return nil, e

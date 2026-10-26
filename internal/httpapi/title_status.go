@@ -72,7 +72,7 @@ func (a *API) titleStatuses(w http.ResponseWriter, r *http.Request, u accounts.U
  COALESCE((SELECT sum(jsonb_array_length(prev.request->'files')) FROM mapping_operations prev WHERE prev.submission_id=op.submission_id AND prev.phase='complete' AND prev.id!=op.id),0)
  +(SELECT count(*) FROM mapping_candidates c WHERE c.operation_id=op.id AND c.probe IS NOT NULL) AS validated) progress
  CROSS JOIN LATERAL (SELECT EXISTS(SELECT 1 FROM library_removals WHERE title_id=t.id AND kind=$2 AND NOT retired) AS removed) rem
- CROSS JOIN LATERAL (SELECT count(*)::int AS added, count(*) FILTER(WHERE c.kind='episode' AND NULLIF(split_part(c.cinemeta_id,':',2),'')::int>0)::int AS regular_added FROM catalog_media c
+ CROSS JOIN LATERAL (SELECT count(*)::int AS added, count(*) FILTER(WHERE c.kind='episode' AND ted_episode_season(c.cinemeta_id)>0)::int AS regular_added FROM catalog_media c
  WHERE (($2='movie' AND c.kind='movie' AND c.cinemeta_id=t.id) OR ($2='series' AND c.kind='episode' AND split_part(c.cinemeta_id,':',1)=t.id))
  AND EXISTS(SELECT 1 FROM streaming_items s JOIN media_mappings m ON m.id=s.mapping_id WHERE s.movie_id=c.id AND s.published)) counts
  CROSS JOIN LATERAL (
@@ -89,7 +89,7 @@ func (a *API) titleStatuses(w http.ResponseWriter, r *http.Request, u accounts.U
  NOT removed AND COALESCE(si.published,false) AS available,
  CASE WHEN si.probe->'format'->>'duration' ~ '^[0-9]+([.][0-9]+)?$' THEN (si.probe->'format'->>'duration')::numeric ELSE NULL END AS duration
  FROM catalog_media c LEFT JOIN watch_current wc ON wc.media_id=c.id AND wc.user_id=$3 LEFT JOIN streaming_items si ON si.movie_id=c.id
- WHERE (($2='movie' AND c.kind='movie' AND c.cinemeta_id=t.id) OR ($2='series' AND c.kind='episode' AND split_part(c.cinemeta_id,':',1)=t.id AND NULLIF(split_part(c.cinemeta_id,':',2),'')::int>0))
+ WHERE (($2='movie' AND c.kind='movie' AND c.cinemeta_id=t.id) OR ($2='series' AND c.kind='episode' AND split_part(c.cinemeta_id,':',1)=t.id AND ted_episode_season(c.cinemeta_id)>0))
  AND (wcat.entries IS NULL OR wcat.entries ? c.cinemeta_id)
  ) observations) viewing`, ids, kind, u.ID)
 	if err != nil {

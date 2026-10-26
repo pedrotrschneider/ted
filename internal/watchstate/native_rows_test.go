@@ -2,6 +2,7 @@ package watchstate
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"testing"
@@ -149,6 +150,50 @@ func TestNativeNextUpFollowsLatestWatchedWithNumericTimestampTies(t *testing.T) 
 	}
 }
 
+func TestNextUpUsesChosenEpisodeOrderWithoutChangingSourceIdentity(t *testing.T) {
+	s, _, _ := nativeWatchFixture(t)
+	ctx := context.Background()
+	canonical := cinemeta.Series{Movie: cinemeta.Movie{ID: "tt1234567", Type: "series", Name: "Series"}, Episodes: []cinemeta.Episode{
+		{ID: "tt1234567:21:1", Season: 21, Number: 1, ReleaseDate: "2020-01-01"},
+		{ID: "tt1234567:20:1", Season: 20, Number: 1, ReleaseDate: "2020-01-02"},
+		{ID: "tt1234567:22:1", Season: 22, Number: 1, ReleaseDate: "2020-01-03"},
+	}}
+	if err := catalog.New(s.pool).SaveSchedule(ctx, canonical, time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	chosen := append([]cinemeta.Episode(nil), canonical.Episodes...)
+	for i := range chosen {
+		chosen[i].Season = 20
+		chosen[i].Number = 432 + i
+	}
+	raw, err := json.Marshal(chosen)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = s.pool.Exec(ctx, `INSERT INTO metadata_series_providers(title_id,provider,changed_by) VALUES($1,'Tmdb',1)`, canonical.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = s.pool.Exec(ctx, `INSERT INTO metadata_series_layouts(title_id,provider,generation,episodes) VALUES($1,'Tmdb',1,$2)`, canonical.ID, raw); err != nil {
+		t.Fatal(err)
+	}
+	for _, ep := range chosen {
+		if _, err = s.pool.Exec(ctx, `INSERT INTO metadata_episode_layout(episode_id,title_id,season,number) VALUES($1,$2,$3,$4)`, ep.ID, canonical.ID, ep.Season, ep.Number); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err = s.pool.Exec(ctx, `UPDATE catalog_episode_schedules SET episodes=$2 WHERE title_id=$1`, canonical.ID, raw); err != nil {
+		t.Fatal(err)
+	}
+	seedPersonal(t, s, chosen[0].ID, true, 0, time.Now())
+	// An excluded legacy episode keeps its history, but cannot become the
+	// anchor for this provider's different series structure.
+	seedPersonal(t, s, "tt1234567:25:1", true, 0, time.Now().Add(time.Minute))
+	page, err := s.PersonalRows(ctx, 1, "next-up", "", "2026-10-25")
+	if err != nil || len(page.Items) != 1 || page.Items[0].Media.ID != chosen[1].ID || page.Items[0].Episode.Season != 20 || page.Items[0].Episode.Number != 433 {
+		t.Fatal("source tuple overrode chosen order", page, err)
+	}
+}
+
 func TestNativeNextUpPaginationAndConfiguredCalendarBoundary(t *testing.T) {
 	s, _, _ := nativeWatchFixture(t)
 	ctx := context.Background()
@@ -221,7 +266,7 @@ func TestNativeNextUpUnwatchedSuccessorUsesAppliedCompletionOnly(t *testing.T) {
 	start.Media, start.ObservedAt = catalog.MediaIdentity{Kind: "episode", ID: first}, at
 	ingestNativeEvents(t, s, auth, g, start)
 	check("")
-	finish := nativeWatchEvent(session, 2, 2, "stop", 90000)
+	finish := nativeWatchEvent(session, 2, 2, "stop", 95000)
 	finish.Media, finish.ObservedAt = start.Media, at.Add(time.Second)
 	ingestNativeEvents(t, s, auth, g, finish)
 	check(show.Episodes[1].ID)
@@ -241,7 +286,7 @@ func TestNativeNextUpUnwatchedSuccessorUsesAppliedCompletionOnly(t *testing.T) {
 	}
 	check(show.Episodes[1].ID)
 	// Retain late completion in history, without reverting the newer reset.
-	late := nativeWatchEvent(later, 4, 2, "stop", 90000)
+	late := nativeWatchEvent(later, 4, 2, "stop", 95000)
 	late.Media, late.ObservedAt = begin.Media, at.Add(3*time.Second)
 	result := ingestNativeEvents(t, s, auth, g, late)
 	if result[0].Outcome != "stale" {
@@ -302,7 +347,7 @@ func TestNativeNextUpWaitsForCurrentEpisodeCompletion(t *testing.T) {
 	start.ObservedAt = at.Add(time.Second)
 	ingestNativeEvents(t, s, auth, g, start)
 	check(1, "")
-	finish := nativeWatchEvent(session, 2, 2, "stop", 90000)
+	finish := nativeWatchEvent(session, 2, 2, "stop", 95000)
 	finish.Media, finish.ObservedAt = start.Media, start.ObservedAt
 	ingestNativeEvents(t, s, auth, g, finish)
 	check(0, last)
@@ -444,7 +489,7 @@ func TestNativeContinueWatchingKeepsUnfinishedRewatchAndFencesReset(t *testing.T
 	second := nativeWatchSession(t, s, g)
 	begin := nativeWatchEvent(second, 4, 1, "start", 0)
 	begin.ObservedAt = start.ObservedAt.Add(time.Second)
-	finish := nativeWatchEvent(second, 5, 2, "stop", 90000)
+	finish := nativeWatchEvent(second, 5, 2, "stop", 95000)
 	finish.ObservedAt = begin.ObservedAt
 	ingestNativeEvents(t, s, auth, g, begin, finish)
 	check(0, 0)
