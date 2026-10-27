@@ -5,7 +5,7 @@ import type {MappingOperation} from './mapping-operation-api.ts';
 import { ApiError, request } from './api.ts';
 import {titleArtworkURL} from './artwork-url.ts';
 import type { TorrentDetail, TorrentFile } from './rd-api.ts';
-export interface Movie { id: string; type: 'movie'; name: string; year: string; description: string; poster: string; genres: string[] }
+export interface Movie { id: string; type: 'movie'; name: string; year: string; description: string; poster: string; genres: string[]; runtime?:string }
 export interface MoviePage { movies: Movie[]; skip: number; next_skip?: number }
 export interface Mapping { id: string; movie_id: string; movie: Movie; rd_account_id: string; torrent_id: string; hash: string; file_id: number; path: string; bytes: number; source_name: string; status: 'draft'; created_at: string }
 export interface SavedMoviePage { movies: Movie[]; next_after?: string }
@@ -15,7 +15,7 @@ const uuid = (v: unknown): v is string => typeof v === 'string' && /^[0-9a-f]{8}
 const invalid = () => new ApiError('TED returned incomplete movie information. Refresh to check the current state.');
 export function movie(v: unknown): Movie {
   if (!record(v) || !imdb(v.id) || v.type !== 'movie' || typeof v.name !== 'string' || !v.name.trim() || typeof v.year !== 'string' || typeof v.description !== 'string' || typeof v.poster !== 'string' || !Array.isArray(v.genres) || !v.genres.every(g => typeof g === 'string')) throw invalid();
-  if (v.poster && !titleArtworkURL(v.poster)) throw invalid();
+  if ((v.poster && !titleArtworkURL(v.poster)) || (v.runtime !== undefined && typeof v.runtime !== 'string')) throw invalid();
   return v as unknown as Movie;
 }
 function mapping(v: unknown): Mapping {

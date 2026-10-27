@@ -9,6 +9,21 @@ test('shared browsing adapts movies and series to the same pagination contract',
  assert.deepEqual(appendBrowse(page,{titles:[],skip:50}).titles,[title]);}}
  finally{globalThis.fetch=original}
 });
+test('movie and series summaries retain optional runtimes and reject malformed values',async()=>{
+ const original=globalThis.fetch;
+ try {for(const kind of ['movie','series'] as const){
+  const title={id:'tt1245698',type:kind,name:'Title',year:'2008',description:'',poster:'',genres:['Drama']};
+  for(const runtime of [undefined,'','45 min']){
+   globalThis.fetch=async()=>Response.json({[kind==='movie'?'movies':'series']:[{...title,runtime}],skip:0});
+   const page=await mediaBrowserApi.browse(kind,'',0,new AbortController().signal);
+   assert.equal(page.titles[0]?.runtime,runtime);
+  }
+  for(const runtime of [null,45,{}]){
+   globalThis.fetch=async()=>Response.json({[kind==='movie'?'movies':'series']:[{...title,runtime}],skip:0});
+   await assert.rejects(mediaBrowserApi.browse(kind,'',0,new AbortController().signal),/incomplete/i);
+  }
+ }}finally{globalThis.fetch=original}
+});
 test('saved movies use the signed-in metadata endpoint and validate cursor boundaries',async()=>{
  const original=globalThis.fetch;const movie={id:'tt1345836',type:'movie',name:'Title',year:'2012',description:'',poster:'',genres:[]};
  try {

@@ -13,7 +13,7 @@ const object=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object';
 const invalid=()=>new ApiError('Incomplete series information. Refresh before changing mappings.');
 export function title(v:unknown):SeriesTitle {
  if(!object(v)||typeof v.id!=='string'||!/^tt[0-9]{7,12}$/.test(v.id)||v.type!=='series'||typeof v.name!=='string'||!v.name||typeof v.year!=='string'||typeof v.description!=='string'||typeof v.poster!=='string'||!Array.isArray(v.genres)||!v.genres.every(g=>typeof g==='string'))throw invalid();
- if(v.poster&&!titleArtworkURL(v.poster))throw invalid();
+ if((v.poster&&!titleArtworkURL(v.poster))||(v.runtime!==undefined&&typeof v.runtime!=='string'))throw invalid();
  return v as unknown as SeriesTitle;
 }
 export const seriesApi={
