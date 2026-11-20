@@ -161,6 +161,14 @@ func run(logger *slog.Logger) error {
 		if inventory := streams.RDInventory(); inventory != nil {
 			api.SetRDInventory(inventory)
 		}
+		if err = api.StartNextPreparations(ctx); err != nil {
+			return err
+		}
+		defer func() {
+			stop, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			_ = api.StopNextPreparations(stop)
+		}()
 		enrichment, err := metadata.New(pool, metadata.NewStoredProviders(providers, cfg.Metadata), cfg.MetadataDir, logger)
 		if err != nil {
 			return err

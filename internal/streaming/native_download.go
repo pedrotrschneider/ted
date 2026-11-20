@@ -46,6 +46,9 @@ func (s *Service) NativeDownload(ctx context.Context, g accounts.NativeGrant, se
 	if m.Bytes <= 0 {
 		return NativeDownload{}, ErrProbeInvalid
 	}
-	sum := sha256.Sum256([]byte(fmt.Sprintf("%s:%d", mapping, m.Bytes)))
-	return DownloadDescriptor(session, m.Bytes, fmt.Sprintf(`"ted-%x"`, sum)), nil
+	return DownloadDescriptor(session, m.Bytes, nativeMappingETag(mapping, m.Bytes)), nil
+}
+func nativeMappingETag(mapping string, size int64) string {
+	sum := sha256.Sum256([]byte(fmt.Sprintf("%s:%d", mapping, size)))
+	return fmt.Sprintf(`"ted-%x"`, sum)
 }

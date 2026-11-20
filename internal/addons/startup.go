@@ -118,6 +118,9 @@ func (s *Service) startupPart(ctx context.Context, source Source, start, end int
 		return startupPart{}, ErrUnavailable
 	}
 	defer res.Body.Close()
+	if err := sourceStatusError(res); err != nil {
+		return startupPart{}, err
+	}
 	a, b, n, e := contentRange(res.Header.Get("Content-Range"))
 	if res.StatusCode != 206 || e != nil || a != start || b != end || n != source.VideoSize || !fileContentType(res.Header.Get("Content-Type")) || !identityEncoding(res.Header.Get("Content-Encoding")) {
 		return startupPart{}, ErrUnsupported
@@ -127,7 +130,7 @@ func (s *Service) startupPart(ctx context.Context, source Source, start, end int
 		if ctx.Err() != nil {
 			return startupPart{}, ctx.Err()
 		}
-		return startupPart{}, ErrUnsupported
+		return startupPart{}, ErrUnavailable
 	}
 	return startupPart{data, res.Header.Get("ETag"), res.Header.Get("Content-Type")}, nil
 }

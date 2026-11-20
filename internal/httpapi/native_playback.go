@@ -23,6 +23,7 @@ func (a *API) nativePlaybackRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/client/v1/playback/preparations", a.nativeProtected(a.nativePrepareSource))
 	mux.HandleFunc("DELETE /api/client/v1/playback/preparations/{id}", a.nativeProtected(a.nativeDiscardSource))
 	mux.HandleFunc("POST /api/client/v1/playback/sessions", a.nativeProtected(a.nativeSession))
+	mux.HandleFunc("POST /api/client/v1/playback/sessions/{id}/cache-plan", a.nativeProtected(a.nativeCachePlan))
 	mux.HandleFunc("POST /api/client/v1/playback/sources", a.nativeProtected(a.nativeSources))
 	mux.HandleFunc("PUT /api/client/v1/playback/sources/{id}/favorite", a.nativeProtected(a.nativeFavorite))
 	mux.HandleFunc("GET /api/client/v1/addons", a.nativeProtected(a.nativeAddons))
@@ -163,6 +164,7 @@ func (a *API) nativeSession(w http.ResponseWriter, r *http.Request, g accounts.N
 		Media     catalog.MediaIdentity `json:"media"`
 		SourceID  string                `json:"source_id"`
 		Beginning bool                  `json:"start_from_beginning"`
+		CacheOnly bool                  `json:"prepare_only"`
 	}
 	if !decode(w, r, &input) {
 		return
@@ -174,7 +176,11 @@ func (a *API) nativeSession(w http.ResponseWriter, r *http.Request, g accounts.N
 	var session streaming.NativeSession
 	var err error
 	if input.SourceID != "" {
-		session, err = a.addons.CreateSession(r.Context(), a.NativeAuth, g, input.Media, input.SourceID)
+		if input.CacheOnly {
+			session, err = a.addons.CreateCacheSession(r.Context(), a.NativeAuth, g, input.Media, input.SourceID)
+		} else {
+			session, err = a.addons.CreateSession(r.Context(), a.NativeAuth, g, input.Media, input.SourceID)
+		}
 	} else {
 		session, err = a.Streaming.CreateNativeSession(r.Context(), a.NativeAuth, g, input.Media)
 	}
@@ -283,19 +289,29 @@ func (a *API) nativeWatchFailure(w http.ResponseWriter, r *http.Request, err err
 
 func (a *API) nativePrepareSource(w http.ResponseWriter, r *http.Request, g accounts.NativeGrant) {
 	var input struct {
-		Media    catalog.MediaIdentity `json:"media"`
-		SourceID string                `json:"source_id"`
+		Operation string                `json:"operation_id"`
+		AllowAdd  bool                  `json:"allow_add"`
+		Media     catalog.MediaIdentity `json:"media"`
+		SourceID  string                `json:"source_id"`
 	}
 	if !decode(w, r, &input) {
 		return
 	}
-	if err := a.addons.PrepareSource(r.Context(), a.NativeAuth, g, input.Media, input.SourceID); err != nil {
+	if input.Operation != "" && !nativeUUID.MatchString(input.Operation) {
+		a.nativeSourceFailure(w, r, addons.ErrSelection)
+		return
+	}
+	if err := a.addons.PrepareSourceOperation(r.Context(), a.NativeAuth, g, input.Media, input.SourceID, input.Operation, input.AllowAdd); err != nil {
 		a.nativeSourceFailure(w, r, err)
 		return
 	}
 	respond(w, 200, map[string]any{"ready": true})
 }
 func (a *API) nativeDiscardSource(w http.ResponseWriter, r *http.Request, g accounts.NativeGrant) {
-	a.addons.DiscardPreparation(g, r.PathValue("id"))
+	if !nativeUUID.MatchString(r.PathValue("id")) || r.URL.Query().Get("operation_id") != "" && !nativeUUID.MatchString(r.URL.Query().Get("operation_id")) {
+		a.nativeSourceFailure(w, r, addons.ErrSelection)
+		return
+	}
+	a.addons.DiscardPreparationOperation(g, r.PathValue("id"), r.URL.Query().Get("operation_id"))
 	respond(w, 200, map[string]any{"discarded": true})
 }

@@ -50,10 +50,11 @@ type API struct {
 	watch            *watchstate.Store
 	stremio          *stremio.Store
 	addons           *addons.Service
+	nativeCachePlans chan struct{}
 }
 
 func New(pool *pgxpool.Pool, service *accounts.Service, secure bool, logger *slog.Logger, rd RDReader) *API {
-	a := &API{updateChecker: updates.NewChecker(), CalendarLocation: time.UTC, pool: pool, accounts: service, logger: logger, rd: rd, sessions: scs.New()}
+	a := &API{updateChecker: updates.NewChecker(), CalendarLocation: time.UTC, pool: pool, accounts: service, logger: logger, rd: rd, sessions: scs.New(), nativeCachePlans: make(chan struct{}, 2)}
 	a.NativeAuth, _ = accounts.NewNativeAuth(pool, service, accounts.DefaultNativePolicy())
 	a.movies = cinemeta.New()
 	a.series = cinemeta.New()

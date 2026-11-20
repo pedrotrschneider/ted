@@ -107,6 +107,19 @@ type Client struct {
 func New(key string) *Client {
 	return &Client{key: key, base: "https://api.real-debrid.com/rest/1.0/", http: &http.Client{Timeout: 8 * time.Second, CheckRedirect: func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }}}
 }
+
+// NewWithHTTPClient keeps the ordinary timeout/redirect policy while allowing
+// an explicit transport, for example an isolated provider protocol fixture.
+func NewWithHTTPClient(key string, client *http.Client) *Client {
+	c := New(key)
+	if client != nil {
+		copy := *client
+		copy.Timeout = c.http.Timeout
+		copy.CheckRedirect = c.http.CheckRedirect
+		c.http = &copy
+	}
+	return c
+}
 func NewStored(store *settings.Store) *Client { c := New(""); c.store = store; return c }
 
 // Snapshot pins the credential for a whole operation, including recovered torrents and link-cache writes.
@@ -214,7 +227,7 @@ func (c *Client) request(ctx context.Context, method, route string, form url.Val
 			case 28, 29, 30:
 				return nil, ErrRejected
 			case 5, 34:
-				return nil, ErrLimited
+				return nil, rateLimit(resp.Header)
 			}
 		}
 	}
@@ -230,7 +243,7 @@ func (c *Client) request(ctx context.Context, method, route string, form url.Val
 	case 404:
 		return nil, ErrNotFound
 	case 429:
-		return nil, ErrLimited
+		return nil, rateLimit(resp.Header)
 	default:
 		return nil, ErrUnavailable
 	}

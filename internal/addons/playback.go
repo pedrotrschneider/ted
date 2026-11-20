@@ -54,6 +54,12 @@ func (s *Service) selected(ctx context.Context, g accounts.NativeGrant, id strin
 	return v, nil
 }
 func (s *Service) CreateSession(ctx context.Context, auth *accounts.NativeAuth, g accounts.NativeGrant, media catalog.MediaIdentity, sourceID string) (streaming.NativeSession, error) {
+	return s.createSession(ctx, auth, g, media, sourceID, false)
+}
+func (s *Service) CreateCacheSession(ctx context.Context, auth *accounts.NativeAuth, g accounts.NativeGrant, media catalog.MediaIdentity, sourceID string) (streaming.NativeSession, error) {
+	return s.createSession(ctx, auth, g, media, sourceID, true)
+}
+func (s *Service) createSession(ctx context.Context, auth *accounts.NativeAuth, g accounts.NativeGrant, media catalog.MediaIdentity, sourceID string, cacheOnly bool) (streaming.NativeSession, error) {
 	ctx, stop := context.WithTimeout(ctx, SessionPreparationTimeout)
 	defer stop()
 	v, err := s.selectedForPlayback(ctx, g, media, sourceID)
@@ -62,8 +68,12 @@ func (s *Service) CreateSession(ctx context.Context, auth *accounts.NativeAuth, 
 	}
 	l := v.link
 	bounded, cancel := context.WithTimeout(ctx, mediaPreparationTimeout)
+	defer cancel()
 	started := time.Now()
-	p, warm := s.takeWarm(g, sourceID, v.source)
+	p, warm := s.warmForSession(g, sourceID, v.source, cacheOnly)
+	if cacheOnly && (!warm || v.source.InfoHash == "") {
+		return streaming.NativeSession{}, ErrPreparation
+	}
 	resolvedAt := time.Now()
 	if !warm {
 		var resolvedSource Source

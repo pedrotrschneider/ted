@@ -242,6 +242,26 @@ type prepared struct {
 	Fingerprint, ETag string
 	startup           *startupBytes
 }
+type mediaRetry struct{ delay time.Duration }
+
+func (e mediaRetry) Error() string             { return ErrUnavailable.Error() }
+func (e mediaRetry) Unwrap() error             { return ErrUnavailable }
+func (e mediaRetry) RetryAfter() time.Duration { return e.delay }
+func sourceStatusError(res *http.Response) error {
+	if res.StatusCode == 429 {
+		delay := time.Duration(0)
+		if seconds, err := strconv.ParseInt(res.Header.Get("Retry-After"), 10, 64); err == nil && seconds > 0 && seconds <= 31536000 {
+			delay = time.Duration(seconds) * time.Second
+		} else if at, err := http.ParseTime(res.Header.Get("Retry-After")); err == nil {
+			delay = time.Until(at)
+		}
+		return mediaRetry{delay}
+	}
+	if res.StatusCode == 401 || res.StatusCode == 403 || res.StatusCode == 404 || res.StatusCode == 408 || res.StatusCode == 410 || res.StatusCode >= 500 {
+		return ErrUnavailable
+	}
+	return nil
+}
 
 func (s *Service) prepare(ctx context.Context, source Source) (prepared, error) {
 	req, err := sourceRequest(ctx, source, "bytes=0-4095")
@@ -259,6 +279,9 @@ func (s *Service) prepare(ctx context.Context, source Source) (prepared, error) 
 		return prepared{}, ErrUnavailable
 	}
 	defer res.Body.Close()
+	if err := sourceStatusError(res); err != nil {
+		return prepared{}, err
+	}
 	start, end, size, err := contentRange(res.Header.Get("Content-Range"))
 	if res.StatusCode != 206 || err != nil || start != 0 || end != min(size-1, 4095) || !fileContentType(res.Header.Get("Content-Type")) || !identityEncoding(res.Header.Get("Content-Encoding")) {
 		return prepared{}, ErrUnsupported
@@ -268,7 +291,7 @@ func (s *Service) prepare(ctx context.Context, source Source) (prepared, error) 
 		if ctx.Err() != nil {
 			return prepared{}, ctx.Err()
 		}
-		return prepared{}, ErrUnsupported
+		return prepared{}, ErrUnavailable
 	}
 	if err := validateMediaPrefix(data, res.Header.Get("Content-Type")); err != nil {
 		return prepared{}, err
@@ -292,6 +315,9 @@ func (s *Service) prepare(ctx context.Context, source Source) (prepared, error) 
 			return prepared{}, ErrUnavailable
 		}
 		defer tailRes.Body.Close()
+		if err := sourceStatusError(tailRes); err != nil {
+			return prepared{}, err
+		}
 		a, b, n, e := contentRange(tailRes.Header.Get("Content-Range"))
 		if tailRes.StatusCode != 206 || e != nil || a != from || b != size-1 || n != size || !fileContentType(tailRes.Header.Get("Content-Type")) || !identityEncoding(tailRes.Header.Get("Content-Encoding")) || res.Header.Get("ETag") != tailRes.Header.Get("ETag") {
 			return prepared{}, ErrUnsupported
@@ -301,7 +327,7 @@ func (s *Service) prepare(ctx context.Context, source Source) (prepared, error) 
 			if ctx.Err() != nil {
 				return prepared{}, ctx.Err()
 			}
-			return prepared{}, ErrUnsupported
+			return prepared{}, ErrUnavailable
 		}
 		data = append(data, tail...)
 	}

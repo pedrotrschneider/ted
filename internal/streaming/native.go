@@ -213,6 +213,9 @@ func (s *Service) ServeNativeSession(w http.ResponseWriter, r *http.Request, gra
 	if m.MappingID != mapping {
 		return ErrReleaseChanged
 	}
+	// The mapping version pins the validated file across a cache-only session
+	// and the fresh viewing session. Never expose provider URLs as validators.
+	w.Header().Set("ETag", nativeMappingETag(mapping, m.Bytes))
 	// Explicit remapping may interrupt a body; new
 	// requests refuse a different cut. File locks still protect local playback.
 	s.playPinnedMedia(w, r, m, mapping)

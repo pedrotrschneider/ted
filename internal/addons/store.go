@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"net/http"
 	"slices"
+	"strings"
 	"sync"
 	"time"
 
@@ -19,6 +20,7 @@ import (
 	"entertainmentdistrict/internal/stremio"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/riverqueue/river"
 )
 
 // SourceLookupTimeout includes collection refresh, bounded parallel lookups and
@@ -30,14 +32,16 @@ type AccountRemote interface {
 	AddonCollection(context.Context, string) ([]json.RawMessage, error)
 }
 type Service struct {
-	RD      *realdebrid.Inventory
-	pool    *pgxpool.Pool
-	remote  AccountRemote
-	http    *http.Client
-	media   *http.Client
-	logger  *slog.Logger
-	startup startupCache
-	warm    warmCache
+	RD         *realdebrid.Inventory
+	pool       *pgxpool.Pool
+	remote     AccountRemote
+	http       *http.Client
+	media      *http.Client
+	logger     *slog.Logger
+	startup    startupCache
+	warm       warmCache
+	next       *river.Client[pgx.Tx]
+	nextSchema string
 }
 
 func New(pool *pgxpool.Pool, remote AccountRemote, client *http.Client, logger *slog.Logger) *Service {
@@ -252,6 +256,8 @@ func (s *Service) Collection(ctx context.Context, user int64, force bool) (Colle
 }
 
 type Choice struct {
+	PackKey      string   `json:"pack_key,omitempty"`
+	FileName     string   `json:"file_name,omitempty"`
 	PreviousKeys []string `json:"previous_source_keys,omitempty"`
 	RDDirect     bool     `json:"rd_direct_play"`
 	InRDAccount  bool     `json:"in_rd_account"`
@@ -532,7 +538,16 @@ func (s *Service) sources(ctx context.Context, auth *accounts.NativeAuth, g acco
 				name = addonName
 			}
 			inAccount := availability[source.ReleaseKey()]
-			page.Sources = append(page.Sources, Choice{ID: id, Addon: addonName, Name: name, Description: source.Description, AddonID: r.d.Key(), BingeKey: bingeKey(r.d.Key(), source.BingeGroup), SourceKey: key, FavoriteKey: favorite, RDDirect: source.InfoHash != "", InRDAccount: inAccount, PreviousKeys: previousKeys[r.d.Key()+":"+source.ReleaseKey()]})
+			pack := ""
+			if source.InfoHash != "" {
+				pack = digest(r.d.Key() + "\x00" + source.InfoHash)
+			}
+			filename := strings.ReplaceAll(source.Filename, `\`, "/")
+			if strings.Contains(source.Filename, "://") {
+				filename = ""
+			}
+			filename = filename[strings.LastIndex(filename, "/")+1:]
+			page.Sources = append(page.Sources, Choice{PackKey: pack, FileName: label(filename, 4096), ID: id, Addon: addonName, Name: name, Description: source.Description, AddonID: r.d.Key(), BingeKey: bingeKey(r.d.Key(), source.BingeGroup), SourceKey: key, FavoriteKey: favorite, RDDirect: source.InfoHash != "", InRDAccount: inAccount, PreviousKeys: previousKeys[r.d.Key()+":"+source.ReleaseKey()]})
 			if previousGroup != "" && previousKey == r.d.Key() && previousGroup == source.BingeGroup {
 				matches = append(matches, id)
 			}

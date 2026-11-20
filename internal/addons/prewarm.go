@@ -2,6 +2,7 @@ package addons
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -9,18 +10,21 @@ import (
 	"entertainmentdistrict/internal/accounts"
 	"entertainmentdistrict/internal/catalog"
 	"entertainmentdistrict/internal/database"
+	"entertainmentdistrict/internal/realdebrid"
 )
 
 const warmLifetime = time.Hour
 
 // A pending selection owns this cache entry. It is not a playback session and
-// never emits viewing, recents, local downloads or torrent additions.
+// never emits viewing, recents or local downloads. Explicit playback-next
+// requests may separately own a durable exact-file RD job.
 type warmEntry struct {
-	source  [32]byte
-	expires time.Time
-	cancel  context.CancelFunc
-	p       prepared
-	ready   bool
+	operation string
+	source    [32]byte
+	expires   time.Time
+	cancel    context.CancelFunc
+	p         prepared
+	ready     bool
 }
 type warmCache struct {
 	mu      sync.Mutex
@@ -31,16 +35,27 @@ func warmKey(g accounts.NativeGrant, id string) string {
 	return fmt.Sprintf("%d/%s/%s/%s", g.User.ID, g.FamilyID, g.DeviceID, id)
 }
 func (s *Service) DiscardPreparation(g accounts.NativeGrant, id string) {
+	s.DiscardPreparationOperation(g, id, "")
+}
+func (s *Service) DiscardPreparationOperation(g accounts.NativeGrant, id, operation string) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	if err := s.cancelNextFile(ctx, g, id, operation); err != nil && s.logger != nil {
+		s.logger.WarnContext(ctx, "next file cancellation failed", "operation", "next_episode_cancel")
+	}
 	s.warm.mu.Lock()
 	defer s.warm.mu.Unlock()
 	key := warmKey(g, id)
-	if entry := s.warm.entries[key]; entry != nil {
+	if entry := s.warm.entries[key]; entry != nil && (operation == "" || entry.operation == operation) {
 		entry.cancel()
 		entry.p.startup.close()
 		delete(s.warm.entries, key)
 	}
 }
 func (s *Service) takeWarm(g accounts.NativeGrant, id string, source Source) (prepared, bool) {
+	return s.warmForSession(g, id, source, false)
+}
+func (s *Service) warmForSession(g accounts.NativeGrant, id string, source Source, keep bool) (prepared, bool) {
 	s.warm.mu.Lock()
 	defer s.warm.mu.Unlock()
 	key := warmKey(g, id)
@@ -48,15 +63,22 @@ func (s *Service) takeWarm(g accounts.NativeGrant, id string, source Source) (pr
 	if entry == nil || !entry.ready {
 		return prepared{}, false
 	}
-	delete(s.warm.entries, key)
-	entry.cancel()
+	if !keep {
+		delete(s.warm.entries, key)
+		entry.cancel()
+	}
 	if time.Now().After(entry.expires) || entry.source != startupKey(prepared{Source: source}) {
+		delete(s.warm.entries, key)
+		entry.cancel()
 		entry.p.startup.close()
 		return prepared{}, false
 	}
 	return entry.p, true
 }
 func (s *Service) PrepareSource(ctx context.Context, auth *accounts.NativeAuth, g accounts.NativeGrant, media catalog.MediaIdentity, id string) error {
+	return s.PrepareSourceOperation(ctx, auth, g, media, id, "", false)
+}
+func (s *Service) PrepareSourceOperation(ctx context.Context, auth *accounts.NativeAuth, g accounts.NativeGrant, media catalog.MediaIdentity, id, operation string, allowAdd bool) error {
 	ctx, cancel := context.WithTimeout(ctx, SessionPreparationTimeout)
 	defer cancel()
 	v, err := s.selectedForPlayback(ctx, g, media, id)
@@ -64,11 +86,12 @@ func (s *Service) PrepareSource(ctx context.Context, auth *accounts.NativeAuth, 
 		return err
 	}
 	// Direct resolver URLs may have provider-side effects. Background reads are
-	// restricted to identified torrents already available in our RD account.
+	// restricted to identified torrents. Browsing remains ready-only; the
+	// playback-next workflow may separately queue its requested exact file.
 	if v.source.InfoHash == "" || s.RD == nil {
 		return ErrUnsupported
 	}
-	entry := &warmEntry{source: startupKey(prepared{Source: v.source}), expires: time.Now().Add(warmLifetime), cancel: cancel}
+	entry := &warmEntry{operation: operation, source: startupKey(prepared{Source: v.source}), expires: time.Now().Add(warmLifetime), cancel: cancel}
 	key := warmKey(g, id)
 	s.warm.mu.Lock()
 	if s.warm.entries == nil {
@@ -118,6 +141,12 @@ func (s *Service) PrepareSource(ctx context.Context, auth *accounts.NativeAuth, 
 	}
 	scope := rd.CredentialScope()
 	want, resolved, err := s.RD.ResolveAvailableSelection(ctx, torrentSelection(v.source))
+	if allowAdd && errors.Is(err, realdebrid.ErrPending) {
+		if err = s.requestNextFile(ctx, auth, g, v, id, operation); err != nil {
+			return err
+		}
+		return realdebrid.ErrPending
+	}
 	if err != nil {
 		return err
 	}

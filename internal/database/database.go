@@ -92,7 +92,7 @@ func Cleanup(ctx context.Context, pool *pgxpool.Pool, logger *slog.Logger) {
 			return
 		case <-ticker.C:
 			op, cancel := context.WithTimeout(ctx, 5*time.Second)
-			_, err := pool.Exec(op, "DELETE FROM browser_session_revocations WHERE expires_at < now(); DELETE FROM sessions WHERE expiry < now(); DELETE FROM login_limits WHERE expiry < now()")
+			_, err := pool.Exec(op, "DELETE FROM browser_session_revocations WHERE expires_at < now(); DELETE FROM sessions WHERE expiry < now(); DELETE FROM login_limits WHERE expiry < now(); DELETE FROM native_next_preparations WHERE expires_at<now()-interval '1 day'")
 			cancel()
 			if err != nil && ctx.Err() == nil {
 				logger.Error("expired authentication data cleanup failed", "operation", "auth_cleanup", "error_type", fmt.Sprintf("%T", err))

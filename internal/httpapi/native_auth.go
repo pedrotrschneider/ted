@@ -43,7 +43,7 @@ func (a *API) nativeHandler() http.Handler {
 		_, pattern := mux.Handler(r)
 		if pattern != "GET /api/client/v1/playback/sessions/{id}/media" && pattern != "GET /api/client/v1/downloads/{id}/media" {
 			budget := 10 * time.Second
-			if pattern == "POST /api/client/v1/playback/preparations" || pattern == "POST /api/client/v1/playback/sessions" || pattern == "POST /api/client/v1/downloads/resolve" {
+			if pattern == "POST /api/client/v1/playback/preparations" || pattern == "POST /api/client/v1/playback/sessions" || pattern == "POST /api/client/v1/playback/sessions/{id}/cache-plan" || pattern == "POST /api/client/v1/downloads/resolve" {
 				budget = addons.SessionPreparationTimeout + 5*time.Second
 			}
 			if pattern == "POST /api/client/v1/playback/sources" {

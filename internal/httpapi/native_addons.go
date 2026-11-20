@@ -102,6 +102,10 @@ func (a *API) nativeSubtitle(w http.ResponseWriter, r *http.Request, g accounts.
 	_, _ = w.Write(data)
 }
 func (a *API) nativeSourceFailure(w http.ResponseWriter, r *http.Request, err error) {
+	var delayed interface{ RetryAfter() time.Duration }
+	if errors.As(err, &delayed) && delayed.RetryAfter() > 0 {
+		w.Header().Set("Retry-After", strconv.FormatInt(int64((delayed.RetryAfter()+time.Second-1)/time.Second), 10))
+	}
 	code, status := "", 503
 	switch {
 	case errors.Is(err, realdebrid.ErrArchive):

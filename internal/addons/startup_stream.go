@@ -58,6 +58,10 @@ func (s *Service) progressiveHead(ctx context.Context, source Source, end int64)
 		return startupPart{}, nil, ErrUnavailable
 	}
 	a, b, n, e := contentRange(res.Header.Get("Content-Range"))
+	if err := sourceStatusError(res); err != nil {
+		res.Body.Close()
+		return startupPart{}, nil, err
+	}
 	if res.StatusCode != http.StatusPartialContent || e != nil || a != 0 || b != end || n != source.VideoSize || !fileContentType(res.Header.Get("Content-Type")) || !identityEncoding(res.Header.Get("Content-Encoding")) {
 		res.Body.Close()
 		return startupPart{}, nil, ErrUnsupported
@@ -65,7 +69,7 @@ func (s *Service) progressiveHead(ctx context.Context, source Source, end int64)
 	prefix := make([]byte, 4096)
 	if _, err = io.ReadFull(res.Body, prefix); err != nil {
 		res.Body.Close()
-		return startupPart{}, nil, ErrUnsupported
+		return startupPart{}, nil, ErrUnavailable
 	}
 	stream := &startupStream{data: append(make([]byte, 0, end+1), prefix...), changed: make(chan struct{})}
 	go func() {
