@@ -29,6 +29,7 @@ type NativeCachePlan struct {
 	Ahead          int64              `json:"ahead_bytes"`
 	Back           int64              `json:"back_bytes"`
 	Initialization []NativeCacheRange `json:"initialization_ranges,omitempty"`
+	packetEnd      int64
 }
 
 type NativeCacheRange struct {
@@ -72,6 +73,10 @@ func (r *cachePlanReads) initialization(plan NativeCachePlan) ([]NativeCacheRang
 		return nil, cachePlanInvalid("initialization_ranges_exhausted")
 	}
 	var result []NativeCacheRange
+	videoEnd := plan.End
+	if plan.packetEnd > 0 {
+		videoEnd = plan.packetEnd
+	}
 	for _, read := range r.reads {
 		window := *read
 		window.End = min(window.End, plan.Size-1)
@@ -82,7 +87,7 @@ func (r *cachePlanReads) initialization(plan NativeCachePlan) ([]NativeCacheRang
 			if plan.ResumeMS > 0 {
 				window.End = min(window.End, (2<<20)-1)
 			}
-		} else if window.Start <= plan.End && window.End >= plan.Start {
+		} else if window.Start <= videoEnd && window.End >= plan.Start {
 			// This request supplied the measured video window. Its speculative
 			// HTTP read-ahead is not an additional initialization requirement.
 			continue
@@ -302,6 +307,7 @@ func cachePlanPackets(plan NativeCachePlan, raw []byte) (NativeCachePlan, error)
 	}
 	// Packet positions can point at container block headers, and lacing has
 	// its own length table. Keep a bounded trailing guard within the same cap.
+	plan.packetEnd = plan.End
 	plan.End = min(plan.End+(64<<10), min(plan.Size-1, plan.Start+plan.Ahead-1))
 	return plan, nil
 }

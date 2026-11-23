@@ -176,3 +176,18 @@ func TestNativeCachePlanBoundsInitializationObservations(t *testing.T) {
 		t.Fatal("unbounded initialization read ledger", err)
 	}
 }
+
+func TestNativeCachePlanRetainsInitializationInsidePacketPadding(t *testing.T) {
+	plan, err := cachePlanPackets(NativeCachePlan{Size: 1 << 20, Ahead: 512 << 10}, []byte(`{"format":{"duration":"20"},"packets":[
+	{"codec_type":"video","stream_index":0,"pos":"6000","size":"100","pts_time":"0","flags":"K_"},
+	{"codec_type":"video","stream_index":0,"pos":"9000","size":"100","pts_time":"5","flags":"__"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var reads cachePlanReads
+	reads.wrote(reads.begin(10000), 9000)
+	ranges, err := reads.initialization(plan)
+	if err != nil || len(ranges) != 1 || ranges[0] != (NativeCacheRange{10000, 18999}) {
+		t.Fatal("startup metadata next to the last video packet was dropped", ranges, err)
+	}
+}
