@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"net"
@@ -25,6 +26,22 @@ type NativeCachePlan struct {
 	End        int64  `json:"end"`
 	Ahead      int64  `json:"ahead_bytes"`
 	Back       int64  `json:"back_bytes"`
+}
+
+// Cache planning can be unavailable for playable media. Reasons are fixed
+// diagnostic codes, never provider output, URLs or filenames.
+type CachePlanError struct{ Reason string }
+
+func (e *CachePlanError) Error() string    { return "cache plan unavailable: " + e.Reason }
+func (e *CachePlanError) Unwrap() error    { return ErrProbeInvalid }
+func cachePlanInvalid(reason string) error { return &CachePlanError{Reason: reason} }
+
+func CachePlanFailureCode(err error) string {
+	var failure *CachePlanError
+	if errors.As(err, &failure) {
+		return failure.Reason
+	}
+	return "unavailable"
 }
 
 // Packet positions are measured by the already bundled ffprobe against the
@@ -71,10 +88,10 @@ func BuildNativeCachePlan(ctx context.Context, media http.Handler, resume, ahead
 	}
 	plan := NativeCachePlan{Size: head.ContentLength, ETag: head.Header.Get("ETag"), ResumeMS: resume, Ahead: ahead, Back: back}
 	if len(plan.ETag) < 2 || len(plan.ETag) > 1024 || plan.ETag[0] != '"' {
-		return NativeCachePlan{}, ErrProbeInvalid
+		return NativeCachePlan{}, cachePlanInvalid("validator_missing")
 	}
 	interval := fmt.Sprintf("%.3f%%%.3f", float64(resume)/1000, float64(resume)/1000+5.25)
-	cmd := exec.CommandContext(ctx, "ffprobe", "-v", "error", "-rw_timeout", "8000000", "-probesize", "10000000", "-analyzeduration", "10000000", "-read_intervals", interval, "-show_entries", "format=duration:packet=codec_type,stream_index,pos,size,pts_time,flags", "-of", "json", endpoint)
+	cmd := exec.CommandContext(ctx, "ffprobe", "-v", "error", "-rw_timeout", "8000000", "-probesize", "10000000", "-analyzeduration", "10000000", "-read_intervals", interval, "-show_entries", "format=duration:stream=index,codec_type:stream_disposition=attached_pic:packet=codec_type,stream_index,pos,size,pts_time,flags", "-of", "json", endpoint)
 	var out boundedOutput
 	var stderr probeStderr
 	cmd.Stdout = &out
@@ -105,6 +122,13 @@ func cachePlanPackets(plan NativeCachePlan, raw []byte) (NativeCachePlan, error)
 		Format struct {
 			Duration string `json:"duration"`
 		} `json:"format"`
+		Streams []struct {
+			Index       int    `json:"index"`
+			Type        string `json:"codec_type"`
+			Disposition struct {
+				Attached int `json:"attached_pic"`
+			} `json:"disposition"`
+		} `json:"streams"`
 		Packets []struct {
 			Type   string `json:"codec_type"`
 			Stream int    `json:"stream_index"`
@@ -115,11 +139,11 @@ func cachePlanPackets(plan NativeCachePlan, raw []byte) (NativeCachePlan, error)
 		} `json:"packets"`
 	}
 	if len(raw) > 2<<20 || json.Unmarshal(raw, &data) != nil || len(data.Packets) > 20000 {
-		return NativeCachePlan{}, ErrProbeInvalid
+		return NativeCachePlan{}, cachePlanInvalid("packet_response_invalid")
 	}
 	duration, err := strconv.ParseFloat(data.Format.Duration, 64)
 	if err != nil || math.IsNaN(duration) || math.IsInf(duration, 0) || duration <= 0 || duration > 604800 || float64(plan.ResumeMS) >= duration*1000 {
-		return NativeCachePlan{}, ErrProbeInvalid
+		return NativeCachePlan{}, cachePlanInvalid("duration_invalid")
 	}
 	plan.DurationMS = int64(duration * 1000)
 	plan.Start = plan.Size
@@ -127,20 +151,38 @@ func cachePlanPackets(plan NativeCachePlan, raw []byte) (NativeCachePlan, error)
 	var firstPTS, lastPTS float64
 	first := true
 	videoStream := -1
+	for _, stream := range data.Streams {
+		if stream.Type == "video" && stream.Disposition.Attached == 0 {
+			videoStream = stream.Index
+			break
+		}
+	}
+	if len(data.Streams) > 0 && videoStream < 0 {
+		return NativeCachePlan{}, cachePlanInvalid("video_missing")
+	}
+	// Laced Matroska audio packets may share a block position and omit PTS.
+	// Their sizes still contribute to byte coverage; only video proves time.
+	blockBytes := make(map[[2]int64]int64)
 	for _, p := range data.Packets {
 		if p.Type != "audio" && p.Type != "video" {
 			continue
 		}
+		if p.Type == "video" && videoStream >= 0 && p.Stream != videoStream {
+			continue
+		}
 		pos, e := strconv.ParseInt(p.Pos, 10, 64)
 		size, e2 := strconv.ParseInt(p.Size, 10, 64)
-		pts, e3 := strconv.ParseFloat(p.PTS, 64)
-		if e != nil || e2 != nil || e3 != nil || pos < 0 || size <= 0 || size > plan.Size-pos || math.IsNaN(pts) || math.IsInf(pts, 0) {
-			return NativeCachePlan{}, ErrProbeInvalid
+		if e != nil || e2 != nil || pos < 0 || size <= 0 || size > plan.Size-pos {
+			return NativeCachePlan{}, cachePlanInvalid("packet_position_invalid")
 		}
 		if p.Type == "video" {
+			pts, e3 := strconv.ParseFloat(p.PTS, 64)
+			if e3 != nil || math.IsNaN(pts) || math.IsInf(pts, 0) {
+				return NativeCachePlan{}, cachePlanInvalid("video_timestamp_invalid")
+			}
 			if first {
 				if !strings.Contains(p.Flags, "K") {
-					return NativeCachePlan{}, ErrProbeInvalid
+					return NativeCachePlan{}, cachePlanInvalid("keyframe_missing")
 				}
 				firstPTS, videoStream, first = pts, p.Stream, false
 			}
@@ -148,15 +190,22 @@ func cachePlanPackets(plan NativeCachePlan, raw []byte) (NativeCachePlan, error)
 				lastPTS = max(lastPTS, pts)
 			}
 		}
+		key := [2]int64{int64(p.Stream), pos}
+		blockBytes[key] += size
+		if blockBytes[key] > plan.Size-pos {
+			return NativeCachePlan{}, cachePlanInvalid("packet_position_invalid")
+		}
 		plan.Start = min(plan.Start, pos)
-		plan.End = max(plan.End, pos+size-1)
+		plan.End = max(plan.End, pos+blockBytes[key]-1)
 	}
 	// Seek must have reached a keyframe at/before the intended position and the
 	// requested playable window. A shallow/failed probe is never cache readiness.
 	target := min(float64(plan.ResumeMS)/1000+5, duration)
 	if first || firstPTS > float64(plan.ResumeMS)/1000+0.25 || lastPTS < target-0.25 || plan.Start > plan.End {
-		return NativeCachePlan{}, ErrProbeInvalid
+		return NativeCachePlan{}, cachePlanInvalid("video_window_incomplete")
 	}
-	plan.End = min(plan.End, plan.Start+plan.Ahead-1)
+	// Packet positions can point at container block headers, and lacing has
+	// its own length table. Keep a bounded trailing guard within the same cap.
+	plan.End = min(plan.End+(64<<10), min(plan.Size-1, plan.Start+plan.Ahead-1))
 	return plan, nil
 }

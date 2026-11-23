@@ -1,6 +1,12 @@
 # Owner home-server deployment
 
-Updated October 25, 2026. This records the installed home-server preview on port 33043, not broad platform acceptance. The separate CasaOS installation on port 33044 remains `ghcr.io/pedrotrschneider/ted:0.2.0` and was not changed by this preview rollout. The old Mac server is stopped; do not start its stale synchronization workers. General backup/restore is in [Operations](../operations.md); code/test status is in [IMPLEMENTATION](../../IMPLEMENTATION.md).
+Updated November 23, 2026. The current read-only observation is the CasaOS installation on port **33044**, running **TED 0.3.2**. The October 25 preview rollout on port 33043 is historical and is retained below for recovery. Do not start the old Mac server's stale synchronization workers. General backup/restore is in [Operations](../operations.md); code/test status is in [IMPLEMENTATION](../../IMPLEMENTATION.md).
+
+## Current CasaOS observation — November 23
+
+The owner opened a password-authenticated private SSH control socket to `ptrschneider@100.122.31.92` for read-only next-episode diagnostics; no SSH key was configured or password captured. Current containers are `ted-casaos-app-1` (`ghcr.io/pedrotrschneider/ted:0.3.2`, host port 33044 → 8080) and `ted-casaos-db-1` (`postgres:18`). `GET http://127.0.0.1:33044/api/client/v1/version` on the server reports version `0.3.2`, compatibility `0.3`. The app contains FFprobe `5.1.9-0+deb12u1`.
+
+The older `ted-teddy-preview` containers are also present; they were not used or changed for these checks. The current deployment root, bind mounts and backup/restore state were not re-audited, so do not apply the preview's historical paths/configuration to CasaOS. Read-only mapping/probe metadata, bounded reads through an existing cached RD link and captured packet comparison established the attached-cover cache-planner failure described in IMPLEMENTATION. The correction is not installed on this server yet. No container restart, migration, RD add/selection, configuration write or viewing/history report was performed.
 
 Earlier October 25 read-only probes used the former cache-flush/schema-46 preview's configured providers without metadata/history writes. The owner subsequently requested the new rollout below. Earlier probe evidence remains `.devbox/viewing-cast-20261025/live-cast-server.json`, `cast-followup.json` and `.devbox/series-providers-20261025/live-provider-results-second.jsonl`.
 
@@ -8,7 +14,7 @@ Earlier October 25 read-only probes used the former cache-flush/schema-46 previe
 
 Preview is cache-free, with 5% viewing qualification, 95% completion, distinct Next Up/New Releases, scoped cast and generic admin per-series provider/structure choice. The old app was stopped before the backup and forward migrations **47/48**. The old cache prototype used an unreleased 0.3 number too; use the matching new Mac artifact below. Migration 46 remains in history; all permanent state/replay lineage is preserved. The disposable cache mount is removed, while its former Config/playback-cache folder is retained on disk. October 20's cache/seekbar instructions below are historical.
 
-## Last verified installation — October 25
+## Historical preview installation — October 25
 
 | Item | Value |
 | --- | --- |

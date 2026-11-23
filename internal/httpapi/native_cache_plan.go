@@ -54,11 +54,16 @@ func (a *API) nativeCachePlan(w http.ResponseWriter, r *http.Request, g accounts
 			return
 		default:
 		}
-		if errors.Is(err, streaming.ErrProbeInvalid) {
-			a.nativeSourceFailure(w, r, addons.ErrUnsupported)
-		} else {
-			a.nativePlaybackFailure(w, r, err)
+		if a.logger != nil && r.Context().Err() == nil {
+			a.logger.WarnContext(r.Context(), "next-episode cache planning unavailable", "operation", "native_cache_plan", "session", id, "reason", streaming.CachePlanFailureCode(err))
 		}
+		if errors.Is(err, streaming.ErrInvalid) {
+			a.nativePlaybackFailure(w, r, err)
+			return
+		}
+		// Failing to map a speculative byte window is not proof that MPV
+		// cannot play the already validated selected media.
+		respond(w, http.StatusServiceUnavailable, map[string]string{"code": "next_cache_unavailable"})
 		return
 	}
 	var expected int64

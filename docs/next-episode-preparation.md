@@ -1,6 +1,6 @@
 # Next-episode preparation and future seek previews
 
-Owner decisions from November 19–20, 2026. This records the discussion so work can continue without the chat. Requirements below are approved; implementation and verified evidence belong in IMPLEMENTATION.md. Do not interpret this plan as proof of device behavior.
+Owner decisions from November 19–20, 2026, with the November 23 mapped-Next failure clarification. This records the discussion so work can continue without the chat. Requirements below are approved; implementation and verified evidence belong in IMPLEMENTATION.md. Do not interpret this plan as proof of device behavior.
 
 ## Report and investigation
 
@@ -34,7 +34,7 @@ For an identified match, TED must reuse the ready exact file or durably request 
 
 The stages are lookup → match → request exact RD file if necessary → wait for readiness → validate/pin file → warm server bytes → cache on device → ready. No-match/transient lookup/server-preparation failures retry every minute, with one attempt in flight. Respect longer provider retry delays. Permanent authorization, disabled-provider, unsupported or changed-source failures wait for a meaningful state change instead of an endless destructive retry. Manual successfully fetching a list and an unmapped successor under mapped playback are deliberate details outcomes, not reasons to start media effects.
 
-After server preparation succeeds, start device caching immediately. A device-cache failure retries every minute independently; retain verified partial bytes for the same pinned representation and avoid repeating completed RD adds. Expired preparation or changed file identity requires revalidation. Cancel obsolete work on navigation, source change, account/profile change or shutdown. Late completion cannot publish into a successor context or unexpectedly start playback on details.
+After server preparation succeeds, start device caching immediately. Verification of the mapping/exact selected source and its prepared session establishes continuation readiness. Packet-window planning belongs to device caching: a failed, unsupported or pending cache plan must not veto playback of an already verified successor. Next authorizes its fresh viewing session even while that optimization retries. A device-cache failure retries every minute independently; retain verified partial bytes for the same pinned representation and avoid repeating completed RD adds. Known authorization, file-change and placeholder failures still invalidate continuation. Expired preparation or changed file identity requires revalidation. Cancel obsolete work on navigation, source change, account/profile change or shutdown. Late completion cannot publish into a successor context or unexpectedly start playback on details.
 
 ## Device caching and player reuse
 
