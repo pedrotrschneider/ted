@@ -11,21 +11,97 @@ import (
 	"net"
 	"net/http"
 	"os/exec"
+	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
 )
 
 type NativeCachePlan struct {
-	Size       int64  `json:"size"`
-	ETag       string `json:"etag"`
-	ResumeMS   int64  `json:"resume_ms"`
-	DurationMS int64  `json:"duration_ms"`
-	Start      int64  `json:"start"`
-	End        int64  `json:"end"`
-	Ahead      int64  `json:"ahead_bytes"`
-	Back       int64  `json:"back_bytes"`
+	Size           int64              `json:"size"`
+	ETag           string             `json:"etag"`
+	ResumeMS       int64              `json:"resume_ms"`
+	DurationMS     int64              `json:"duration_ms"`
+	Start          int64              `json:"start"`
+	End            int64              `json:"end"`
+	Ahead          int64              `json:"ahead_bytes"`
+	Back           int64              `json:"back_bytes"`
+	Initialization []NativeCacheRange `json:"initialization_ranges,omitempty"`
+}
+
+type NativeCacheRange struct {
+	Start int64 `json:"start"`
+	End   int64 `json:"end"`
+}
+
+// Keep only numeric read positions. Container attachments and indexes may be
+// far from both the playable window and a small fixed file suffix.
+type cachePlanReads struct {
+	mu       sync.Mutex
+	reads    []*NativeCacheRange
+	overflow bool
+}
+
+func (r *cachePlanReads) begin(start int64) *NativeCacheRange {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if len(r.reads) >= 64 {
+		r.overflow = true
+		return nil
+	}
+	read := &NativeCacheRange{Start: start, End: start - 1}
+	r.reads = append(r.reads, read)
+	return read
+}
+
+func (r *cachePlanReads) wrote(read *NativeCacheRange, n int) {
+	if read == nil || n <= 0 {
+		return
+	}
+	r.mu.Lock()
+	read.End += int64(n)
+	r.mu.Unlock()
+}
+
+func (r *cachePlanReads) initialization(plan NativeCachePlan) ([]NativeCacheRange, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if r.overflow {
+		return nil, cachePlanInvalid("initialization_ranges_exhausted")
+	}
+	var result []NativeCacheRange
+	for _, read := range r.reads {
+		window := *read
+		window.End = min(window.End, plan.Size-1)
+		if window.Start == 0 {
+			// At zero, packet positions identify the complete container prefix.
+			// A resumed window must not classify earlier episode data as headers.
+			window.End = min(window.End, plan.Start-1)
+			if plan.ResumeMS > 0 {
+				window.End = min(window.End, (2<<20)-1)
+			}
+		} else if window.Start <= plan.End && window.End >= plan.Start {
+			// This request supplied the measured video window. Its speculative
+			// HTTP read-ahead is not an additional initialization requirement.
+			continue
+		}
+		if window.Start < 0 || window.End < window.Start {
+			continue
+		}
+		result = append(result, window)
+	}
+	sort.Slice(result, func(i, j int) bool { return result[i].Start < result[j].Start })
+	merged := result[:0]
+	for _, window := range result {
+		if len(merged) > 0 && window.Start <= merged[len(merged)-1].End+1 {
+			merged[len(merged)-1].End = max(merged[len(merged)-1].End, window.End)
+		} else {
+			merged = append(merged, window)
+		}
+	}
+	return merged, nil
 }
 
 // Cache planning can be unavailable for playable media. Reasons are fixed
@@ -57,6 +133,8 @@ func BuildNativeCachePlan(ctx context.Context, media http.Handler, resume, ahead
 		return NativeCachePlan{}, ErrUnavailable
 	}
 	var delivered atomic.Int64
+	var size atomic.Int64
+	var reads cachePlanReads
 	var nonce [16]byte
 	if _, err = rand.Read(nonce[:]); err != nil {
 		return NativeCachePlan{}, ErrUnavailable
@@ -67,7 +145,13 @@ func BuildNativeCachePlan(ctx context.Context, media http.Handler, resume, ahead
 			http.NotFound(w, r)
 			return
 		}
-		media.ServeHTTP(&planWriter{ResponseWriter: w, delivered: &delivered, cancel: cancel}, r.WithContext(ctx))
+		var observed *NativeCacheRange
+		if r.Method == "GET" {
+			if span, err := parseRange(r.Header.Get("Range"), size.Load()); err == nil {
+				observed = reads.begin(span.start)
+			}
+		}
+		media.ServeHTTP(&planWriter{ResponseWriter: w, delivered: &delivered, cancel: cancel, reads: &reads, observed: observed}, r.WithContext(ctx))
 	})}
 	go func() { _ = server.Serve(listener) }()
 	defer server.Close()
@@ -87,6 +171,7 @@ func BuildNativeCachePlan(ctx context.Context, media http.Handler, resume, ahead
 		return NativeCachePlan{}, ErrUnavailable
 	}
 	plan := NativeCachePlan{Size: head.ContentLength, ETag: head.Header.Get("ETag"), ResumeMS: resume, Ahead: ahead, Back: back}
+	size.Store(plan.Size)
 	if len(plan.ETag) < 2 || len(plan.ETag) > 1024 || plan.ETag[0] != '"' {
 		return NativeCachePlan{}, cachePlanInvalid("validator_missing")
 	}
@@ -100,13 +185,20 @@ func BuildNativeCachePlan(ctx context.Context, media http.Handler, resume, ahead
 	if cmd.Run() != nil {
 		return NativeCachePlan{}, ErrUnavailable
 	}
-	return cachePlanPackets(plan, out.Bytes())
+	plan, err = cachePlanPackets(plan, out.Bytes())
+	if err != nil {
+		return NativeCachePlan{}, err
+	}
+	plan.Initialization, err = reads.initialization(plan)
+	return plan, err
 }
 
 type planWriter struct {
 	http.ResponseWriter
 	delivered *atomic.Int64
 	cancel    context.CancelFunc
+	reads     *cachePlanReads
+	observed  *NativeCacheRange
 }
 
 func (w *planWriter) Write(b []byte) (int, error) {
@@ -114,7 +206,11 @@ func (w *planWriter) Write(b []byte) (int, error) {
 		w.cancel()
 		return 0, ErrUnavailable
 	}
-	return w.ResponseWriter.Write(b)
+	n, err := w.ResponseWriter.Write(b)
+	if w.reads != nil {
+		w.reads.wrote(w.observed, n)
+	}
+	return n, err
 }
 func (w *planWriter) Unwrap() http.ResponseWriter { return w.ResponseWriter }
 func cachePlanPackets(plan NativeCachePlan, raw []byte) (NativeCachePlan, error) {

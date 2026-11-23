@@ -136,3 +136,43 @@ func TestNativeCachePlanIncludesLacedUntimedAudioWithoutInventingVideoCoverage(t
 		t.Fatal("missing video time manufactured readiness", err)
 	}
 }
+
+func TestNativeCachePlanRetainsObservedContainerReadsWithoutVideoReadAhead(t *testing.T) {
+	plan := NativeCachePlan{Size: 302865410, Start: 1142836, End: 1818454, Ahead: 64 << 20}
+	var reads cachePlanReads
+	for _, span := range []struct {
+		start int64
+		bytes int
+	}{
+		{0, 100 << 20}, // The initial HTTP response can read well past its headers.
+		{1142822, 3 << 20},
+		{plan.Size - 923308, 923308}, // Attached fonts/index needed before first frame.
+		{plan.Size - 1648, 1648},
+	} {
+		reads.wrote(reads.begin(span.start), span.bytes)
+	}
+	ranges, err := reads.initialization(plan)
+	if err != nil || len(ranges) != 2 || ranges[0] != (NativeCacheRange{0, plan.Start - 1}) || ranges[1] != (NativeCacheRange{plan.Size - 923308, plan.Size - 1}) {
+		t.Fatal("container reads lost or speculative video retained", ranges, err)
+	}
+	plan.ResumeMS, plan.Start, plan.End = 600000, 150<<20, 151<<20
+	var resumed cachePlanReads
+	resumed.wrote(resumed.begin(0), 100<<20)
+	resumed.wrote(resumed.begin(plan.Start-16), 2<<20)
+	resumed.wrote(resumed.begin(plan.Size-923308), 923308)
+	ranges, err = resumed.initialization(plan)
+	if err != nil || ranges[0].End != (2<<20)-1 {
+		t.Fatal("resumed episode data classified as headers", ranges, err)
+	}
+}
+
+func TestNativeCachePlanBoundsInitializationObservations(t *testing.T) {
+	var reads cachePlanReads
+	for i := 0; i < 65; i++ {
+		reads.wrote(reads.begin(int64(i)*1024), 512)
+	}
+	_, err := reads.initialization(NativeCachePlan{Size: 1 << 20, Start: 100, End: 200})
+	if CachePlanFailureCode(err) != "initialization_ranges_exhausted" {
+		t.Fatal("unbounded initialization read ledger", err)
+	}
+}
