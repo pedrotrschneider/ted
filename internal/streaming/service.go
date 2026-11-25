@@ -14,6 +14,7 @@ import (
 	"entertainmentdistrict/internal/catalog"
 	"entertainmentdistrict/internal/cinemeta"
 	"entertainmentdistrict/internal/database"
+	"entertainmentdistrict/internal/diagnostics"
 	"entertainmentdistrict/internal/realdebrid"
 	"entertainmentdistrict/internal/stremio"
 
@@ -110,10 +111,12 @@ func New(ctx context.Context, pool *pgxpool.Pool, rd Resolver, logger *slog.Logg
 		return nil, err
 	}
 	workers := river.NewWorkers()
+	river.AddWorker(workers, &diagnostics.CleanupWorker{Store: diagnostics.New(pool)})
 	periodic := []*river.PeriodicJob{stremio.PeriodicJob(), catalog.MetadataPeriodicJob(), river.NewPeriodicJob(river.PeriodicInterval(24*time.Hour), func() (river.JobArgs, *river.InsertOpts) {
 		return orphanArgs{}, cleanupOptions()
 	}, &river.PeriodicJobOpts{RunOnStart: true})}
 	queues := map[string]river.QueueConfig{"catalog_metadata": {MaxWorkers: 1}, "default": {MaxWorkers: 1}, "stremio": {MaxWorkers: 2}, "mapping_control": {MaxWorkers: 1}, "mapping_validation": {MaxWorkers: mappingWorkers}}
+	periodic = append(periodic, diagnostics.PeriodicJob())
 	if client, ok := rd.(*realdebrid.Client); ok {
 		s.inventory, err = realdebrid.NewInventory(pool, client, logger)
 		if err != nil {

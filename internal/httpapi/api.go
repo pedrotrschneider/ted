@@ -17,6 +17,7 @@ import (
 	"entertainmentdistrict/internal/addons"
 	"entertainmentdistrict/internal/catalog"
 	"entertainmentdistrict/internal/cinemeta"
+	"entertainmentdistrict/internal/diagnostics"
 	"entertainmentdistrict/internal/metadata"
 	"entertainmentdistrict/internal/realdebrid"
 	"entertainmentdistrict/internal/settings"
@@ -32,6 +33,7 @@ import (
 )
 
 type API struct {
+	Logs             *diagnostics.Store
 	updateChecker    *updates.Checker
 	CalendarLocation *time.Location
 	Streaming        *streaming.Service
@@ -56,6 +58,7 @@ type API struct {
 func New(pool *pgxpool.Pool, service *accounts.Service, secure bool, logger *slog.Logger, rd RDReader) *API {
 	a := &API{updateChecker: updates.NewChecker(), CalendarLocation: time.UTC, pool: pool, accounts: service, logger: logger, rd: rd, sessions: scs.New(), nativeCachePlans: make(chan struct{}, 2)}
 	a.NativeAuth, _ = accounts.NewNativeAuth(pool, service, accounts.DefaultNativePolicy())
+	a.Logs = diagnostics.New(pool)
 	a.movies = cinemeta.New()
 	a.series = cinemeta.New()
 	a.catalog = catalog.New(pool)
@@ -87,6 +90,10 @@ func (a *API) Handler() http.Handler {
 		respond(w, 200, map[string]string{"status": "ready"})
 	})
 	auth := http.NewServeMux()
+	for _, path := range []string{"/api/admin/logs", "/api/admin/logs/devices", "/api/admin/logs/settings"} {
+		auth.HandleFunc("GET "+path, a.protected(true, a.readLogs))
+	}
+	auth.HandleFunc("PUT /api/admin/logs/settings", a.protected(true, a.readLogs))
 	a.artworkRoutes(auth)
 	a.seriesMetadataProviderRoutes(auth)
 	a.avatarRoutes(auth)

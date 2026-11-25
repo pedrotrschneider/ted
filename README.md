@@ -115,6 +115,10 @@ devbox run -- bash scripts/build-teddy-macos.sh
 
 The Mac build requires full Xcode and emits a unique immutable app path. Quit the prior instance and open the new app yourself. Never replace libraries inside a running bundle. Other platform validation remains outstanding; see the native README and IMPLEMENTATION for exact local and hosted evidence. A local passing check does not establish a successful hosted build or publication.
 
+## Client diagnostics
+
+Administrators open **Logs** in the web UI to query Teddy logs, download bounded NDJSON pages and configure retention (default **90 days**, 1–3,650). All reads and retention changes require an administrator. Teddy sends logs by default; **Settings → Advanced → Send diagnostic logs** opts out and clears its queued diagnostics. **Detailed diagnostic logging** enables additional bounded playback measurements. Upgrade both TED and Teddy for remote logging; older clients keep their existing local logs. Data stays in the existing PostgreSQL backup, with server/device size limits and hourly River cleanup. See [client diagnostics](docs/client-diagnostics.md) for the API, storage/retry limits and logging audit.
+
 ## Troubleshooting and operational boundaries
 
 - **Cast loads but person page fails:** the October 15 server fix restores the optional filmography pagination cursor. Reopen the person or use Retry after updating TED; no Teddy rebuild or metadata-cache reset is needed.

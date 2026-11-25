@@ -440,3 +440,5 @@ footer{overflow-anchor:none}
 
 .provider-overrides label{display:flex;align-items:center;gap:.75rem}
 .provider-overrides input[type="radio"]{flex:none;width:1.25rem;height:1.25rem;min-height:0;padding:0}
+
+.logs-filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.client-logs{margin:16px 0}.log-entry{border-top:1px solid var(--border,#444);padding:12px 0}.log-entry small{overflow-wrap:anywhere;opacity:.8}.log-entry pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0;font-size:.85rem;max-height:360px;overflow:auto}
