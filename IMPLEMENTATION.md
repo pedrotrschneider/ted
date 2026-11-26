@@ -1,6 +1,14 @@
-# Engineering handoff — November 25, 2026
+# Engineering handoff — November 26, 2026
 
 This is the current execution checkpoint. [PROJECT](PROJECT.md) contains agreed behavior, [AGENTS](AGENTS.md) engineering constraints, [README](README.md)/[native README](../teddy/README.md) workflows and [Operations](docs/operations.md) recovery. The older chronological implementation journal was consolidated to remove conflicting active instructions. Private pre-consolidation copies are under `.devbox/documentation-20261015`; current requirements do not depend on reading those copies or this chat.
+
+## Client log screen layout correction — November 26
+
+The owner confirms that log collection/querying works and supplies a screenshot of the broken web layout. Generic text-input rules made the refresh checkbox full-width/48 pixels tall; generic label/form margins added excess filter spacing, narrow date fields clipped their values, and adjacent query/retention cards touched. The fix scopes control styling to the Logs page, removes the inherited filter margins, gives date filters a wider responsive grid, aligns the normal-size checkbox with its caption, separates cards through the existing panel stack and keeps retention's number field compact beside Save (wrapping below on phones). Query, upload, retention and authorization behavior are unchanged; no Teddy update is needed.
+
+All **128 web tests**, frontend typecheck and production build pass. Existing isolated headless Chrome checks now also render the actual ClientLogs component with synthetic responses at **1512 / 820 / 390 pixels**. Three regressions cover field/panel spacing, date widths, inline checkbox/caption geometry, compact responsive retention controls, long-message containment/no horizontal page overflow, keyboard Space toggling and filter submission. Together with the existing poster checks, all **7 rendered tests** pass. Desktop/phone screenshots were visually reviewed; evidence is `.devbox/logs-layout-20261126`. This operates only fresh headless test profiles/loopback fixtures, not the owner's browser, server or history. No library or environment change is introduced. Hosted release validation is tracked against the pushed TED commit independently of these local checks.
+
+The preceding diagnostics releases are published: **TED 0.3.5** ([successful checks/image workflow](https://github.com/pedrotrschneider/ted/actions/runs/45553567940), OCI revision `272ad9407e3cf884942500553ca5c6207363bc1a`) and **Teddy 0.3.18** ([successful five-platform build/publication workflow](https://github.com/pedrotrschneider/teddy/actions/runs/45553161439), revision `5b567449654d11514b74fb882e89fdbe50ad4077`). Registry/release metadata were verified; this is publication evidence, not an agent deployment to the home server. The owner's screenshot now supplies delivery/query evidence for their Mac device, separate from Chromecast acceptance.
 
 ## Client diagnostics in TED — November 25
 

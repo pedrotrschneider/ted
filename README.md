@@ -87,7 +87,7 @@ devbox run -- npm --prefix web test
 devbox run -- npm --prefix web run build
 ```
 
-Poster geometry also has a rendered regression check using an existing headless Chrome installation, with a fresh temporary profile and synthetic media only:
+Poster indicators and the Logs page also have rendered layout regressions using an existing headless Chrome installation, with fresh temporary profiles and synthetic media/logs only. The Logs checks cover desktop, tablet and phone layouts, keyboard refresh and filter submission:
 
 ```sh
 devbox run -- npm --prefix web run test:layout

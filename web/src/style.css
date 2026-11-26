@@ -441,4 +441,18 @@ footer{overflow-anchor:none}
 .provider-overrides label{display:flex;align-items:center;gap:.75rem}
 .provider-overrides input[type="radio"]{flex:none;width:1.25rem;height:1.25rem;min-height:0;padding:0}
 
-.logs-filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.client-logs{margin:16px 0}.log-entry{border-top:1px solid var(--border,#444);padding:12px 0}.log-entry small{overflow-wrap:anywhere;opacity:.8}.log-entry pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0;font-size:.85rem;max-height:360px;overflow:auto}
+.logs-query-form{margin-top:0}
+.logs-query-form fieldset{display:grid;gap:1rem}
+.logs-filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr));gap:1rem}
+.logs-filters label{margin:0;min-width:0}
+.logs-query-form .actions{align-items:center}
+.logs-query-form .actions a{display:inline-flex;align-items:center;min-height:44px}
+.logs-follow{display:flex;align-items:center;gap:.65rem;width:fit-content;min-height:44px;margin:1rem 0 .5rem;cursor:pointer}
+.logs-follow input[type="checkbox"]{flex:none;width:1.15rem;height:1.15rem;min-height:0;padding:0;margin:0;accent-color:#f9ab78}
+.logs-retention-fields{display:flex;flex-wrap:wrap;align-items:flex-end;gap:1rem}
+.logs-retention-fields label{flex:0 1 12rem;min-width:0;margin:0}
+.logs-retention-fields button{min-height:48px}
+.client-logs{margin:1rem 0 0;min-width:0}
+.log-entry{border-top:1px solid #354046;padding:1rem 0;overflow-wrap:anywhere}
+.log-entry small{display:block;margin-top:.25rem;opacity:.8}
+.log-entry pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:.5rem 0 0;font-size:.85rem;max-height:360px;overflow:auto}
