@@ -66,7 +66,10 @@ func (a *API) nativeDownloadResolve(w http.ResponseWriter, r *http.Request, g ac
 	respond(w, 200, d)
 }
 func (a *API) nativeDownloadMedia(w http.ResponseWriter, r *http.Request, g accounts.NativeGrant) {
+	trace := streaming.MediaTraceFrom(r.Context())
+	phase := trace.Phase("download_descriptor")
 	d, err := a.downloadDescriptor(r, g, r.PathValue("id"))
+	phase(err)
 	if err != nil {
 		a.nativeSourceFailure(w, r, err)
 		return

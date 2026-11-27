@@ -213,6 +213,7 @@ func (a *API) nativeMedia(w http.ResponseWriter, r *http.Request, g accounts.Nat
 		err = a.Streaming.ServeNativeSession(w, r, g, r.PathValue("id"))
 	}
 	if err != nil {
+		streaming.MediaTraceFrom(r.Context()).Failure(err)
 		a.nativeSourceFailure(w, r, err)
 	}
 }

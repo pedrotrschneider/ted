@@ -100,12 +100,14 @@ const remoteStreamChunkSize int64 = 1 << 30
 // sendMedia requests bounded chunks upstream. Rejected links are renewed before
 // copying the next chunk. Interrupted bodies require a client range reconnect.
 func (s *Service) sendMedia(w http.ResponseWriter, r *http.Request, m Media) {
+	trace := MediaTraceFrom(r.Context())
 	want, err := parseRange(r.Header.Get("Range"), m.Bytes)
 	if err != nil {
 		w.Header().Set("Content-Range", fmt.Sprintf("bytes */%d", m.Bytes))
 		http.Error(w, "invalid range", 416)
 		return
 	}
+	trace.Source("mapped_rd", want.start, want.end, m.Bytes)
 	w.Header().Set("Accept-Ranges", "bytes")
 	w.Header().Set("X-TED-Source", "remote")
 	w.Header().Set("Cache-Control", "private, no-store")
@@ -133,6 +135,7 @@ func (s *Service) sendMedia(w http.ResponseWriter, r *http.Request, m Media) {
 		end := min(position+remoteStreamChunkSize-1, want.end)
 		link, err := s.link(r.Context(), m, "")
 		if err != nil {
+			trace.Failure(err)
 			recordProbeEvent(r.Context(), probeRelayEvent{Stage: "resolve", Code: probeTransportCode(err), Start: position, End: end})
 			if !wrote {
 				w.Header().Del("Content-Length")
@@ -147,7 +150,9 @@ func (s *Service) sendMedia(w http.ResponseWriter, r *http.Request, m Media) {
 		}
 		req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", position, end))
 		req.Header.Set("Accept-Encoding", "identity")
+		req, upstreamDone := trace.Upstream(req)
 		response, err := s.mediaHTTP.Do(req)
+		upstreamDone(response, err)
 		if err != nil {
 			recordProbeEvent(r.Context(), probeRelayEvent{Stage: "upstream_request", Code: probeTransportCode(err), Start: position, End: end})
 			if !wrote {
@@ -171,10 +176,12 @@ func (s *Service) sendMedia(w http.ResponseWriter, r *http.Request, m Media) {
 				w.Header().Del("Content-Range")
 				http.Error(w, "source link unavailable", 503)
 			}
+			trace.Reject("link_rejected")
 			return
 		}
 		expected := fmt.Sprintf("bytes %d-%d/%d", position, end, m.Bytes)
 		if response.StatusCode != 206 || response.Header.Get("Content-Range") != expected || response.ContentLength != end-position+1 || (response.Header.Get("Content-Encoding") != "" && response.Header.Get("Content-Encoding") != "identity") {
+			trace.Reject("range_mismatch")
 			response.Body.Close()
 			if !wrote {
 				w.Header().Del("Content-Length")
@@ -193,7 +200,7 @@ func (s *Service) sendMedia(w http.ResponseWriter, r *http.Request, m Media) {
 		}
 		// A downstream write deadline bounds slow/disconnected clients; each copy
 		// chunk gets a fresh deadline rather than a total movie-length timeout.
-		n, copyErr := copyChunk(controller, w, response.Body, end-position+1)
+		n, copyErr := CopyMediaContext(r.Context(), w, response.Body, end-position+1)
 		response.Body.Close()
 		position += n
 		if copyErr != nil {

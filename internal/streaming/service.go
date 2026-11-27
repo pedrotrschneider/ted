@@ -255,6 +255,7 @@ func (s *Service) media(ctx context.Context, id string, published bool) (Media, 
 	return m, err
 }
 func (s *Service) link(ctx context.Context, m Media, invalid string) (string, error) {
+	trace := MediaTraceFrom(ctx)
 	if s.rd == nil {
 		return "", ErrUnavailable
 	}
@@ -264,7 +265,9 @@ func (s *Service) link(ctx context.Context, m Media, invalid string) (string, er
 	if stored, ok := rd.(interface {
 		Snapshot(context.Context) (*realdebrid.Client, error)
 	}); ok {
+		phase := trace.Phase("rd_credentials")
 		snapshot, err := stored.Snapshot(ctx)
+		phase(err)
 		if err != nil {
 			return "", err
 		}
@@ -272,24 +275,42 @@ func (s *Service) link(ctx context.Context, m Media, invalid string) (string, er
 	}
 	// Bound pool consumption, leaving connections for durable recovery writes.
 	// Mapping row locks below remain the cross-process correctness boundary.
+	phase := trace.Phase("link_slot_wait")
 	select {
 	case s.linkSlots <- struct{}{}:
+		phase(nil)
 		defer func() { <-s.linkSlots }()
 	case <-ctx.Done():
+		phase(ctx.Err())
 		return "", ctx.Err()
 	}
+	phase = trace.Phase("link_database_pool")
 	tx, err := s.pool.Begin(ctx)
+	phase(err)
 	if err != nil {
 		return "", err
 	}
 	defer database.Rollback(tx)
-	if _, err = tx.Exec(ctx, `SELECT id FROM mapping_versions WHERE id=$1 FOR NO KEY UPDATE`, m.MappingID); err != nil {
+	phase = trace.Phase("link_mapping_lock")
+	_, err = tx.Exec(ctx, `SELECT id FROM mapping_versions WHERE id=$1 FOR NO KEY UPDATE`, m.MappingID)
+	phase(err)
+	if err != nil {
 		return "", err
 	}
 	var link string
+	phase = trace.Phase("link_cache_lookup")
 	err = tx.QueryRow(ctx, `SELECT download_url FROM streaming_links WHERE mapping_id=$1 AND credential_scope=$2 AND expires_at>now()`, m.MappingID, rd.CredentialScope()).Scan(&link)
+	if errors.Is(err, pgx.ErrNoRows) {
+		phase(nil)
+		trace.Phase("link_cache_miss")(nil)
+	} else {
+		phase(err)
+	}
 	if err == nil && link != invalid {
-		return link, tx.Commit(ctx)
+		phase = trace.Phase("link_cache_hit")
+		err = tx.Commit(ctx)
+		phase(err)
+		return link, err
 	}
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return "", err
@@ -303,25 +324,34 @@ func (s *Service) link(ctx context.Context, m Media, invalid string) (string, er
 		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 			return "", err
 		}
+		phase = trace.Phase("rd_prepare_file")
 		want, err = recovery.PrepareFile(ctx, want, owned, func(id string) error {
 			// Separate durable commit: the mapping row lock still serializes workers,
 			// but rollback after a remote failure must not erase ownership provenance.
 			_, e := s.pool.Exec(ctx, `INSERT INTO streaming_recovery(mapping_id,torrent_id,rd_account_id) VALUES($1,$2,$3) ON CONFLICT(mapping_id) DO UPDATE SET torrent_id=$2,rd_account_id=$3`, m.MappingID, id, m.AccountID)
 			return e
 		})
+		phase(err)
 		if err != nil {
 			return "", err
 		}
 	}
+	phase = trace.Phase("rd_resolve_file")
 	resolved, err := rd.ResolveFile(ctx, want)
+	phase(err)
 	if err != nil {
 		return "", err
 	}
+	phase = trace.Phase("link_cache_publish")
 	_, err = tx.Exec(ctx, `INSERT INTO streaming_links(mapping_id,credential_scope,download_url,expires_at) VALUES($1,$2,$3,now()+interval '30 minutes') ON CONFLICT(mapping_id) DO UPDATE SET credential_scope=$2,download_url=$3,expires_at=excluded.expires_at`, m.MappingID, rd.CredentialScope(), resolved.URL)
+	phase(err)
 	if err != nil {
 		return "", err
 	}
-	return resolved.URL, tx.Commit(ctx)
+	phase = trace.Phase("link_commit")
+	err = tx.Commit(ctx)
+	phase(err)
+	return resolved.URL, err
 }
 
 func (w *worker) Work(ctx context.Context, job *river.Job[prepareArgs]) error {

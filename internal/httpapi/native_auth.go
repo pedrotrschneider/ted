@@ -10,6 +10,7 @@ import (
 
 	"entertainmentdistrict/internal/accounts"
 	"entertainmentdistrict/internal/addons"
+	"entertainmentdistrict/internal/streaming"
 	"entertainmentdistrict/internal/watchstate"
 )
 
@@ -35,13 +36,22 @@ func (a *API) nativeHandler() http.Handler {
 	}))
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Vary", "Authorization")
+		_, pattern := mux.Handler(r)
+		if pattern == "GET /api/client/v1/playback/sessions/{id}/media" || pattern == "GET /api/client/v1/downloads/{id}/media" {
+			session := strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, "/api/client/v1/playback/sessions/"), "/media")
+			if pattern == "GET /api/client/v1/downloads/{id}/media" {
+				session = strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, "/api/client/v1/downloads/"), "/media")
+			}
+			var trace *streaming.MediaTrace
+			w, r, trace = streaming.BeginMediaTrace(w, r, a.logger, session)
+			defer trace.Finish()
+		}
 		// No SCS loading/saving on native routes, even if a browser has a cookie.
 		// Reject competing mechanisms instead of silently choosing an identity.
 		if _, err := r.Cookie(a.sessions.Cookie.Name); err == nil {
 			a.nativeFail(w, r, accounts.ErrUnauthorized)
 			return
 		}
-		_, pattern := mux.Handler(r)
 		if pattern != "GET /api/client/v1/playback/sessions/{id}/media" && pattern != "GET /api/client/v1/downloads/{id}/media" {
 			budget := 10 * time.Second
 			if pattern == "POST /api/client/v1/playback/preparations" || pattern == "POST /api/client/v1/playback/sessions" || pattern == "POST /api/client/v1/playback/sessions/{id}/cache-plan" || pattern == "POST /api/client/v1/downloads/resolve" {
@@ -79,6 +89,7 @@ func (a *API) nativeProtected(next func(http.ResponseWriter, *http.Request, acco
 	return func(w http.ResponseWriter, r *http.Request) {
 		raw, err := accessHeader(r)
 		if err != nil {
+			streaming.MediaTraceFrom(r.Context()).Failure(err)
 			a.nativeFail(w, r, err)
 			return
 		}
@@ -86,9 +97,11 @@ func (a *API) nativeProtected(next func(http.ResponseWriter, *http.Request, acco
 		g, err := a.NativeAuth.Authenticate(ctx, raw)
 		cancel()
 		if err != nil {
+			streaming.MediaTraceFrom(r.Context()).Failure(err)
 			a.nativeFail(w, r, err)
 			return
 		}
+		streaming.MediaTraceFrom(r.Context()).Authenticated(g.User.ID, g.DeviceID)
 		next(w, r, g)
 	}
 }

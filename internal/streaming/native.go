@@ -195,9 +195,12 @@ func (s *Service) ServeNativeSession(w http.ResponseWriter, r *http.Request, gra
 		return ErrInvalid
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 8*time.Second)
+	trace := MediaTraceFrom(r.Context())
+	phase := trace.Phase("mapped_session_lookup")
 	var id, mapping string
 	err := s.pool.QueryRow(ctx, `SELECT media_id::text,mapping_id::text FROM native_playback_sessions WHERE id=$1 AND user_id=$2 AND device_id=$3 AND mapping_id IS NOT NULL`, session, grant.User.ID, grant.DeviceID).Scan(&id, &mapping)
 	cancel()
+	phase(err)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return accounts.ErrNotFound
 	}
@@ -205,8 +208,10 @@ func (s *Service) ServeNativeSession(w http.ResponseWriter, r *http.Request, gra
 		return err
 	}
 	ctx, cancel = context.WithTimeout(r.Context(), 8*time.Second)
+	phase = trace.Phase("mapped_file_lookup")
 	m, err := s.media(ctx, id, true)
 	cancel()
+	phase(err)
 	if err != nil {
 		return err
 	}

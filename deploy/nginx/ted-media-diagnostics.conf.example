@@ -1,0 +1,22 @@
+# Optional Nginx http-context diagnostics; merge into the proxy's existing
+# configuration, never overwrite it. No URL, query, address or credential fields.
+# A TED-generated response ID limits collection to authenticated media routes
+# (including their rejected requests). Request IDs convey no authorization.
+map $upstream_http_x_ted_request_id $ted_media_diagnostic {
+    default 0;
+    "~^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$" 1;
+}
+log_format ted_media_diagnostic escape=json
+    '{"type":"ted_media","at":"$time_iso8601",'
+    '"request_id":"$upstream_http_x_ted_request_id","status":"$status",'
+    '"complete":"$request_completion","request_s":"$request_time",'
+    '"connect_s":"$upstream_connect_time","headers_s":"$upstream_header_time",'
+    '"upstream_s":"$upstream_response_time","upstream_status":"$upstream_status",'
+    '"upstream_bytes":"$upstream_bytes_received","upstream_body_bytes":"$upstream_response_length",'
+    '"downstream_body_bytes":"$body_bytes_sent","downstream_bytes":"$bytes_sent"}';
+
+# Add in the TED proxy-host's server context, using its EXISTING rotated access
+# file (the owner's current NPM host is 11). Retain the ordinary access log.
+# access_log /data/logs/proxy-host-11_access.log ted_media_diagnostic if=$ted_media_diagnostic;
+# This produces a second JSON record for media only in the existing log file.
+# nginx -t must pass before a separately authorized reload/rollout.

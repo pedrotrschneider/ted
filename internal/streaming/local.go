@@ -320,11 +320,14 @@ func (s *Service) playMedia(w http.ResponseWriter, r *http.Request, m Media) {
 }
 
 func (s *Service) playPinnedMedia(w http.ResponseWriter, r *http.Request, m Media, pinned string) {
+	trace := MediaTraceFrom(r.Context())
 	if s.storage == nil {
 		s.sendMedia(w, r, m)
 		return
 	}
+	phase := trace.Phase("local_file_lock")
 	conn, release, err := s.fileLock(r.Context(), m.ID, true)
+	phase(err)
 	if err != nil {
 		http.Error(w, "playback temporarily unavailable; retry", 503)
 		return
@@ -333,10 +336,12 @@ func (s *Service) playPinnedMedia(w http.ResponseWriter, r *http.Request, m Medi
 	var available bool
 	var generation int64
 	stateCtx, cancelState := context.WithTimeout(r.Context(), 8*time.Second)
+	phase = trace.Phase("local_state_lookup")
 	if pinned != "" {
 		var mapping string
 		err = conn.QueryRow(stateCtx, `SELECT s.mapping_id::text,COALESCE(l.available,false),COALESCE(l.generation,0) FROM streaming_items s LEFT JOIN local_files l ON l.movie_id=s.movie_id WHERE s.movie_id=$1 AND s.published`, m.ID).Scan(&mapping, &available, &generation)
 		cancelState()
+		phase(err)
 		if errors.Is(err, pgx.ErrNoRows) {
 			http.Error(w, "mapping is no longer ready", 409)
 			return
@@ -350,6 +355,11 @@ func (s *Service) playPinnedMedia(w http.ResponseWriter, r *http.Request, m Medi
 	} else {
 		err = conn.QueryRow(stateCtx, `SELECT available,generation FROM local_files WHERE movie_id=$1`, m.ID).Scan(&available, &generation)
 		cancelState()
+		if errors.Is(err, pgx.ErrNoRows) {
+			phase(nil)
+		} else {
+			phase(err)
+		}
 	}
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		http.Error(w, "storage state unavailable", 503)
@@ -360,13 +370,17 @@ func (s *Service) playPinnedMedia(w http.ResponseWriter, r *http.Request, m Medi
 		return
 	}
 	_, name := localNames(m.ID, generation)
+	phase = trace.Phase("local_file_open")
 	f, err := s.storage.Open(name)
+	phase(err)
 	if err != nil {
 		http.Error(w, "local file unavailable; check storage or remove local copy", 503)
 		return
 	}
 	defer f.Close()
+	phase = trace.Phase("local_file_stat")
 	info, err := f.Stat()
+	phase(err)
 	if err != nil || !info.Mode().IsRegular() || info.Size() != m.Bytes {
 		http.Error(w, "local file invalid; check storage", 503)
 		return
@@ -377,6 +391,7 @@ func (s *Service) playPinnedMedia(w http.ResponseWriter, r *http.Request, m Medi
 		http.Error(w, "invalid range", 416)
 		return
 	}
+	trace.Source("local", want.start, want.end, m.Bytes)
 	w.Header().Set("Content-Type", "application/octet-stream")
 	w.Header().Set("X-TED-Source", "local")
 	w.Header().Set("Cache-Control", "private, no-store")
@@ -390,6 +405,5 @@ func (s *Service) playPinnedMedia(w http.ResponseWriter, r *http.Request, m Medi
 	if r.Method == "HEAD" {
 		return
 	}
-	controller := http.NewResponseController(w)
-	_, _ = copyChunk(controller, w, io.NewSectionReader(f, want.start, want.end-want.start+1), want.end-want.start+1)
+	_, _ = CopyMediaContext(r.Context(), w, io.NewSectionReader(f, want.start, want.end-want.start+1), want.end-want.start+1)
 }

@@ -371,13 +371,21 @@ func (s *Service) Serve(w http.ResponseWriter, r *http.Request, g accounts.Nativ
 	return s.serve(w, r, g, session, true)
 }
 func (s *Service) serve(w http.ResponseWriter, r *http.Request, g accounts.NativeGrant, session string, useStartup bool) error {
+	trace := streaming.MediaTraceFrom(r.Context())
 	// A selected CDN may need longer than the JSON write deadline to connect.
 	// Clear it before opening upstream; CopyMedia supplies the rolling deadline
 	// once streaming starts. Database and connection/header waits remain bounded.
 	_ = http.NewResponseController(w).SetWriteDeadline(time.Time{})
 	lookup, cancel := context.WithTimeout(r.Context(), 8*time.Second)
+	phase := trace.Phase("addon_session_lookup")
 	v, p, err := s.playback(lookup, g, session)
 	cancel()
+	if errors.Is(err, ErrNotAddon) {
+		phase(nil)
+		trace.Phase("addon_not_selected")(nil)
+	} else {
+		phase(err)
+	}
 	if err != nil {
 		return err
 	}
@@ -385,7 +393,9 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request, g accounts.Nativ
 		if s.RD == nil {
 			return realdebrid.ErrNotConfigured
 		}
+		phase = trace.Phase("rd_credentials")
 		c, e := s.RD.Snapshot(r.Context())
+		phase(e)
 		if e != nil {
 			return e
 		}
@@ -394,8 +404,10 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request, g accounts.Nativ
 		}
 		if c.CredentialScope() != p.Source.RDScope {
 			bounded, stop := context.WithTimeout(r.Context(), SessionPreparationTimeout)
+			phase = trace.Phase("addon_link_renewal")
 			p, e = s.renew(bounded, g, session, p, v)
 			stop()
+			phase(e)
 			if e != nil {
 				return e
 			}
@@ -416,6 +428,11 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request, g accounts.Nativ
 		start = 0
 		end = 0
 	}
+	source := "addon_http"
+	if p.Source.RDFile != nil {
+		source = "addon_rd"
+	}
+	trace.Source(source, start, end, p.Size)
 	if cached := s.cachedStartup(session, p); useStartup && cached != nil {
 		if handled := s.serveStartup(w, r, p, cached, start, end, rangeValue, func(w http.ResponseWriter, r *http.Request) error {
 			return s.serve(w, r, g, session, false)
@@ -429,7 +446,9 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request, g accounts.Nativ
 		if err != nil {
 			return nil, err
 		}
+		req, upstreamDone := trace.Upstream(req)
 		res, err := s.mediaHTTP().Do(req)
+		upstreamDone(res, err)
 		if err != nil {
 			if r.Context().Err() == nil && s.logger != nil {
 				s.logger.WarnContext(r.Context(), "selected media connection failed", "operation", "addon_media_open", "session_id", session, "rd_direct", source.RDFile != nil, "elapsed_ms", time.Since(started).Milliseconds())
@@ -445,8 +464,10 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request, g accounts.Nativ
 	if res.StatusCode == 401 || res.StatusCode == 403 || res.StatusCode == 404 || res.StatusCode == 410 {
 		res.Body.Close()
 		bounded, cancel := context.WithTimeout(r.Context(), SessionPreparationTimeout)
+		phase = trace.Phase("addon_link_renewal")
 		p, err = s.renew(bounded, g, session, p, v)
 		cancel()
+		phase(err)
 		if err != nil {
 			return err
 		}
@@ -458,9 +479,11 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request, g accounts.Nativ
 	defer res.Body.Close()
 	a, b, size, err := contentRange(res.Header.Get("Content-Range"))
 	if res.StatusCode != 206 || err != nil || a != start || b != end || size != p.Size || !fileContentType(res.Header.Get("Content-Type")) || !identityEncoding(res.Header.Get("Content-Encoding")) {
+		trace.Reject("range_mismatch")
 		return ErrSelection
 	}
 	if p.ETag != "" && res.Header.Get("ETag") != p.ETag {
+		trace.Reject("source_etag_changed")
 		return ErrSelection
 	}
 	w.Header().Set("Accept-Ranges", "bytes")
@@ -486,7 +509,7 @@ func (s *Service) serve(w http.ResponseWriter, r *http.Request, g accounts.Nativ
 		w.WriteHeader(200)
 	}
 	// A short transfer remains a short body; never append a JSON error to media.
-	transferred, copyErr := streaming.CopyMedia(w, res.Body, length)
+	transferred, copyErr := streaming.CopyMediaContext(r.Context(), w, res.Body, length)
 	if copyErr != nil && r.Context().Err() == nil && s.logger != nil {
 		s.logger.WarnContext(r.Context(), "add-on media transfer interrupted", "session_id", session, "expected_bytes", length, "transferred_bytes", transferred)
 	}

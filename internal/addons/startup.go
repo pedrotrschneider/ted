@@ -251,10 +251,14 @@ func (c *startupBytes) at(start, end int64) []byte {
 // and cancel/seek without waiting for another CDN connection. The remainder
 // still uses the ordinary authorized, identity-checked range handler.
 func (s *Service) serveStartup(w http.ResponseWriter, r *http.Request, p prepared, c *startupBytes, start, end int64, rangeValue string, remote func(http.ResponseWriter, *http.Request) error) bool {
+	trace := streaming.MediaTraceFrom(r.Context())
+	phase := trace.Phase("startup_cache_read")
 	data := c.read(r.Context(), start, end)
+	phase(r.Context().Err())
 	if len(data) == 0 {
 		return false
 	}
+	trace.Source("startup_cache", start, end, p.Size)
 	contentType := c.contentType
 	if strings.HasPrefix(strings.ToLower(contentType), "application/force-download") {
 		contentType = "application/octet-stream"
@@ -278,7 +282,7 @@ func (s *Service) serveStartup(w http.ResponseWriter, r *http.Request, p prepare
 		w.WriteHeader(200)
 	}
 	for len(data) > 0 {
-		n, e := streaming.CopyMedia(w, bytes.NewReader(data), int64(len(data)))
+		n, e := streaming.CopyMediaContext(r.Context(), w, bytes.NewReader(data), int64(len(data)))
 		if e != nil {
 			return true
 		}
@@ -286,12 +290,22 @@ func (s *Service) serveStartup(w http.ResponseWriter, r *http.Request, p prepare
 		if start > end {
 			return true
 		}
-		if http.NewResponseController(w).Flush() != nil {
+		phase = trace.Phase("downstream_flush")
+		err := http.NewResponseController(w).Flush()
+		phase(err)
+		if err != nil {
+			trace.Failure(err)
 			return true
 		}
+		phase = trace.Phase("startup_cache_read")
 		data = c.read(r.Context(), start, end)
+		phase(r.Context().Err())
 	}
-	if http.NewResponseController(w).Flush() != nil || r.Context().Err() != nil {
+	phase = trace.Phase("downstream_flush")
+	err := http.NewResponseController(w).Flush()
+	phase(err)
+	if err != nil || r.Context().Err() != nil {
+		trace.Failure(err)
 		return true
 	}
 	next := r.Clone(r.Context())
